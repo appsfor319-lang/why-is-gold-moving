@@ -18,7 +18,7 @@ async function refresh(){
  refreshInFlight=true;
  if(!news.length)$('connection').textContent='LOADING MARKET DATA';
  try{
-  const response=await fetch(base().replace(/\\/$/, '')+'/api/terminal',{cache:'no-store',signal:AbortSignal.timeout(20000)});
+  const response=await fetch((base().endsWith('/')?base().slice(0,-1):base())+'/api/terminal',{cache:'no-store',signal:AbortSignal.timeout(20000)});
   if(!response.ok)throw Error('API HTTP '+response.status);
   const data=await response.json();
   if(!data||typeof data!=='object'||!data.market||!data.market.gold)throw Error('API returned incomplete market data');
