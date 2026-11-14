@@ -330,3 +330,42 @@ th{background:#151515!important}
 .news-neutral{background:rgba(255,255,255,.045)!important}
 footer{border-color:#292929!important}
 @media(max-width:580px){main{padding-top:18px}}
+
+
+/* The entire accent theme follows the live gold direction from the API. */
+:root{--live-direction:#ef4444;--live-direction-soft:rgba(220,35,35,.13);--live-direction-border:rgba(220,35,35,.38)}
+:root[data-gold-trend="up"]{
+  --live-direction:#36c47b;
+  --live-direction-soft:rgba(35,170,100,.13);
+  --live-direction-border:rgba(54,196,123,.42);
+}
+:root[data-gold-trend="up"] body{
+  background:radial-gradient(ellipse at 50% -20%,rgba(35,170,100,.09),transparent 43%),#050505!important;
+}
+:root[data-gold-trend="up"] .main-story{border-top-color:var(--live-direction)!important}
+:root[data-gold-trend="up"] .story-kicker,
+:root[data-gold-trend="up"] .eyebrow,
+:root[data-gold-trend="up"] .section-title .eyebrow,
+:root[data-gold-trend="up"] .text-button,
+:root[data-gold-trend="up"] .status,
+:root[data-gold-trend="up"] .tab.active,
+:root[data-gold-trend="up"] .analysis-notes h3{color:var(--live-direction)!important}
+:root[data-gold-trend="up"] .status{
+  background:var(--live-direction-soft)!important;
+  border-color:var(--live-direction-border)!important;
+}
+:root[data-gold-trend="up"] .button:not(.subtle){
+  background:#188b55!important;border-color:#188b55!important;color:#fff!important;
+  box-shadow:0 4px 16px rgba(35,170,100,.18)!important;
+}
+:root[data-gold-trend="up"] .tab.active{background:var(--live-direction-soft)!important}
+:root[data-gold-trend="up"] .tab.active{border-bottom-color:var(--live-direction)!important}
+:root[data-gold-trend="up"] .tab:hover,
+:root[data-gold-trend="up"] .story a:hover,
+:root[data-gold-trend="up"] .headline a:hover,
+:root[data-gold-trend="up"] .button:hover,
+:root[data-gold-trend="up"] select:hover{color:#65dfa0!important;border-color:var(--live-direction)!important}
+:root[data-gold-trend="up"] .gold-quote strong{color:var(--live-direction)!important}
+:root[data-gold-trend="up"] .driver-chip.primary{
+  background:#0d2117!important;border-color:#26764c!important;color:#9ee6bc!important;
+}
