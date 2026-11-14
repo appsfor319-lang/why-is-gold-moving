@@ -369,3 +369,24 @@ footer{border-color:#292929!important}
 :root[data-gold-trend="up"] .driver-chip.primary{
   background:#0d2117!important;border-color:#26764c!important;color:#9ee6bc!important;
 }
+
+
+/* TradZ Academy identity */
+.academy-masthead{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:18px;
+  padding:4px 2px 24px;margin:0 0 4px;
+  border-bottom:1px solid #242424;
+}
+.academy-name{
+  color:#f5f5f5;font-size:clamp(34px,5.4vw,58px);
+  line-height:1;font-weight:800;letter-spacing:-.065em;
+}
+.academy-name span{color:#ef4444}
+.academy-subtitle{
+  color:#929292;font:10px 'DM Mono',monospace;
+  letter-spacing:.2em;padding-bottom:5px;text-align:right;
+}
+@media(max-width:580px){
+ .academy-masthead{align-items:flex-start;flex-direction:column;gap:8px;padding-bottom:17px}
+ .academy-subtitle{font-size:9px}
+}
