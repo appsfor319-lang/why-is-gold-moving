@@ -51,7 +51,7 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
     if(!generated)throw Error(payload.promptFeedback?.blockReason||"Gemini returned no analysis");
     const parsed=JSON.parse(generated);
     if(typeof parsed.headline!=="string"||typeof parsed.body!=="string")throw Error("Gemini response missing headline/body");
-    let confidence=["HIGH","MEDIUM","LOW","MIXED"].includes(parsed.confidence)?parsed.confidence:"LOW";const currentCross=[m.dxy,m.yield,m.silver,m.oil].filter(x=>x&&x.stale!==true&&(x.change_pct!=null||x.change_bp!=null)).length;if(!m.gold?.change_pct||currentCross<2)confidence="LOW";
+    let confidence=["HIGH","MEDIUM","LOW","MIXED"].includes(parsed.confidence)?parsed.confidence:"LOW";const currentCross=[m.dxy,m.yield,m.silver,m.oil].filter(x=>x&&x.stale!==true&&(x.change_pct!=null||x.change_bp!=null)).length;if(m.gold?.change_pct==null||currentCross<2)confidence="LOW";
     const refs=Array.isArray(parsed.headline_refs)?parsed.headline_refs.filter(i=>Number.isInteger(i)&&i>=0&&i<evidence.headlines.length):[];
     const drivers=(Array.isArray(parsed.drivers)?parsed.drivers:[]).slice(0,4).filter(x=>x&&typeof x.name==="string"&&typeof x.evidence==="string").map(x=>({name:x.name.slice(0,90),role:["primary","counterforce","secondary"].includes(x.role)?x.role:"secondary",evidence:x.evidence.slice(0,500)}));
     const f=parsed.factors&&typeof parsed.factors==="object"?parsed.factors:{};
