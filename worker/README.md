@@ -10,11 +10,11 @@ Deploy the Cloudflare Worker from this directory with Wrangler. Add credentials 
 wrangler secret put GOLDAPI_KEY
 wrangler secret put TWELVEDATA_API_KEY
 wrangler secret put FRED_API_KEY
-wrangler secret put OPENAI_API_KEY
+wrangler secret put GEMINI_API_KEY
 ```
 
 Optional Worker variables:
-- `OPENAI_MODEL` (defaults to `gpt-4.1-mini`)
+- `GEMINI_MODEL` (defaults to `gemini-3.8-flash`)
 - `DXY_SYMBOL` and `OIL_SYMBOL` if your Twelve Data plan uses different symbols.
 
 Then deploy:
@@ -31,7 +31,7 @@ In the published dashboard, open **Settings** and enter the Worker URL.
 - DXY and WTI quote: Twelve Data (confirm symbol access with your plan).
 - US 10-year Treasury yield: FRED DGS10. This is a daily observation, not a live intraday yield.
 - Gold-related headline discovery: GDELT DOC API. Headlines link to their publishers; GDELT is not a licensed Bloomberg/Reuters/Kitco wire.
-- Interpretation: OpenAI Responses API using an independent gold-analysis method and the market/headline evidence supplied by the feeds. If `OPENAI_API_KEY` is absent or the AI call fails, the Worker uses a limited rules-based fallback and labels it accordingly.
+- Interpretation: Gemini Developer API (`gemini-3.8-flash` by default) receives the current market readings and a small set of recent headlines. It must distinguish observed data from plausible explanations, discount stale readings, identify opposing forces, and avoid claiming that a headline caused a move without supporting evidence. The Worker caches identical analyses for 12 minutes. If `GEMINI_API_KEY` is absent, the quota is exhausted, or the AI request fails, the Worker uses the limited rules-based fallback and labels the AI source as `fallback`.
 
 ## How the gold briefing reasons
 
@@ -44,3 +44,8 @@ The economic calendar and historical event-reaction sections return empty arrays
 ## Important limitations
 
 Provider coverage, freshness, symbol names, licensing and subscription quotas must be verified with your own accounts. A spot reference price is not guaranteed to match your OANDA XAUUSD CFD quote. FRED DGS10 is daily. GDELT headline availability and metadata may vary. This independent setup means GoldSquawk shutting down does not disable these feeds; an individual provider or hosting account can still have outages or change its terms.
+
+
+## Gemini configuration
+
+Add `GEMINI_API_KEY` as a Cloudflare Worker secret. Never put it in Git, the static website, or a public issue. The optional `GEMINI_MODEL` Worker variable defaults to `gemini-3.8-flash`. Gemini free-tier availability and request limits depend on the Google AI Studio project and selected model; inspect the project's AI Studio usage page if requests start falling back. Free-tier data-use terms differ from paid-tier terms.
