@@ -29,7 +29,7 @@ STYLE:
 Return only valid JSON with keys headline, body, confidence, factors, drivers, headline_refs. No markdown fences.`;
  const input={market,headlines};
  try{
-  const r=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:env.OPENAI_MODEL||"gpt-4.1-mini",instructions,input:JSON.stringify(input),text:{format:{type:"json_object"}},max_output_tokens:700})});
+  const r=await fetch("https://api.openai.com/v1/responses",{method:"POST",headers:{"Authorization":"Bearer "+env.OPENAI_API_KEY,"Content-Type":"application/json"},body:JSON.stringify({model:env.OPENAI_MODEL||"gpt-4.1-mini",instructions,input:"Return valid JSON only. "+JSON.stringify(input),text:{format:{type:"json_object"}},max_output_tokens:700})});
   if(!r.ok){const errorBody=await r.text();throw Error("OpenAI HTTP "+r.status+": "+errorBody.slice(0,1200))}
   const d=await r.json();
   const textOut=d.output_text||(d.output||[]).flatMap(x=>x.content||[]).map(x=>x.text||"").join("");
