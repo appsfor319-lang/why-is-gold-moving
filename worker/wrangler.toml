@@ -1,0 +1,6 @@
+name = "why-is-gold-moving-api"
+main = "src/index.js"
+compatibility_date = "2026-11-14"
+
+# Add provider credentials using wrangler secret put:
+# GOLDAPI_KEY, TWELVEDATA_API_KEY, FRED_API_KEY
