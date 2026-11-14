@@ -25,7 +25,7 @@ async function historicalReactions(env){
     return{event_type:item.event_type,event:item.release.name,source_url:item.release.link||"https://fred.stlouisfed.org/releases",dates:(d.release_dates||[]).map(x=>x.date).filter(Boolean)};
   }));
   const priceUrl=new URL("https://api.twelvedata.com/time_series");
-  Object.entries({symbol:"XAU/USD",interval:"1day",outputsize:"5000",timezone:"America/New_York",apikey:env.TWELVEDATA_API_KEY}).forEach(([k,v])=>priceUrl.searchParams.set(k,v));
+  Object.entries({symbol:"XAU/USD",interval:"1day",outputsize:"1600",timezone:"America/New_York",apikey:env.TWELVEDATA_API_KEY}).forEach(([k,v])=>priceUrl.searchParams.set(k,v));
   const priceData=await get(priceUrl);
   if(priceData.status==="error"||!Array.isArray(priceData.values)||!priceData.values.length)throw Error(priceData.message||"Twelve Data returned no historical XAU/USD daily candles");
   const candles=priceData.values.map(v=>({date:String(v.datetime||"").slice(0,10),close:Number(v.close)})).filter(v=>/^\d{4}-\d{2}-\d{2}$/.test(v.date)&&Number.isFinite(v.close)&&v.close>0).sort((a,b)=>a.date.localeCompare(b.date));
