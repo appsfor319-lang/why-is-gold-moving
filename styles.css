@@ -170,3 +170,12 @@ dialog input{border-radius:7px;margin:7px 0 10px}
   .section-title h2{font-size:19px}
   .top-headlines,.news,.method{grid-template-columns:1fr}
 }
+
+
+/* Evidence notes */
+.analysis-notes{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0 4px}
+.analysis-notes article{min-width:0;padding:15px 17px;border:1px solid rgba(140,160,176,.17);border-radius:9px;background:rgba(5,10,15,.34)}
+.analysis-notes h3{margin:0 0 10px;color:#e7c982;font-size:10px;font-weight:700;letter-spacing:.13em;text-transform:uppercase}
+.analysis-notes ul{margin:0;padding-left:17px;color:#aebbc5;font-size:11px;line-height:1.7}
+.analysis-notes li+li{margin-top:5px}
+@media(max-width:580px){.analysis-notes{grid-template-columns:1fr}.analysis-notes article{padding:13px 14px}}
