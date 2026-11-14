@@ -38,7 +38,7 @@ jobs:
           if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources) || !Array.isArray(data.history) || !Array.isArray(data.intraday_history)) {
             throw new Error("News, calendar and sources must be arrays");
           }
-          if (!["gemini", "rules-fallback"].includes(data.briefing?.engine) || !["ok", "fallback"].includes(data.briefing?.ai_status)) {
+          if (!["gemini", "rules-fallback", "free-rules-analysis"].includes(data.briefing?.engine) || ![undefined, "ok", "fallback"].includes(data.briefing?.ai_status)) {
             throw new Error("Unexpected briefing engine state: " + (data.briefing?.engine || "unknown"));
           }
           const ai = data.sources.find(source => source.name === "Gemini AI analysis");
