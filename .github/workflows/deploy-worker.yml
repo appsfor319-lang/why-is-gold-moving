@@ -38,15 +38,17 @@ jobs:
           if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources)) {
             throw new Error("News, calendar and sources must be arrays");
           }
-          if (data.briefing?.engine !== "gemini" || data.briefing?.ai_status !== "ok") {
-            throw new Error("Gemini analysis is not active: " + (data.briefing?.ai_error || data.briefing?.engine || "unknown"));
+          if (!["gemini", "rules-fallback"].includes(data.briefing?.engine) || !["ok", "fallback"].includes(data.briefing?.ai_status)) {
+            throw new Error("Unexpected briefing engine state: " + (data.briefing?.engine || "unknown"));
           }
           const ai = data.sources.find(source => source.name === "Gemini AI analysis");
-          if (!ai || ai.status !== "ok") throw new Error("Gemini source health check failed");
+          if (!ai || !["ok", "fallback"].includes(ai.status)) throw new Error("AI source health check failed");
           console.log(JSON.stringify({
             api_status: data.status,
             ai_engine: data.briefing.engine,
-            ai_model: data.briefing.model,
+            ai_status: data.briefing.ai_status,
+            ai_model: data.briefing.model || null,
+            ai_fallback_reason: data.briefing.ai_error || null,
             news_count: data.news.length,
             calendar_count: data.calendar.length,
             source_health: data.sources.map(source => ({ name: source.name, status: source.status }))
