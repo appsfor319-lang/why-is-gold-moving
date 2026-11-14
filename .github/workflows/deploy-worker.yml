@@ -32,7 +32,7 @@ jobs:
           const response = await fetch(url, { signal: AbortSignal.timeout(45000) });
           if (!response.ok) throw new Error("Terminal API returned HTTP " + response.status);
           const data = await response.json();
-          for (const field of ["market", "briefing", "news", "calendar", "history", "intraday_history", "sources"]) {
+          for (const field of ["market", "briefing", "news", "calendar", "history", "intraday_history", "positioning", "sources"]) {
             if (!(field in data)) throw new Error("Missing API field: " + field);
           }
           if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources) || !Array.isArray(data.history) || !Array.isArray(data.intraday_history)) {
@@ -53,6 +53,7 @@ jobs:
             calendar_count: data.calendar.length,
             history_count: data.history.length,
             intraday_history_count: data.intraday_history.length,
+            cftc_positioning: data.positioning ? { report_date: data.positioning.report_date, managed_money_net: data.positioning.managed_money_net, weekly_net_change: data.positioning.weekly_net_change } : null,
             source_health: data.sources.map(source => ({ name: source.name, status: source.status }))
           }, null, 2));
           NODE
