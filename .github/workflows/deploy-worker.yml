@@ -23,3 +23,32 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: worker
           command: deploy
+
+      - name: Smoke test live terminal API
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
+          const response = await fetch(url, { signal: AbortSignal.timeout(45000) });
+          if (!response.ok) throw new Error("Terminal API returned HTTP " + response.status);
+          const data = await response.json();
+          for (const field of ["market", "briefing", "news", "calendar", "sources"]) {
+            if (!(field in data)) throw new Error("Missing API field: " + field);
+          }
+          if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources)) {
+            throw new Error("News, calendar and sources must be arrays");
+          }
+          if (data.briefing?.engine !== "gemini" || data.briefing?.ai_status !== "ok") {
+            throw new Error("Gemini analysis is not active: " + (data.briefing?.ai_error || data.briefing?.engine || "unknown"));
+          }
+          const ai = data.sources.find(source => source.name === "Gemini AI analysis");
+          if (!ai || ai.status !== "ok") throw new Error("Gemini source health check failed");
+          console.log(JSON.stringify({
+            api_status: data.status,
+            ai_engine: data.briefing.engine,
+            ai_model: data.briefing.model,
+            news_count: data.news.length,
+            calendar_count: data.calendar.length,
+            source_health: data.sources.map(source => ({ name: source.name, status: source.status }))
+          }, null, 2));
+          NODE
