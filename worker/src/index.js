@@ -80,7 +80,7 @@ async function intradayReactions(env){
     if(i<1||i+15>=bars.length)continue;
     const base=bars[i-1].close,ret=n=>Number(((bars[i+n-1].close/base-1)*100).toFixed(3));
     const forecast=e.consensus??null,actual=e.actual??null;
-    rows.push({event:e.title||e.name||e.series_name,date:e.date||local.slice(0,10),release_at_utc:e.release_at_utc||e.time_utc,actual,forecast,previous:e.prior??null,gold_15m_pct:ret(1),gold_1h_pct:ret(4),gold_4h_pct:ret(16),baseline_bar:bars[i-1].time,source:"Twelve Data · XAU/USD · 15-minute candles",source_url:e.source_url||e.url||"https://www.financecalendar.com/",method:"Return from the last 15-minute close before the scheduled release to the 15-minute, 1-hour and 4-hour close after release; New York time"});
+    rows.push({event:e.title||e.name||e.series_name,date:e.date||local.slice(0,10),release_at_utc:e.release_at_utc||e.time_utc,actual,forecast,surprise:surpriseValue(actual,forecast),previous:e.prior??null,gold_15m_pct:ret(1),gold_1h_pct:ret(4),gold_4h_pct:ret(16),baseline_bar:bars[i-1].time,source:"Twelve Data · XAU/USD · 15-minute candles",source_url:e.source_url||e.url||"https://www.financecalendar.com/",method:"Return from the last 15-minute close before the scheduled release to the 15-minute, 1-hour and 4-hour close after release; New York time"});
   }
   return rows.sort((a,b)=>b.date.localeCompare(a.date)).slice(0,80);
 }
