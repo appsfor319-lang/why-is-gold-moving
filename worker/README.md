@@ -15,7 +15,6 @@ wrangler secret put GEMINI_API_KEY
 
 Optional Worker variables:
 - `GEMINI_MODEL` (defaults to `gemini-3.8-flash`)
-- `DXY_SYMBOL` and `OIL_SYMBOL` if your Twelve Data plan uses different symbols.
 
 Then deploy:
 
@@ -45,7 +44,7 @@ The economic calendar and historical event-reaction sections return empty arrays
 
 ## Important limitations
 
-Provider coverage, freshness, symbol names, licensing and subscription quotas must be verified with your own accounts. A spot reference price is not guaranteed to match your OANDA XAUUSD CFD quote. FRED DGS10 is daily. GDELT headline availability and metadata may vary. This independent setup means GoldSquawk shutting down does not disable these feeds; an individual provider or hosting account can still have outages or change its terms.
+Provider coverage, freshness, symbol names, licensing and subscription quotas must be verified with your own accounts. A spot reference price is not guaranteed to match your OANDA XAUUSD CFD quote. FRED DGS10 and WTI are daily observations. RSS feed availability, publication timestamps and metadata may vary. This independent setup means GoldSquawk shutting down does not disable these feeds; an individual provider or hosting account can still have outages or change its terms.
 
 
 ## Gemini configuration
