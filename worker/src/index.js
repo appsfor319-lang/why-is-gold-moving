@@ -214,10 +214,10 @@ async function goldInstitutionalFlows(){
   const r=await fetch(url,{headers:{"User-Agent":"Mozilla/5.0 (compatible; TradZAcademy/1.0)","Accept":"text/html"},signal:AbortSignal.timeout(12000)});
   if(!r.ok)throw Error("World Gold Council HTTP "+r.status);
   const html=await r.text();
-  const plain=html.replace(/<script[\\s\\S]*?<\\/script>/gi," ").replace(/<style[\\s\\S]*?<\\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/\\s+/g," ").trim();
-  const report=plain.match(/Gold ETF Flows:\\s*([A-Za-z]+\\s+\\d{4})/i)?.[1]||null;
-  const published=plain.match(/Published:\\s*(\\d{1,2}\\s+[A-Za-z]+,\\s*\\d{4})/i)?.[1]||null;
-  const asOf=plain.match(/Data as of\\s*(\\d{1,2}\\s+[A-Za-z]+,\\s*\\d{4})/i)?.[1]||null;
+  const plain=html.replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;/g," ").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/\s+/g," ").trim();
+  const report=plain.match(/Gold ETF Flows:\s*([A-Za-z]+\s+\d{4})/i)?.[1]||null;
+  const published=plain.match(/Published:\s*(\d{1,2}\s+[A-Za-z]+,\s*\d{4})/i)?.[1]||null;
+  const asOf=plain.match(/Data as of\s*(\d{1,2}\s+[A-Za-z]+,\s*\d{4})/i)?.[1]||null;
   const start=plain.indexOf("Global physically-backed gold ETFs"),end=plain.indexOf("Regional overview",start);
   const summary=start>=0?plain.slice(start,end>start?end:start+2600).slice(0,2600):plain.slice(0,1200);
   if(!report&&!summary)throw Error("World Gold Council ETF report could not be parsed");
