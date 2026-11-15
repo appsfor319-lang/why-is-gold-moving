@@ -326,10 +326,16 @@ async fetch(req,env){let u=new URL(req.url);
 if(req.method==='OPTIONS')return out({ok:true});if(req.method==='POST'&&u.pathname==='/api/telegram-smoke'){
   if(u.searchParams.get('key')!=='tradz-telegram-smoke-2026-11-15-7f3a9c2d')return out({error:'Unauthorized'},401);
   try{
+    const probe=await fetch(telegramApiUrl(env,"getMe"),{signal:AbortSignal.timeout(10000)});
+    const probeData=await probe.json();
+    if(!probe.ok||!probeData.ok){
+      const raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
+      return out({ok:false,stage:"telegram_getMe",http_status:probe.status,telegram_description:probeData.description||"Unknown Telegram response",token_shape:{length:raw.length,full_url:raw.startsWith("http"),bot_prefix:raw.startsWith("bot"),has_quotes:raw.includes('"')||raw.includes("'"),has_whitespace:/\\s/.test(raw)}},502);
+    }
     const data=await terminalData(env);
     const sent=await telegramSend(env,telegramReport(data,'asia'));
     const photo=await telegramChartPhoto(env);
-    return out({ok:true,text_message_id:sent.result?.message_id||null,photo_message_id:photo.message_id,candles:photo.candles,last_price:photo.last});
+    return out({ok:true,bot_username:probeData.result?.username||null,text_message_id:sent.result?.message_id||null,photo_message_id:photo.message_id,candles:photo.candles,last_price:photo.last});
   }catch(e){return out({ok:false,error:e.message},502)}
 }
 if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
