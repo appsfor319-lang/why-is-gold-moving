@@ -78,3 +78,8 @@ jobs:
           }, null, 2));
           NODE
 
+      - name: Verify Telegram bot authentication
+        shell: bash
+        run: |
+          curl --fail-with-body --silent --show-error --max-time 20 -X POST "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-check?key=tradz-check-20261115-b9d74f"
+
