@@ -44,7 +44,18 @@ jobs:
             return counts;
           }, {});
           console.log("Preflight diagnostics:", JSON.stringify({
-            briefing: { engine: data.briefing?.engine, ai_status: data.briefing?.ai_status, ai_error: data.briefing?.ai_error || null },
+            briefing: {
+              engine: data.briefing?.engine, ai_status: data.briefing?.ai_status,
+              headline: data.briefing?.headline || null, body: data.briefing?.body || null,
+              confidence: data.briefing?.confidence || null, factors: data.briefing?.factors || null,
+              drivers: data.briefing?.drivers || [], ai_error: data.briefing?.ai_error || null
+            },
+            gold_direction_check: {
+              change_pct: data.market?.gold?.change_pct ?? null,
+              expected: data.market?.gold?.change_pct == null ? "unavailable" :
+                data.market.gold.change_pct > 0.05 ? "higher" :
+                data.market.gold.change_pct < -0.05 ? "lower" : "little changed"
+            },
             market_freshness: Object.fromEntries(Object.entries(data.market || {}).map(([key, value]) => [key, {
               timestamp: value?.timestamp || null,
               freshness: value?.freshness || (value?.stale ? "stale" : "unknown"),
@@ -72,6 +83,11 @@ jobs:
           }
           if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources) || !Array.isArray(data.history) || !Array.isArray(data.intraday_history)) {
             throw new Error("News, calendar and sources must be arrays");
+          }
+          for (const [marketKey, factorKey] of [["dxy", "dxy"], ["yield", "yield"], ["silver", "silver"], ["oil", "oil"]]) {
+            if (data.market?.[marketKey]?.stale && !String(data.briefing?.factors?.[factorKey] || "").toUpperCase().includes("STALE")) {
+              throw new Error("Stale " + marketKey + " data is not labelled stale in the briefing factors");
+            }
           }
           if (!data.market?.gold || !data.market?.dxy || !data.market?.yield || data.news.length === 0) {
             throw new Error("Required gold spot, DXY, US 10Y or gold news feed is missing");
