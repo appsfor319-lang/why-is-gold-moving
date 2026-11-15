@@ -350,7 +350,7 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
  let lastError=null;
  for(const model of models){
   try{
-   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(model===primary?8000:4500),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1800}})});
+   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(model===primary?8000:4500),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1000}})});
    if(!r.ok){lastError="Gemini "+model+" HTTP "+r.status+": "+(await r.text()).slice(0,180);if([408,429,500,502,503,504].includes(r.status))continue;throw Error(lastError)}
    const d=await r.json(),body=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();
    if(body)return body;lastError="Gemini "+model+" returned an empty response";
@@ -407,7 +407,7 @@ async function telegramPhoto(env,caption){
 async function telegramReport(env,data,kind,chart,context){
  const names={asia:"آسيا",london:"لندن",ny_am:"نيويورك الصباحية",ny_pm:"نيويورك المسائية"};
  const report=await sessionDarijaBrief(env,data,kind,chart,context);
- const links=(data.news||[]).slice(0,6).map(n=>"<a href=\""+tgEscape(n.url||"https://www.kitco.com/")+"\">"+tgEscape((n.source||"مصدر")+" — "+(n.title||"خبر").slice(0,115))+"</a>");
+ const links=(data.news||[]).slice(0,4).map(n=>"<a href=\""+tgEscape(n.url||"https://www.kitco.com/")+"\">"+tgEscape((n.source||"مصدر")+" — "+(n.title||"خبر").slice(0,115))+"</a>");
  if(data.positioning?.source_url)links.push("<a href=\""+tgEscape(data.positioning.source_url)+"\">CFTC · بيانات تمركز العقود</a>");
  if(data.positioning?.etf_flows?.source_url)links.push("<a href=\""+tgEscape(data.positioning.etf_flows.source_url)+"\">World Gold Council · تدفقات صناديق الذهب</a>");
  if(data.positioning?.central_bank?.source_url)links.push("<a href=\""+tgEscape(data.positioning.central_bank.source_url)+"\">XAUS · احتياطيات البنوك المركزية</a>");
