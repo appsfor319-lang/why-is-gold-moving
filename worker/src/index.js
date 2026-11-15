@@ -363,7 +363,7 @@ async function scheduledAlerts(env){
     if(r.ok){const d=await r.json(),v=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();if(v)explanation=v}
    }catch(err){console.error("Breaking-news explanation failed:",err.message)}
   }
-  const msg="<b>خبر عاجل وتأثيره على الذهب</b>\\n<b>"+tgEscape(n.title||"تطور جديد")+"</b>\\n\\n"+tgEscape(explanation)+"\\n\\n<a href=\\""+tgEscape(n.url||"https://www.kitco.com/")+"\\">المصدر: "+tgEscape(n.source||"افتح الخبر")+"</a>";
+  const msg=`<b>خبر عاجل وتأثيره على الذهب</b>\n<b>${tgEscape(n.title||"تطور جديد")}</b>\n\n${tgEscape(explanation)}\n\n<a href="${tgEscape(n.url||"https://www.kitco.com/")}">المصدر: ${tgEscape(n.source||"افتح الخبر")}</a>`;
   await telegramSend(env,msg);sentToday++;if(cache){await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));await cache.put(dayKey,new Response(String(sentToday),{headers:{"cache-control":"public, max-age=86400"}}))}
  }
 }
