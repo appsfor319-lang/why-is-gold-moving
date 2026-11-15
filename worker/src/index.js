@@ -250,16 +250,19 @@ function telegramReport(data,kind){
 function telegramApiUrl(env,method){
   const raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
   if(!raw)throw Error("TELEGRAM_BOT_TOKEN is missing");
-  // Accept either the raw BotFather token, a token prefixed with "bot", or the full Telegram Bot API URL.
-  if(/^https?:\\/\\//i.test(raw)){
+  // Accept raw token, a "bot" prefix, or a full Telegram Bot API URL.
+  if(raw.startsWith("https://")||raw.startsWith("http://")){
     const u=new URL(raw);
     if(u.hostname!=="api.telegram.org")throw Error("TELEGRAM_BOT_TOKEN URL must use api.telegram.org");
-    const match=u.pathname.match(/\\/(bot[^/]+)/i);
-    if(!match)throw Error("TELEGRAM_BOT_TOKEN URL does not contain a bot token");
-    return "https://api.telegram.org/"+match[1]+"/"+method;
+    const segments=u.pathname.split("/").filter(Boolean);
+    const botPath=segments.find(x=>x.startsWith("bot"));
+    if(!botPath)throw Error("TELEGRAM_BOT_TOKEN URL does not contain a bot token");
+    return "https://api.telegram.org/"+botPath+"/"+method;
   }
-  const token=raw.replace(/^bot/i,"").replace(/\\/(sendMessage|sendPhoto).*$/i,"").trim();
-  if(!token||token.includes("/")||/\\s/.test(token))throw Error("TELEGRAM_BOT_TOKEN format is invalid");
+  let token=raw;
+  if(token.startsWith("bot"))token=token.slice(3);
+  token=token.split("/")[0].trim();
+  if(!token||token.split("").some(ch=>/\s/.test(ch)))throw Error("TELEGRAM_BOT_TOKEN format is invalid");
   return "https://api.telegram.org/bot"+token+"/"+method;
 }
 async function telegramSend(env,text){
