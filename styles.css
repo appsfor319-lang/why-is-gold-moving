@@ -427,3 +427,32 @@ body{top:0!important;position:static!important;}
 .goog-te-gadget{height:1px!important;overflow:hidden!important;font-size:0!important;}
 .goog-te-gadget .goog-te-combo{display:block!important;width:1px!important;height:1px!important;opacity:0!important;}
 .language-float.is-english{font-size:14px!important;letter-spacing:-.35px!important;}
+
+/* Live XAU/USD chart + UFD Sessions & Liquidity */
+.live-desk{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:12px;align-items:stretch;margin:0 0 26px}
+.live-desk>.main-story{min-width:0;height:100%;margin:0}
+.live-chart-panel{min-width:0;background:#101820;border:1px solid #303d49;border-top:2px solid #c9a34a;padding:18px;display:flex;flex-direction:column}
+.chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.chart-head h2{font-size:19px;margin:2px 0 4px}
+.chart-head .eyebrow{margin:0}
+.chart-feed-status,.chart-foot{font:9px 'DM Mono';color:var(--muted)}
+.chart-controls{display:flex;justify-content:flex-end}
+.timeframe-buttons{display:flex;gap:3px;flex-wrap:wrap}
+.chart-tf{border:1px solid #34424e;background:#0b1219;color:#aab6c0;padding:6px 8px;font:10px 'DM Mono';cursor:pointer}
+.chart-tf.active{background:#c9a34a;border-color:#c9a34a;color:#111}
+.chart-price-row{display:flex;align-items:baseline;gap:12px;margin:14px 0 8px}
+.chart-price-row strong{font:22px 'DM Mono';color:#f3f5f6}
+.chart-price-row span{font:10px 'DM Mono';color:var(--muted)}
+.xau-chart{width:100%;height:420px;min-height:320px;position:relative}
+.chart-legend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;color:#9aa8b4;font:9px 'DM Mono'}
+.chart-legend span{display:inline-flex;align-items:center;gap:5px}
+.legend-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+.legend-dot.asia{background:#26c6da}.legend-dot.london{background:#ff9800}.legend-dot.newyork{background:#2196f3}.legend-dot.liq{background:#ef5350}.legend-dot.ob{background:#55c89b}
+.chart-foot{display:flex;justify-content:space-between;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid #273540}
+.chart-ai-context{margin:18px 0 14px;padding:14px;background:#0b141c;border:1px solid #31404d;border-left:2px solid #c9a34a}
+.chart-ai-context .chart-ai-label{font:9px 'DM Mono';letter-spacing:.12em;color:#c9a34a;margin-bottom:6px}
+.chart-ai-context h3{font-size:15px;line-height:1.35;margin:0 0 7px}
+.chart-ai-context p{font-size:12px;line-height:1.6;color:#c0cbd3;margin:0}
+.chart-ai-context .chart-ai-meta{font:9px 'DM Mono';color:#82919e;margin-top:9px}
+@media(max-width:900px){.live-desk{grid-template-columns:1fr}.xau-chart{height:390px}}
+@media(max-width:580px){.live-chart-panel{padding:13px}.chart-head{flex-direction:column}.chart-controls{justify-content:flex-start;width:100%}.xau-chart{height:340px;min-height:280px}.chart-foot{flex-direction:column}}
