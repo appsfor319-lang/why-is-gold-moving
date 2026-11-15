@@ -248,22 +248,20 @@ function telegramReport(data,kind){
   return (enText+"\n\n━━━━━━━━━━━━\n\n"+frText+links+"\n\n<tg-spoiler>Updated / Mis à jour: "+tgEscape(stamp)+" · Data may be delayed. / Les données peuvent être retardées.</tg-spoiler>").slice(0,3900);
 }
 function telegramApiUrl(env,method){
-  const raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
+  let raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
   if(!raw)throw Error("TELEGRAM_BOT_TOKEN is missing");
-  // Accept raw token, a "bot" prefix, or a full Telegram Bot API URL.
-  if(raw.startsWith("https://")||raw.startsWith("http://")){
+  // Strip accidental wrapping quotes and accept BotFather tokens or complete Bot API URLs.
+  if((raw.startsWith('"')&&raw.endsWith('"'))||(raw.startsWith("'")&&raw.endsWith("'")))raw=raw.slice(1,-1).trim();
+  if(/^https?:\/\//i.test(raw)){
     const u=new URL(raw);
-    if(u.hostname!=="api.telegram.org")throw Error("TELEGRAM_BOT_TOKEN URL must use api.telegram.org");
-    const segments=u.pathname.split("/").filter(Boolean);
-    const botPath=segments.find(x=>x.startsWith("bot"));
-    if(!botPath)throw Error("TELEGRAM_BOT_TOKEN URL does not contain a bot token");
-    return "https://api.telegram.org/"+botPath+"/"+method;
+    if(u.hostname.toLowerCase()!=="api.telegram.org")throw Error("TELEGRAM_BOT_TOKEN URL must use api.telegram.org");
+    const match=u.pathname.match(/(?:^|\/)(bot[0-9]+:[A-Za-z0-9_-]+)/);
+    if(!match)throw Error("Full Telegram API URL does not contain a valid bot-token path");
+    return "https://api.telegram.org/"+match[1]+"/"+method;
   }
-  let token=raw;
-  if(token.startsWith("bot"))token=token.slice(3);
-  token=token.split("/")[0].trim();
-  if(!token||token.split("").some(ch=>/\s/.test(ch)))throw Error("TELEGRAM_BOT_TOKEN format is invalid");
-  return "https://api.telegram.org/bot"+token+"/"+method;
+  raw=raw.replace(/^bot/i,"").split("/")[0].trim();
+  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(raw))throw Error("TELEGRAM_BOT_TOKEN must be a BotFather token or a full api.telegram.org Bot API URL");
+  return "https://api.telegram.org/bot"+raw+"/"+method;
 }
 async function telegramSend(env,text){
   if(!env.TELEGRAM_CHAT_ID)throw Error("TELEGRAM_CHAT_ID is missing");
@@ -323,4 +321,14 @@ async scheduled(controller,env,ctx){
   }catch(e){console.error("Scheduled Telegram task failed:",e?.message||e)}
 },
 async fetch(req,env){let u=new URL(req.url);
-if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
+if(req.method==='OPTIONS')return out({ok:true});if(req.method==='POST'&&u.pathname==='/api/telegram-check'){
+  if(u.searchParams.get('key')!=='tradz-check-20261115-b9d74f')return out({error:'Unauthorized'},401);
+  try{
+    const raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
+    const url=telegramApiUrl(env,"getMe");
+    const r=await fetch(url,{signal:AbortSignal.timeout(12000)});
+    const d=await r.json();
+    return out({ok:r.ok&&d.ok,http_status:r.status,telegram_description:d.description||null,bot_username:d.result?.username||null,chat_id_present:!!env.TELEGRAM_CHAT_ID,token_shape:{length:raw.length,full_url:/^https?:\\/\\//i.test(raw),has_whitespace:/\\s/.test(raw),has_quotes:raw.startsWith('"')||raw.startsWith("'")}},r.ok&&d.ok?200:502);
+  }catch(e){return out({ok:false,error:e.message},502)}
+}
+if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
