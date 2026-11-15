@@ -8,8 +8,7 @@ compatibility_date = "2026-11-14"
 # Optional: Finance Calendar API key enables actual/consensus figures and timed intraday release studies.
 # Configure with: wrangler secret put FINANCE_CALENDAR_API_KEY
 
-# Telegram reports in Algeria time (UTC+1):
-# 01:00 Asia outlook, 07:00 London, 13:00 NY open, 16:00 NY mid-session, 20:00 daily wrap.
-# High-impact calendar checks run every five minutes.
+# One 5-minute cron handles all five Algeria-time reports and high-impact event alerts.
+# Report slots: 01:00, 07:00, 13:00, 16:00, 20:00 Africa/Algiers.
 [triggers]
-crons = ["0 0 * * *", "0 6 * * *", "0 12 * * *", "0 15 * * *", "0 19 * * *", "*/5 * * * *"]
+crons = ["*/5 * * * *"]
