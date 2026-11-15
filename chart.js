@@ -128,7 +128,12 @@ function drawIndicator(result,bars){
   });
  });
  const marks=[];
+ result.ranges.forEach(r=>{const mid=r.start+Math.floor((r.end-r.start)/2),bar=bars.reduce((best,x)=>Math.abs(x.time-mid)<Math.abs(best.time-mid)?x:best,bars[0]);if(bar)marks.push({time:bar.time,position:"aboveBar",color:r.color,shape:"circle",text:r.name})});
  result.sweeps.forEach(s=>marks.push({time:s.time,position:s.direction==="high"?"aboveBar":"belowBar",color:"#e4b85f",shape:s.direction==="high"?"arrowDown":"arrowUp",text:s.label}));
+ marks.sort((a,b)=>a.time-b.time);
+ activeZoneData=result.activeObs;updateObZones();
+ const latest=bars[bars.length-1],recentSweep=result.sweeps.find(s=>s.time===latest.time);
+ $("chart-indicator-status").textContent=recentSweep?"SWEEP ALERT · "+recentSweep.label+" · "+fmt(recentSweep.price):"UFD Sessions & Liquidity · Asia / London / New York · 1H OB";
  if(LightweightCharts.createSeriesMarkers){
   if(markersApi&&markersApi.setMarkers)markersApi.setMarkers(marks);
   else markersApi=LightweightCharts.createSeriesMarkers(candleSeries,marks);
@@ -140,7 +145,8 @@ function initChart(){
  candleSeries=chart.addSeries(LightweightCharts.CandlestickSeries,{upColor:"#55c89b",downColor:"#ee8178",borderUpColor:"#55c89b",borderDownColor:"#ee8178",wickUpColor:"#55c89b",wickDownColor:"#ee8178"});
  volumeSeries=chart.addSeries(LightweightCharts.HistogramSeries,{priceFormat:{type:"volume"},priceScaleId:"volume",lastValueVisible:false,priceLineVisible:false});
  chart.priceScale("volume").applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
- obZoneLayer=document.createElement("div");obZoneLayer.className="ob-zones";el.appendChild(obZoneLayer);\n chart.timeScale().subscribeVisibleTimeRangeChange(updateObZones);\n const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0){chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)});updateObZones()}}});
+ obZoneLayer=document.createElement("div");obZoneLayer.className="ob-zones";el.appendChild(obZoneLayer);
+ chart.timeScale().subscribeVisibleTimeRangeChange(updateObZones);\n const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0){chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)});updateObZones()}}});
  ro.observe(el);
 }
 function renderPrice(data){
