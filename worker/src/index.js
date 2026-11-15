@@ -309,11 +309,11 @@ async function telegramPhoto(env,caption){
   const result=await sent.json();if(!sent.ok||!result.ok)throw Error("Telegram sendPhoto failed: "+(result.description||sent.status));
   return{source:"TradingView OANDA:XAUUSD live chart screenshot",bytes:bytes.byteLength};
 }
-async function telegramReport(data,kind,chart,context){
+async function telegramReport(env,data,kind,chart,context){
   const m=data.market||{},news=(data.news||[]).slice(0,4),cal=(data.calendar||[]).filter(e=>e.datetime&&Date.parse(e.datetime)>=Date.now()-2*3600000).slice(0,5);
   const names={asia:"ASIA",london:"LONDON",ny:"NEW YORK"};
   const now=new Date().toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false});
-  const report=await sessionDarijaBrief(globalThis.__workerEnv||{},data,kind,chart,context);
+  const report=await sessionDarijaBrief(env,data,kind,chart,context);
   const caption="<b>WHY IS GOLD MOVING LIKE THIS?</b>\n<b>"+names[kind]+" SESSION · TRADZ ACADEMY</b>\n\n"+(report.split("\n\n")[0]||"Analyse live ta3 XAU/USD.");
   const sourceLinks=news.map(n=>"• <a href=\""+tgEscape(n.url||"https://www.kitco.com/")+"\">"+tgEscape((n.source||"News")+" — "+(n.title||"Headline").slice(0,125))+"</a>");
   const eventLines=cal.map(e=>"• "+tgEscape(e.datetime)+" — "+tgEscape(e.event)+" ["+tgEscape(e.impact||"impact n/a")+"]");
@@ -346,7 +346,7 @@ async function scheduledReport(env,kind){
   const data=await terminalData(env);if(!data.market)throw Error("Terminal API returned incomplete market data");
   const chart=await chartCandles(env,"5min");
   const context=sessionEvidence(chart,kind);
-  const report=await telegramReport(data,kind,chart,context);
+  const report=await telegramReport(env,data,kind,chart,context);
   await telegramPhoto(env,report.caption);
   await telegramSend(env,report.body);
 }
