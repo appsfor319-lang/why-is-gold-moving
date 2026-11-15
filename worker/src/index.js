@@ -294,6 +294,14 @@ async function explainChart(env,payload){
 
 
 function tgEscape(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function telegramSafeReport(value){
+ const normalized=String(value||"").replace(/&lt;b&gt;/g,"<b>").replace(/&lt;\/b&gt;/g,"</b>").replace(/&amp;/g,"&");
+ return normalized.split("\n").map(line=>{
+  const match=line.match(/^<b>(.*?)<\/b>$/);
+  if(match)return "<b>"+tgEscape(match[1])+"</b>";
+  return tgEscape(line.replace(/<[^>]*>/g,""));
+ }).join("\n");
+}
 function fmtPrice(v){return Number.isFinite(Number(v))?Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"N/A"}
 function signedPct(v){return Number.isFinite(Number(v))?(Number(v)>0?"+":"")+Number(v).toFixed(2)+"%":"n/a"}
 function marketLine(label,x){return label+": "+(x?.value!=null?fmtPrice(x.value):"unavailable")+(x?.change_pct!=null?" ("+signedPct(x.change_pct)+")":"")+(x?.freshness==="stale"?" · STALE":"")}
@@ -403,7 +411,7 @@ async function telegramReport(env,data,kind,chart,context){
  if(data.positioning?.source_url)links.push("<a href=\""+tgEscape(data.positioning.source_url)+"\">CFTC · بيانات تمركز العقود</a>");
  if(data.positioning?.etf_flows?.source_url)links.push("<a href=\""+tgEscape(data.positioning.etf_flows.source_url)+"\">World Gold Council · تدفقات صناديق الذهب</a>");
  if(data.positioning?.central_bank?.source_url)links.push("<a href=\""+tgEscape(data.positioning.central_bank.source_url)+"\">XAUS · احتياطيات البنوك المركزية</a>");
- return{body:["<b>TradZ Academy | التحليل اليومي للذهب</b>","<b>ملخص جلسة "+names[kind]+"</b>","",report.replace(/&lt;b&gt;/g,"<b>").replaceAll("&lt;/b&gt;","</b>"),"","<b>المصادر</b>",links.length?links.join("\n"):"لا توجد روابط أخبار حديثة متاحة."].join("\n")};
+ return{body:["<b>TradZ Academy | التحليل اليومي للذهب</b>","<b>ملخص جلسة "+names[kind]+"</b>","",telegramSafeReport(report),"","<b>المصادر</b>",links.length?links.join("\n"):"لا توجد روابط أخبار حديثة متاحة."].join("\n")};
 }
 async function terminalData(env){let [g,s,d,y,o,n,cal,h,ih,cot,wgc]=await Promise.all([safe(()=>metal(env,'XAU')),safe(()=>metal(env,'XAG')),safe(()=>yahooDXY()),safe(()=>yield10(env)),safe(()=>oilWTI(env)),safe(headlines),safe(()=>economicCalendar(env)),safe(()=>historicalReactions(env)),safe(()=>intradayReactions(env)),safe(cftcGoldPositioning),safe(goldInstitutionalFlows)]);let market={gold:markFreshness(g.data,48),silver:markFreshness(s.data,48),dxy:markFreshness(d.data,48),yield:markFreshness(y.data,48),oil:markFreshness(o.data,48)},news=n.data||[],briefing=await aiBrief(env,market,news),sources=[['Gold spot',g],['Silver spot',s],['DXY · ICE Dollar Index',d],['US 10Y',y],['WTI oil · FRED daily',o],['Gold newsdesk',n],['Economic calendar',cal]].map(([name,x])=>({name,status:x.status==='ok'&&((name==='Gold spot'&&market.gold?.stale)||(name==='Silver spot'&&market.silver?.stale)||(name==='DXY · ICE Dollar Index'&&market.dxy?.stale)||(name==='US 10Y'&&market.yield?.stale)||(name==='WTI oil · FRED daily'&&market.oil?.stale))?'stale':x.status,error:x.error||null}));sources.push({name:'CFTC gold futures positioning',status:cot.status==='ok'&&cot.data?.freshness==='stale'?'stale':cot.status,error:cot.error||null});sources.push({name:'World Gold Council ETF flows',status:wgc.status==='ok'&&wgc.data?.freshness==='stale'?'stale':wgc.status,error:wgc.error||null});sources.push({name:'Gemini AI analysis',status:briefing.ai_status==='ok'?'ok':'fallback',error:briefing.ai_error||null});sources.push({name:'Historical event reactions',status:h.status,error:h.error||null});sources.push({name:'Intraday event reactions',status:ih.status==='ok'?(env.FINANCE_CALENDAR_API_KEY?'ok':'not_configured'):ih.status,error:ih.error||null});return {status:Object.values(market).every(Boolean)&&n.status==='ok'&&cal.status==='ok'&&h.status==='ok'&&ih.status==='ok'&&!Object.values(market).some(x=>x?.stale)?'ok':'partial',updated_at:new Date().toISOString(),market,briefing,news,calendar:cal.data||[],history:h.data||[],intraday_history:ih.data||[],positioning:cot.data?{...cot.data,etf_flows:wgc.data||null,central_bank:market.gold?.central_bank||null}:wgc.data?{etf_flows:wgc.data,central_bank:market.gold?.central_bank||null}:market.gold?.central_bank?{central_bank:market.gold.central_bank}:null,sources}}
 
