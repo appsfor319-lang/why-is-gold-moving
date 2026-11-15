@@ -8,7 +8,7 @@ compatibility_date = "2026-11-14"
 # Optional: Finance Calendar API key enables actual/consensus figures and timed intraday release studies.
 # Configure with: wrangler secret put FINANCE_CALENDAR_API_KEY
 
-# One 5-minute cron handles all five Algeria-time reports and high-impact event alerts.
-# Report slots: 01:00, 07:00, 13:00, 16:00, 20:00 Africa/Algiers.
+# One 5-minute cron handles three Algeria-time session reports and high-impact event alerts.
+# Report slots: 01:00 Asia, 07:00 London, 13:00 New York (Africa/Algiers).
 [triggers]
 crons = ["*/5 * * * *"]
