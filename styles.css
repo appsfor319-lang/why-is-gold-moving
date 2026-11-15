@@ -462,3 +462,8 @@ body{top:0!important;position:static!important;}
 .ob-zone.bull{background:rgba(38,166,154,.09);border-color:rgba(38,166,154,.6)}
 .ob-zone.bear{background:rgba(239,83,80,.09);border-color:rgba(239,83,80,.6)}
 .ob-zone span{position:absolute;right:4px;bottom:2px;color:#aab6c0;font:8px 'DM Mono';white-space:nowrap;text-shadow:0 1px 2px #000}
+
+/* Data quality and publisher coverage */
+.change.stale,.card small.stale,.gold-quote strong.stale{color:var(--amber)!important}
+.news-source-note{margin:10px 13px;padding:9px 11px;border:1px solid rgba(215,163,76,.35);background:#17140e;color:#e7c17d;font-size:10px;line-height:1.5}
+.news-source-note[hidden]{display:none}
