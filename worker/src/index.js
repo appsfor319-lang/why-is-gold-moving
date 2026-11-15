@@ -186,6 +186,7 @@ async function chartCandles(env,interval){
   if(cache)await cache.put(key,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=45"}}));
   return result;
 }
+// Keep chart-context reasoning separate from the scheduled macro briefing.
 async function explainChart(env,payload){
   const chart=payload?.chart||{},market=payload?.market||{},headlines=Array.isArray(payload?.headlines)?payload.headlines.slice(0,6):[];
   const evidence={chart:{symbol:"XAU/USD",timeframe:chart.timeframe||"5min",last:chart.last||null,structure:chart.structure||null,session:chart.session||null,session_ranges:chart.session_ranges||[],active_liquidity:chart.active_liquidity||[],recent_sweeps:chart.recent_sweeps||[],order_blocks:chart.order_blocks||[],candle_window:chart.candle_window||null},macro:{gold:market.gold||null,dxy:market.dxy||null,us10y:market.yield||null,silver:market.silver||null,oil:market.oil||null},headlines};
