@@ -1,5 +1,9 @@
 name: Deploy Gold Briefing Worker
 
+concurrency:
+  group: deploy-gold-briefing-worker
+  cancel-in-progress: true
+
 on:
   push:
     branches:
