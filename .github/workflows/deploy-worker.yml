@@ -24,15 +24,6 @@ jobs:
           workingDirectory: worker
           command: deploy
 
-      - name: List configured Worker secret names only
-        working-directory: worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        shell: bash
-        run: |
-          export CLOUDFLARE_ACCOUNT_ID="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
-          npx wrangler secret list --format json | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{for(const x of JSON.parse(s))console.log(x.name)})'
       - name: Smoke test live terminal API
         shell: bash
         run: |
@@ -86,9 +77,3 @@ jobs:
             source_health: data.sources.map(source => ({ name: source.name, status: source.status }))
           }, null, 2));
           NODE
-
-      - name: Verify Telegram bot authentication
-        shell: bash
-        run: |
-          curl --fail-with-body --silent --show-error --max-time 20 -X POST "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-check?key=tradz-check-20261115-b9d74f"
-
