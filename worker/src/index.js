@@ -260,28 +260,40 @@ function algiersParts(ms){
   const get=k=>parts.find(x=>x.type===k)?.value||"00";
   return{date:get("year")+"-"+get("month")+"-"+get("day"),hour:Number(get("hour")),minute:Number(get("minute")),clock:get("hour")+":"+get("minute")};
 }
-function sessionStats(candles,date,startHour,endHour){
-  const bars=(candles||[]).filter(c=>{const p=algiersParts(c.time*1000);return p.date===date&&p.hour>=startHour&&p.hour<endHour});
-  if(!bars.length)return{bars:0,from:startHour,to:endHour,high:null,low:null,open:null,close:null,change_pct:null};
+function zonedParts(ms,timeZone){
+  const parts=new Intl.DateTimeFormat("en-GB",{timeZone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ms));
+  const get=k=>parts.find(x=>x.type===k)?.value||"00";
+  return{date:get("year")+"-"+get("month")+"-"+get("day"),hour:Number(get("hour")),minute:Number(get("minute")),clock:get("hour")+":"+get("minute")};
+}
+function sessionStatsZone(candles,timeZone,startHour,endHour,dateOverride=null){
+  const date=dateOverride||zonedParts(Date.now(),timeZone).date;
+  const bars=(candles||[]).filter(c=>{const p=zonedParts(c.time*1000,timeZone);return p.date===date&&p.hour>=startHour&&p.hour<endHour});
+  if(!bars.length)return{bars:0,date,time_zone:timeZone,from:startHour,to:endHour,high:null,low:null,open:null,close:null,change_pct:null};
   const high=Math.max(...bars.map(x=>x.high)),low=Math.min(...bars.map(x=>x.low)),open=bars[0].open,close=bars[bars.length-1].close;
-  return{bars:bars.length,from:startHour,to:endHour,high,low,open,close,change_pct:open?Number(((close/open-1)*100).toFixed(3)):null,high_time:algiersParts(bars.find(x=>x.high===high).time*1000).clock,low_time:algiersParts(bars.find(x=>x.low===low).time*1000).clock};
+  return{bars:bars.length,date,time_zone:timeZone,from:startHour,to:endHour,high,low,open,close,change_pct:open?Number(((close/open-1)*100).toFixed(3)):null,high_time:zonedParts(bars.find(x=>x.high===high).time*1000,timeZone).clock,low_time:zonedParts(bars.find(x=>x.low===low).time*1000,timeZone).clock};
 }
 function sessionEvidence(chart,kind){
- const now=Date.now(),today=algiersParts(now).date,dayBars=chart.candles||[],prevDate=new Date(now-86400000),prev=algiersParts(prevDate.getTime()).date;
- const day=(a,b)=>sessionStats(dayBars,today,a,b);
- const previous=dayBars.filter(c=>algiersParts(c.time*1000).date===prev);
- const prior=previous.length?{high:Math.max(...previous.map(x=>x.high)),low:Math.min(...previous.map(x=>x.low)),close:previous[previous.length-1].close}:null;
- const periods=kind==="asia"?{asia:day(0,8),prior_ny:sessionStats(dayBars,prev,13,24)}:
- kind==="london"?{asia:day(0,8),london:day(8,17)}:
- kind==="ny_am"?{london:day(8,17),ny_am:day(17,20)}:
- {london:day(8,17),ny_am:day(17,20),ny_pm:day(20,24)};
- const latest=dayBars[dayBars.length-1]||null;
- return{date_algiers:today,report_session:kind,latest:latest?{time_algiers:algiersParts(latest.time*1000).clock,open:latest.open,high:latest.high,low:latest.low,close:latest.close}:null,previous_day:prior,periods,recent_candles:dayBars.slice(-18).map(c=>({time:algiersParts(c.time*1000).clock,open:c.open,high:c.high,low:c.low,close:c.close}))};
+  const now=Date.now(),today=algiersParts(now).date,dayBars=chart.candles||[];
+  const prevDate=new Date(now-86400000),prev=algiersParts(prevDate.getTime()).date;
+  const previous=dayBars.filter(c=>algiersParts(c.time*1000).date===prev);
+  const prior=previous.length?{high:Math.max(...previous.map(x=>x.high)),low:Math.min(...previous.map(x=>x.low)),close:previous[previous.length-1].close}:null;
+  const asia=sessionStatsZone(dayBars,"Africa/Algiers",0,8);
+  const london=sessionStatsZone(dayBars,"Europe/London",8,17);
+  const nyAm=sessionStatsZone(dayBars,"America/New_York",8,12);
+  const nyPm=sessionStatsZone(dayBars,"America/New_York",12,16);
+  const priorNyDate=zonedParts(now-86400000,"America/New_York").date;
+  const priorNy=sessionStatsZone(dayBars,"America/New_York",12,16,priorNyDate);
+  const periods=kind==="asia"?{asia,prior_ny:priorNy}:
+    kind==="london"?{asia,london}:
+    kind==="ny_am"?{london,ny_am:nyAm}:
+    {london,ny_am:nyAm,ny_pm:nyPm};
+  const latest=dayBars[dayBars.length-1]||null;
+  return{date_algiers:today,report_session:kind,latest:latest?{time_algiers:algiersParts(latest.time*1000).clock,open:latest.open,high:latest.high,low:latest.low,close:latest.close}:null,previous_day:prior,periods,recent_candles:dayBars.slice(-18).map(c=>({time:algiersParts(c.time*1000).clock,open:c.open,high:c.high,low:c.low,close:c.close}))};
 }
 async function sessionDarijaBrief(env,data,kind,chart,context){
  const names={asia:"آسيا",london:"لندن",ny_am:"نيويورك الصباحية",ny_pm:"نيويورك المسائية"};
  const evidence={session:context,market:data.market||{},headlines:(data.news||[]).slice(0,18),calendar:(data.calendar||[]).slice(0,15),positioning:data.positioning||null};
- const fallback=()=>["<b>1. علاش الذهب تحرك اليوم؟</b>\nالمعطيات الحالية ما تثبتش سبب واحد للحركة. نقارنو الذهب مع الدولار والعوائد والأخبار.","<b>2. الأخبار تاع اليوم وتأثيرها على الذهب</b>\n"+(evidence.headlines.slice(0,4).map(x=>tgEscape(x.title)+" — "+tgEscape(x.source||"مصدر")).join("\n")||"ما كاينش خبر مؤكد جديد في المصادر المتاحة.")+"\nلازم نشوفو رد فعل السوق باش نربطو الخبر بالحركة.","<b>3. واش راهم يقولو المحترفين؟</b>\nما كاينش تصريح مهني حديث موثق في المعطيات المتاحة؛ ما نختلقوش توقعات.","<b>4. واش راهم يديرو الحيتان الضخمة؟</b>\n"+(evidence.positioning?"بيانات COT الأسبوعية متوفرة، وهي متأخرة وما تمثلش صفقات مباشرة اليوم.":"بيانات COT غير متاحة حالياً؛ ما نقدرش نأكد تحركات المؤسسات.") ,"<b>5. ملخص جلسة "+names[kind]+"</b>\n"+(Object.entries(context.periods||{}).filter(([,v])=>v?.bars).map(([k,v])=>k+": "+(v.change_pct>0?"الذهب طلع":v.change_pct<0?"الذهب هبط":"الحركة ما كانتش واضحة")+".").join("\n")||"بيانات الشموع غير كافية.")+"\nنراقبو استمرار الحركة ورد الفعل على الأخبار."].join("\n\n");
+ const fallback=()=>["<b>1. علاش الذهب تحرك اليوم؟</b>\nالمعطيات الحالية ما تثبتش سبب واحد للحركة. نقارنو الذهب مع الدولار والعوائد والأخبار.","<b>2. الأخبار تاع اليوم وتأثيرها على الذهب</b>\n"+(evidence.headlines.slice(0,4).map(x=>tgEscape(x.title)+" — "+tgEscape(x.source||"مصدر")).join("\n")||"ما كاينش خبر مؤكد جديد في المصادر المتاحة.")+"\nلازم نشوفو رد فعل السوق باش نربطو الخبر بالحركة.","<b>3. واش راهم يقولو المحترفين؟</b>\nما كاينش تصريح مهني حديث موثق في المعطيات المتاحة؛ ما نختلقوش توقعات.","<b>4. واش راهم يديرو الحيتان الضخمة؟</b>\n"+(evidence.positioning?"آخر بيانات COT بتاريخ "+String(evidence.positioning.report_date||"غير معروف").slice(0,10)+"؛ "+(evidence.positioning.freshness==="stale"?"التقرير قديم وما يصلحش كدليل على تحركات اليوم.":"البيانات أسبوعية ومتأخرة وما تمثلش صفقات مباشرة اليوم."):"بيانات COT غير متاحة حالياً؛ ما نقدرش نأكد تحركات المؤسسات.") ,"<b>5. ملخص جلسة "+names[kind]+"</b>\n"+(Object.entries(context.periods||{}).filter(([,v])=>v?.bars).map(([k,v])=>k+": "+(v.change_pct>0?"الذهب طلع":v.change_pct<0?"الذهب هبط":"الحركة ما كانتش واضحة")+".").join("\n")||"بيانات الشموع غير كافية.")+"\nنراقبو استمرار الحركة ورد الفعل على الأخبار."].join("\n\n");
  if(!env.GEMINI_API_KEY)return fallback();
  const prompt=["You are TradZ Academy gold market analyst. Write natural Algerian Darija in Arabic script.","Return ONE combined Telegram post with exactly these five sections:","1. علاش الذهب تحرك اليوم؟","2. الأخبار تاع اليوم وتأثيرها على الذهب","3. واش راهم يقولو المحترفين؟","4. واش راهم يديرو الحيتان الضخمة؟","5. ملخص جلسة "+names[kind],"Sections 1-4 are identical in purpose in every report. ONLY section 5 changes with session: Asia, London, New York AM, New York PM.","Explain actual causes, mechanism and why gold reacted. Explain today's economic/geopolitical news and transmission via rates, yields, dollar, inflation and safe-haven demand.","Professional views must be attributed to named institutions/analysts in supplied sources. If absent, say so. For whales use CFTC COT, ETF flows and central-bank data only when supplied; state COT is weekly/delayed. Never claim live orders without evidence.","Section 5: summarize the specified session, what happened, why, scenario changes and what to watch next.","No raw prices, percentages, price targets, numerical dashboards, images, emojis or trading calls. Do not invent causality, quotes or positions. State missing/stale evidence clearly. Short readable paragraphs with blank lines.","EVIDENCE: "+JSON.stringify(evidence)].join("\n");
  const models=[(env.GEMINI_MODEL||"gemini-3.8-flash").trim(),env.GEMINI_FALLBACK_MODEL||"gemini-4-hydrogen","gemini-3.5-flash-lite"].filter((x,i,a)=>x&&a.indexOf(x)===i);
