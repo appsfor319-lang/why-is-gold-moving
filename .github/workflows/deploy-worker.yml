@@ -50,6 +50,19 @@ jobs:
             throw new Error("XAU/USD chart endpoint returned incomplete candle data");
           }
           console.log("Chart smoke test: " + chart.candles.length + " XAU/USD 5m candles; " + chart.order_block_candles.length + " 1H candles.");
+          const analysisResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/chart-analysis", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ chart: { timeframe: "5min", last: { close: 4000 }, structure: { direction: "test structure" }, session: null, session_ranges: [], active_liquidity: [], recent_sweeps: [], order_blocks: [] }, market: {}, headlines: [] }),
+            signal: AbortSignal.timeout(20000)
+          });
+          if (!analysisResponse.ok) throw new Error("Chart analysis endpoint returned HTTP " + analysisResponse.status);
+          const chartAnalysis = await analysisResponse.json();
+          if (typeof chartAnalysis.analysis?.headline !== "string" || typeof chartAnalysis.analysis?.body !== "string") {
+            throw new Error("Chart analysis endpoint returned an invalid analysis object");
+          }
+          console.log("Chart analysis smoke test: engine=" + (chartAnalysis.analysis.engine || "unknown") + "; confidence=" + (chartAnalysis.analysis.confidence || "unknown"));
+
           console.log(JSON.stringify({
             api_status: data.status,
             ai_engine: data.briefing.engine,
