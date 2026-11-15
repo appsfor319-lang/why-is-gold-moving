@@ -111,7 +111,7 @@ jobs:
           npx --yes wrangler@4 tail why-is-gold-movingm --format pretty >"$LOG" 2>&1 &
           TAIL_PID=$!
           trap 'kill "$TAIL_PID" 2>/dev/null || true' EXIT
-          for i in $(seq 1 210); do
+          for i in $(seq 1 211); do
             if grep -qE "Telegram readiness test (delivered and confirmed|already confirmed) by Telegram" "$LOG"; then
               echo "Telegram test delivery was confirmed by the Telegram API."
               cat "$LOG"
