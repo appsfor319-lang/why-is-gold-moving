@@ -44,6 +44,14 @@ jobs:
           if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources) || !Array.isArray(data.history) || !Array.isArray(data.intraday_history)) {
             throw new Error("News, calendar and sources must be arrays");
           }
+          if (data.briefing?.engine !== "gemini" || data.briefing?.ai_status !== "ok") {
+            throw new Error("Gemini briefing is not live: " + (data.briefing?.ai_error || data.briefing?.engine || "unknown"));
+          }
+          const calendarSource = data.sources.find(source => source.name === "Economic calendar");
+          if (!calendarSource || calendarSource.status !== "ok") {
+            throw new Error("Economic calendar source is unhealthy: " + (calendarSource?.error || calendarSource?.status || "missing"));
+          }
+          if (!data.positioning) throw new Error("CFTC gold positioning data is missing");
           if (!["gemini", "rules-fallback", "free-rules-analysis"].includes(data.briefing?.engine) || ![undefined, "ok", "fallback"].includes(data.briefing?.ai_status)) {
             throw new Error("Unexpected briefing engine state: " + (data.briefing?.engine || "unknown"));
           }
@@ -80,7 +88,7 @@ jobs:
             history_count: data.history.length,
             intraday_history_count: data.intraday_history.length,
             cftc_positioning: data.positioning ? { report_date: data.positioning.report_date, managed_money_net: data.positioning.managed_money_net, weekly_net_change: data.positioning.weekly_net_change } : null,
-            source_health: data.sources.map(source => ({ name: source.name, status: source.status }))
+            source_health: data.sources.map(source => ({ name: source.name, status: source.status, error: source.error || null }))
           }, null, 2));
           NODE
 
