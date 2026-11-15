@@ -198,10 +198,10 @@ async function explainChart(env,payload){
     else if(liq.length)parts.push("Unswept session liquidity remains at "+liq.slice(0,3).map(x=>x.label+" "+x.price).join(", ")+".");
     if(obs.length)parts.push("The nearest active higher-timeframe order block is "+obs[0].direction+" between "+obs[0].bottom+" and "+obs[0].top+".");
     if(!parts.length)parts.push("The chart feed is loaded, but the available candles do not yet establish a clear session or structure event.");
-    const gold=evidence.macro.gold,dxy=evidence.macro.dxy,yield=evidence.macro.us10y;
+    const gold=evidence.macro.gold,dxy=evidence.macro.dxy,yieldData=evidence.macro.us10y;
     if(gold?.change_pct!=null)parts.push("The broader gold reference is "+(gold.change_pct>0?"up ":gold.change_pct<0?"down ":"flat ")+Math.abs(gold.change_pct).toFixed(2)+"% on its provider timeframe.");
     if(dxy?.change_pct!=null&&!dxy.stale)parts.push("DXY is "+(dxy.change_pct>0?"firmer":dxy.change_pct<0?"weaker":"little changed")+", which is a macro cross-check rather than proof of the chart move.");
-    if(yield?.change_bp!=null&&!yield.stale)parts.push("The US 10-year yield has changed "+yield.change_bp+" bp; check its timestamp because this feed may be daily.");
+    if(yieldData?.change_bp!=null&&!yieldData.stale)parts.push("The US 10-year yield has changed "+yieldData.change_bp+" bp; check its timestamp because this feed may be daily.");
     return{headline:sweeps.length?"A session liquidity sweep is visible on the chart":s.direction?"Gold chart: "+s.direction:"Gold chart loaded; waiting for a clearer setup",body:parts.join(" "),confidence:"LOW",engine:"rules-chart-context",updated_at:new Date().toISOString()};
   };
   if(!env.GEMINI_API_KEY)return fallback();
