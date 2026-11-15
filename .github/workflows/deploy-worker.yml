@@ -77,3 +77,15 @@ jobs:
             source_health: data.sources.map(source => ({ name: source.name, status: source.status }))
           }, null, 2));
           NODE
+      - name: Verify real Telegram text and chart delivery
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const response = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test?key=TZTEST_7f3b9c2e6a1d4f8b", { method: "POST", signal: AbortSignal.timeout(90000) });
+          const result = await response.json();
+          if (!response.ok || result.ok !== true || result.text_sent !== true || result.chart_sent !== true) {
+            throw new Error("Telegram delivery test failed: " + JSON.stringify(result));
+          }
+          console.log("Telegram text and chart delivery confirmed: " + JSON.stringify(result));
+          NODE
+
