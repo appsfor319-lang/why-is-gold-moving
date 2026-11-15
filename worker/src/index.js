@@ -330,20 +330,43 @@ async function scheduledReport(env,kind){
   await telegramSend(env,report.body);
 }
 async function scheduledAlerts(env){
-  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
-  const data=await terminalData(env),events=(data.calendar||[]),now=Date.now(),cache=typeof caches!=="undefined"?caches.default:null;
-  for(const e of events){
-    if(!/high|3/i.test(String(e.impact||"")))continue;
-    const rawTime=String(e.datetime||"");if(!/[T ]\d{2}:\d{2}/.test(rawTime))continue;const t=Date.parse(rawTime);if(!Number.isFinite(t)||t<now-10*60000||t>now+5*60000)continue;
-    const key="https://gold-brief-cache.local/telegram-event/"+encodeURIComponent((e.event||"event")+"|"+e.datetime);
-    if(cache&&await cache.match(key))continue;
-    const gold=data.market?.gold,dxy=data.market?.dxy;
-    const msg="<b>MAJOR US EVENT ALERT / ALERTE ÉCONOMIQUE MAJEURE</b>\n"+tgEscape(e.event||"US high-impact event")+"\nTime / Heure: "+tgEscape(e.datetime)+"\nImpact: HIGH\nGold: "+tgEscape(fmtPrice(gold?.value))+" ("+tgEscape(signedPct(gold?.change_pct))+")\nDXY: "+tgEscape(fmtPrice(dxy?.value))+" ("+tgEscape(signedPct(dxy?.change_pct))+")\n\nEN: Watch the actual release and the price reaction. Do not assume the first spike is the true direction.\nFR: Surveillez le chiffre publié et la réaction du prix. Ne supposez pas que la première impulsion donne la direction réelle.";
-    await telegramSend(env,msg);
-    if(cache)await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));
+ if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
+ const data=await terminalData(env),events=data.calendar||[],now=Date.now(),cache=typeof caches!=="undefined"?caches.default:null;
+ for(const e of events){
+  if(!/high|3/i.test(String(e.impact||"")))continue;
+  const raw=String(e.datetime||"");if(!/[T ]\\d{2}:\\d{2}/.test(raw))continue;
+  const t=Date.parse(raw);if(!Number.isFinite(t)||t<now-10*60000||t>now+5*60000)continue;
+  const key="https://gold-brief-cache.local/telegram-event/"+encodeURIComponent((e.event||"event")+"|"+e.datetime);
+  if(cache&&await cache.match(key))continue;
+  const actual=e.actual!=null?String(e.actual):"غير متوفر",forecast=e.forecast!=null?String(e.forecast):"غير متوفر";
+  const msg="<b>خبر اقتصادي مهم | TradZ Academy</b>\\n"+tgEscape(e.event||"حدث اقتصادي أمريكي")+"\\nالنتيجة المنشورة: "+tgEscape(actual)+"\\nالتوقعات: "+tgEscape(forecast)+"\\n\\nهذا الحدث يقدر يأثر على الذهب عبر توقعات الفائدة والدولار وعوائد السندات. التأثير الحقيقي يتحدد من مفاجأة البيانات ورد فعل السوق، ماشي من اسم الخبر وحده.";
+  await telegramSend(env,msg);if(cache)await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));
+ }
+ const headlines=(data.news||[]).filter(n=>{
+  const title=String(n.title||"").toLowerCase(),published=Date.parse(n.published_at||"");
+  return Number.isFinite(published)&&now-published>=-5*60000&&now-published<=45*60000&&/(federal reserve|fed decision|powell|cpi|pce|inflation|nonfarm|payroll|unemployment|interest rate|rate decision|treasury yield|dollar index|central bank|tariff|sanction|iran|israel|war |military strike|ceasefire|gold etf|gold reserves|china gold|opec)/i.test(title);
+ }).slice(0,5);
+ const day=algiersParts(now).date,dayKey="https://gold-brief-cache.local/telegram-news-count/"+day;
+ let sentToday=0;if(cache){const saved=await cache.match(dayKey);if(saved)sentToday=Number(await saved.text())||0}
+ for(const n of headlines){
+  if(sentToday>=2)break;
+  const url=String(n.url||"");const unique=url||String(n.title||"");
+  const key="https://gold-brief-cache.local/telegram-breaking/"+encodeURIComponent(unique);
+  if(cache&&await cache.match(key))continue;
+  const m=data.market||{},evidence={headline:n.title,source:n.source,published_at:n.published_at,gold:m.gold?{direction:m.gold.change_pct>0?"rising":m.gold.change_pct<0?"falling":"little changed",freshness:m.gold.freshness}:null,dxy:m.dxy?{direction:m.dxy.change_pct>0?"stronger":m.dxy.change_pct<0?"weaker":"little changed",freshness:m.dxy.freshness}:null,yields:m.yield?{change_bp:m.yield.change_bp,freshness:m.yield.freshness}:null};
+  let explanation="هذا خبر مهم للسوق. لازم نراقبو التفاصيل ورد فعل الذهب والدولار والعوائد قبل ما نعتبروه السبب المباشر للحركة.";
+  if(env.GEMINI_API_KEY){
+   try{
+    const prompt="Explain this breaking gold-market headline in clear Algerian Darija using Arabic script. State what happened, why it matters to gold, the transmission mechanism through rates/dollar/yields/risk demand, and what to watch next. Do not invent facts or claim causality without evidence. No prices or percentages. 3-5 short sentences. Evidence: "+JSON.stringify(evidence);
+    const model=(env.GEMINI_MODEL||"gemini-3.8-flash").trim();
+    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(12000),body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:450}})});
+    if(r.ok){const d=await r.json(),v=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();if(v)explanation=v}
+   }catch(err){console.error("Breaking-news explanation failed:",err.message)}
   }
+  const msg="<b>خبر عاجل وتأثيره على الذهب</b>\\n<b>"+tgEscape(n.title||"تطور جديد")+"</b>\\n\\n"+tgEscape(explanation)+"\\n\\n<a href=\\""+tgEscape(n.url||"https://www.kitco.com/")+"\\">المصدر: "+tgEscape(n.source||"افتح الخبر")+"</a>";
+  await telegramSend(env,msg);sentToday++;if(cache){await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));await cache.put(dayKey,new Response(String(sentToday),{headers:{"cache-control":"public, max-age=86400"}}))}
+ }
 }
-
 export default{
 async scheduled(controller,env,ctx){
  const d=new Date(Number(controller.scheduledTime)||Date.now()),p=algiersParts(d.getTime());
