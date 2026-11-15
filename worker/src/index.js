@@ -112,7 +112,7 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
   const fail=reason=>({...fallback(m,news),engine:"rules-fallback",ai_status:"fallback",ai_error:String(reason||"Gemini unavailable").slice(0,240)});
   if(!env.GEMINI_API_KEY)return fail("GEMINI_API_KEY missing");
   const primary=(env.GEMINI_MODEL||"gemini-4-hydrogen").trim();
-  const models=[primary,env.GEMINI_FALLBACK_MODEL||"gemini-4-hydrogen","gemini-3.8-flash","gemini-3.5-flash-lite"].filter((x,i,a)=>x&&a.indexOf(x)===i);
+  const models=[primary,env.GEMINI_FALLBACK_MODEL||"gemini-3.8-flash","gemini-3.5-flash-lite"].filter((x,i,a)=>x&&a.indexOf(x)===i);
   const signals=factorSignals(m);
   const evidence={
     market:{
@@ -342,7 +342,7 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
  let lastError=null;
  for(const model of models){
   try{
-   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(9000),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1800}})});
+   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(5000),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1800}})});
    if(!r.ok){lastError="Gemini "+model+" HTTP "+r.status+": "+(await r.text()).slice(0,180);if([408,429,500,502,503,504].includes(r.status))continue;throw Error(lastError)}
    const d=await r.json(),body=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();
    if(body)return body;lastError="Gemini "+model+" returned an empty response";
@@ -437,14 +437,16 @@ async function scheduledSmokeTest(env){
 }
 async function scheduledAlerts(env){
  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
- const data=await terminalData(env),now=Date.now(),cache=typeof caches!=='undefined'?caches.default:null;
- const headlines=(data.news||[]).filter(n=>{
+ const now=Date.now(),cache=typeof caches!=='undefined'?caches.default:null;
+ const newsRows=await headlines();
+ const headlinesToSend=newsRows.filter(n=>{
   const title=String(n.title||"").toLowerCase(),published=Date.parse(n.published_at||"");
   return Number.isFinite(published)&&now-published>=-5*60000&&now-published<=45*60000&&/(federal reserve|fed decision|powell|cpi|pce|inflation|nonfarm|payroll|unemployment|interest rate|rate decision|treasury yield|dollar index|central bank|tariff|sanction|iran|israel|war |military strike|ceasefire|gold etf|gold reserves|china gold|opec)/i.test(title);
  }).slice(0,5);
  const day=algiersParts(now).date,dayKey="https://gold-brief-cache.local/telegram-news-count/"+day;
  let sentToday=0;if(cache){const saved=await cache.match(dayKey);if(saved)sentToday=Number(await saved.text())||0}
- for(const n of headlines){
+ if(sentToday>=2||!headlinesToSend.length)return;
+ const data=await terminalData(env);for(const n of headlinesToSend){
   if(sentToday>=2)break;
   const url=String(n.url||"");const unique=url||String(n.title||"");
   const key="https://gold-brief-cache.local/telegram-breaking/"+encodeURIComponent(unique);
