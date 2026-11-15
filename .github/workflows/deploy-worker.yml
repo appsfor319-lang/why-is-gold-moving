@@ -38,6 +38,13 @@ jobs:
           const response = await fetch(url, { signal: AbortSignal.timeout(45000) });
           if (!response.ok) throw new Error("Terminal API returned HTTP " + response.status);
           const data = await response.json();
+          console.log("Preflight diagnostics:", JSON.stringify({
+            briefing: { engine: data.briefing?.engine, ai_status: data.briefing?.ai_status, ai_error: data.briefing?.ai_error || null },
+            source_health: (data.sources || []).map(source => ({ name: source.name, status: source.status, error: source.error || null })),
+            news_count: data.news?.length || 0,
+            calendar_count: data.calendar?.length || 0,
+            positioning: data.positioning ? { report_date: data.positioning.report_date, freshness: data.positioning.freshness } : null
+          }, null, 2));
           for (const field of ["market", "briefing", "news", "calendar", "history", "intraday_history", "positioning", "sources"]) {
             if (!(field in data)) throw new Error("Missing API field: " + field);
           }
