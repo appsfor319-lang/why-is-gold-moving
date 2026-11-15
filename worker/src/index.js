@@ -90,7 +90,7 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
   const fail=reason=>({...fallback(m,news),engine:"rules-fallback",ai_status:"fallback",ai_error:String(reason||"Gemini unavailable").slice(0,240)});
   if(!env.GEMINI_API_KEY)return fail("GEMINI_API_KEY missing");
   const primary=(env.GEMINI_MODEL||"gemini-3.8-flash").trim();
-  const models=[primary,env.GEMINI_FALLBACK_MODEL||"gemini-3.6-flash","gemini-3.5-flash-lite"].filter((x,i,a)=>x&&a.indexOf(x)===i);
+  const models=[primary,env.GEMINI_FALLBACK_MODEL||"gemini-4-hydrogen","gemini-3.8-flash","gemini-3.5-flash-lite"].filter((x,i,a)=>x&&a.indexOf(x)===i);
   const signals=factorSignals(m);
   const evidence={
     market:{
@@ -284,7 +284,17 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
  const fallback=()=>["<b>1. علاش الذهب تحرك اليوم؟</b>\nالمعطيات الحالية ما تثبتش سبب واحد للحركة. نقارنو الذهب مع الدولار والعوائد والأخبار.","<b>2. الأخبار تاع اليوم وتأثيرها على الذهب</b>\n"+(evidence.headlines.slice(0,4).map(x=>tgEscape(x.title)+" — "+tgEscape(x.source||"مصدر")).join("\n")||"ما كاينش خبر مؤكد جديد في المصادر المتاحة.")+"\nلازم نشوفو رد فعل السوق باش نربطو الخبر بالحركة.","<b>3. واش راهم يقولو المحترفين؟</b>\nما كاينش تصريح مهني حديث موثق في المعطيات المتاحة؛ ما نختلقوش توقعات.","<b>4. واش راهم يديرو الحيتان الضخمة؟</b>\n"+(evidence.positioning?"بيانات COT الأسبوعية متوفرة، وهي متأخرة وما تمثلش صفقات مباشرة اليوم.":"بيانات COT غير متاحة حالياً؛ ما نقدرش نأكد تحركات المؤسسات.") ,"<b>5. ملخص جلسة "+names[kind]+"</b>\n"+(Object.entries(context.periods||{}).filter(([,v])=>v?.bars).map(([k,v])=>k+": "+(v.change_pct>0?"الذهب طلع":v.change_pct<0?"الذهب هبط":"الحركة ما كانتش واضحة")+".").join("\n")||"بيانات الشموع غير كافية.")+"\nنراقبو استمرار الحركة ورد الفعل على الأخبار."].join("\n\n");
  if(!env.GEMINI_API_KEY)return fallback();
  const prompt=["You are TradZ Academy gold market analyst. Write natural Algerian Darija in Arabic script.","Return ONE combined Telegram post with exactly these five sections:","1. علاش الذهب تحرك اليوم؟","2. الأخبار تاع اليوم وتأثيرها على الذهب","3. واش راهم يقولو المحترفين؟","4. واش راهم يديرو الحيتان الضخمة؟","5. ملخص جلسة "+names[kind],"Sections 1-4 are identical in purpose in every report. ONLY section 5 changes with session: Asia, London, New York AM, New York PM.","Explain actual causes, mechanism and why gold reacted. Explain today's economic/geopolitical news and transmission via rates, yields, dollar, inflation and safe-haven demand.","Professional views must be attributed to named institutions/analysts in supplied sources. If absent, say so. For whales use CFTC COT, ETF flows and central-bank data only when supplied; state COT is weekly/delayed. Never claim live orders without evidence.","Section 5: summarize the specified session, what happened, why, scenario changes and what to watch next.","No raw prices, percentages, price targets, numerical dashboards, images, emojis or trading calls. Do not invent causality, quotes or positions. State missing/stale evidence clearly. Short readable paragraphs with blank lines.","EVIDENCE: "+JSON.stringify(evidence)].join("\n");
- try{const model=(env.GEMINI_MODEL||"gemini-3.8-flash").trim();const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(18000),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1800}})});if(!r.ok)throw Error("Gemini HTTP "+r.status);const d=await r.json(),body=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();if(!body)throw Error("Empty Gemini response");return body}catch(e){console.error("Telegram briefing fallback:",e.message);return fallback()}
+ const models=[(env.GEMINI_MODEL||"gemini-3.8-flash").trim(),env.GEMINI_FALLBACK_MODEL||"gemini-4-hydrogen","gemini-3.5-flash-lite"].filter((x,i,a)=>x&&a.indexOf(x)===i);
+ let lastError=null;
+ for(const model of models){
+  try{
+   const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(9000),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1800}})});
+   if(!r.ok){lastError="Gemini "+model+" HTTP "+r.status+": "+(await r.text()).slice(0,180);if([408,429,500,502,503,504].includes(r.status))continue;throw Error(lastError)}
+   const d=await r.json(),body=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();
+   if(body)return body;lastError="Gemini "+model+" returned an empty response";
+  }catch(e){lastError=e.message}
+ }
+ console.error("Telegram briefing fallback:",lastError);return fallback();
 }
 function telegramApiUrl(env,method){
   let raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
