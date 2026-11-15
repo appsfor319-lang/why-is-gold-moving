@@ -244,13 +244,16 @@ function sessionStats(candles,date,startHour,endHour){
   return{bars:bars.length,from:startHour,to:endHour,high,low,open,close,change_pct:open?Number(((close/open-1)*100).toFixed(3)):null,high_time:algiersParts(bars.find(x=>x.high===high).time*1000).clock,low_time:algiersParts(bars.find(x=>x.low===low).time*1000).clock};
 }
 function sessionEvidence(chart,kind){
-  const now=Date.now(),today=algiersParts(now).date,dayBars=chart.candles||[],prevDate=new Date(now-86400000),prev=algiersParts(prevDate.getTime()).date;
-  const day=(a,b)=>sessionStats(dayBars,today,a,b);
-  const previous=dayBars.filter(c=>algiersParts(c.time*1000).date===prev);
-  const prior=previous.length?{high:Math.max(...previous.map(x=>x.high)),low:Math.min(...previous.map(x=>x.low)),close:previous[previous.length-1].close}:null;
-  const periods=kind==="asia"?{asia_early:day(0,1),prior_ny:sessionStats(dayBars,prev,13,24)}:kind==="london"?{asia:day(1,7),london_open:day(7,8)}:{asia:day(1,7),london:day(7,13),ny_early:day(13,14)};
-  const latest=dayBars[dayBars.length-1]||null;
-  return{date_algiers:today,report_session:kind,latest:latest?{time_algiers:algiersParts(latest.time*1000).clock,open:latest.open,high:latest.high,low:latest.low,close:latest.close}:null,previous_day:prior,periods,recent_candles:dayBars.slice(-18).map(c=>({time:algiersParts(c.time*1000).clock,open:c.open,high:c.high,low:c.low,close:c.close}))};
+ const now=Date.now(),today=algiersParts(now).date,dayBars=chart.candles||[],prevDate=new Date(now-86400000),prev=algiersParts(prevDate.getTime()).date;
+ const day=(a,b)=>sessionStats(dayBars,today,a,b);
+ const previous=dayBars.filter(c=>algiersParts(c.time*1000).date===prev);
+ const prior=previous.length?{high:Math.max(...previous.map(x=>x.high)),low:Math.min(...previous.map(x=>x.low)),close:previous[previous.length-1].close}:null;
+ const periods=kind==="asia"?{asia:day(0,8),prior_ny:sessionStats(dayBars,prev,13,24)}:
+ kind==="london"?{asia:day(0,8),london:day(8,17)}:
+ kind==="ny_am"?{london:day(8,17),ny_am:day(17,20)}:
+ {london:day(8,17),ny_am:day(17,20),ny_pm:day(20,24)};
+ const latest=dayBars[dayBars.length-1]||null;
+ return{date_algiers:today,report_session:kind,latest:latest?{time_algiers:algiersParts(latest.time*1000).clock,open:latest.open,high:latest.high,low:latest.low,close:latest.close}:null,previous_day:prior,periods,recent_candles:dayBars.slice(-18).map(c=>({time:algiersParts(c.time*1000).clock,open:c.open,high:c.high,low:c.low,close:c.close}))};
 }
 async function sessionDarijaBrief(env,data,kind,chart,context){
  const names={asia:"آسيا",london:"لندن",ny_am:"نيويورك الصباحية",ny_pm:"نيويورك المسائية"};
