@@ -57,12 +57,12 @@ function calculateIndicator(bars,htf){
   const prev=htf[i-1],cur=htf[i];
   const bull=cur.close>prev.high&&prev.close<prev.open;
   const bear=cur.close<prev.low&&prev.close>prev.open;
-  if(bull)obs.push({direction:"bullish",top:prev.high,bottom:prev.low,time:prev.time});
-  if(bear)obs.push({direction:"bearish",top:prev.high,bottom:prev.low,time:prev.time});
+  if(bull)obs.push({direction:"bullish",top:prev.high,bottom:prev.low,time:prev.time,activatedAt:cur.time});
+  if(bear)obs.push({direction:"bearish",top:prev.high,bottom:prev.low,time:prev.time,activatedAt:cur.time});
  }
  const activeObs=[];
  obs.forEach(o=>{
-  const broken=bars.some(b=>b.time>=o.time&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
+  const broken=bars.some(b=>b.time>=o.activatedAt&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
   if(!broken)activeObs.push(o);
  });
  const capped=[];
@@ -177,6 +177,7 @@ function setIntervalChart(v){
  document.querySelectorAll(".chart-tf").forEach(b=>b.classList.toggle("active",b.dataset.interval===v));
  loadChart(true);
 }
+window.addEventListener("gold-terminal-updated",()=>{if(!chartData||!chart)return;const ind=calculateIndicator(chartData.candles,chartData.order_block_candles||[]);explain(ind.summary,true)});
 document.addEventListener("DOMContentLoaded",()=>{
  if(!$("xau-chart"))return;
  if(!window.LightweightCharts){$("chart-feed-status").textContent="Chart library failed to load";return}
