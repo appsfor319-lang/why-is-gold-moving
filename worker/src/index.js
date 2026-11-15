@@ -425,7 +425,7 @@ async function scheduledReport(env,kind){
 }
 async function scheduledSmokeTest(env){
   const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1");
-  if(cache&&await cache.match(key))return false;
+  if(cache&&await cache.match(key)){console.log("Telegram readiness test already confirmed by Telegram.");return false;}
   if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return false;
   const data=await terminalData(env);
   if(!data.market||!data.market.gold||!data.market.dxy||!data.market.yield||!Array.isArray(data.news)||data.news.length===0||!Array.isArray(data.calendar))throw Error("Telegram test blocked: required gold, DXY, yield or news data is missing");
