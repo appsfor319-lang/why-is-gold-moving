@@ -265,7 +265,7 @@ async function scheduledAlerts(env){
   const data=await r.json(),events=(data.calendar||[]),now=Date.now(),cache=typeof caches!=="undefined"?caches.default:null;
   for(const e of events){
     if(!/high|3/i.test(String(e.impact||"")))continue;
-    const t=Date.parse(e.datetime||"");if(!Number.isFinite(t)||t<now-10*60000||t>now+5*60000)continue;
+    const rawTime=String(e.datetime||"");if(!/[T ]\\d{2}:\\d{2}/.test(rawTime))continue;const t=Date.parse(rawTime);if(!Number.isFinite(t)||t<now-10*60000||t>now+5*60000)continue;
     const key="https://gold-brief-cache.local/telegram-event/"+encodeURIComponent((e.event||"event")+"|"+e.datetime);
     if(cache&&await cache.match(key))continue;
     const gold=data.market?.gold,dxy=data.market?.dxy;
