@@ -166,23 +166,46 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
 }
 async function cftcGoldPositioning(){const url=new URL("https://publicreporting.cftc.gov/resource/72hh-3qpy.json");url.searchParams.set("$where","commodity_name='GOLD'");url.searchParams.set("$order","report_date_as_yyyy_mm_dd DESC");url.searchParams.set("$limit","3");const rows=await get(url);if(!Array.isArray(rows)||!rows.length)throw Error("CFTC returned no gold positioning rows");const pick=(r,names)=>{for(const n of names){const v=r?.[n];if(v!==undefined&&v!==null&&v!=="")return Number(v)}return null};const longNames=["m_money_positions_long_all","managed_money_positions_long","managed_money_positions_long_all","managed_money_long_all"];const shortNames=["m_money_positions_short_all","managed_money_positions_short","managed_money_positions_short_all","managed_money_short_all"];const latest=rows[0],long=pick(latest,longNames),short=pick(latest,shortNames);if(long===null||short===null||!Number.isFinite(long)||!Number.isFinite(short))throw Error("CFTC managed-money fields were not present in the returned gold record");const previous=rows[1],priorLong=previous?pick(previous,longNames):null,priorShort=previous?pick(previous,shortNames):null,net=long-short,priorNet=priorLong!==null&&priorShort!==null?priorLong-priorShort:null;const reportDate=latest.report_date_as_yyyy_mm_dd||latest.report_date||null;const ageDays=reportDate?Math.max(0,Math.floor((Date.now()-Date.parse(reportDate))/86400000)):null;return{report_date:reportDate,age_days:ageDays,freshness:ageDays!==null&&ageDays>8?"stale":"current",market:latest.market_and_exchange_names||latest.contract_market_name||"COMEX gold futures",managed_money_long:long,managed_money_short:short,managed_money_net:net,weekly_net_change:priorNet===null?null:net-priorNet,open_interest:pick(latest,["open_interest_all"]),source:"US Commodity Futures Trading Commission · Disaggregated Futures Only",source_url:"https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",timing:"Positions as of Tuesday; normally published Friday",method:"Managed Money is an aggregated trader category, not a list of individual funds or whales."}}
 
+async function yahooGoldCandles(interval){
+  const map={"5min":{interval:"5m",range:"5d"},"1h":{interval:"1h",range:"3mo"}};
+  const cfg=map[interval];if(!cfg)throw Error("Unsupported Yahoo chart interval");
+  const symbols=["XAUUSD=X","GC=F"];let lastError=null;
+  for(const symbol of symbols){
+    try{
+      const u=new URL("https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(symbol));
+      u.searchParams.set("range",cfg.range);u.searchParams.set("interval",cfg.interval);
+      const r=await fetch(u,{headers:{"User-Agent":"Mozilla/5.0 (compatible; TradZAcademy/1.0)","Accept":"application/json"},signal:AbortSignal.timeout(15000)});
+      const d=await r.json(),result=d.chart?.result?.[0],q=result?.indicators?.quote?.[0];
+      if(!r.ok||!result||!Array.isArray(result.timestamp)||!q)throw Error(d.chart?.error?.description||"Yahoo returned no "+symbol+" chart data (HTTP "+r.status+")");
+      const bars=result.timestamp.map((time,i)=>({time,open:Number(q.open?.[i]),high:Number(q.high?.[i]),low:Number(q.low?.[i]),close:Number(q.close?.[i]),volume:Number(q.volume?.[i])||0})).filter(x=>Number.isFinite(x.time)&&[x.open,x.high,x.low,x.close].every(Number.isFinite)).sort((a,b)=>a.time-b.time);
+      if(bars.length<20)throw Error("Yahoo returned only "+bars.length+" usable "+interval+" candles for "+symbol);
+      return{bars,symbol};
+    }catch(e){lastError=e.message}
+  }
+  throw Error("Yahoo chart fallback failed: "+lastError);
+}
 async function chartCandles(env,interval){
-  if(!env.TWELVEDATA_API_KEY)throw Error("TWELVEDATA_API_KEY missing");
-  const allowed=["1min","5min","15min","30min","1h"];
-  if(!allowed.includes(interval))throw Error("Unsupported chart interval");
-  const cache=typeof caches!=="undefined"?caches.default:null;
-  const key=new Request("https://gold-brief-cache.local/xau-chart-v2/"+interval);
+  if(!["1min","5min","15min","30min","1h"].includes(interval))throw Error("Unsupported chart interval");
+  const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/xau-chart-v3/"+interval);
   if(cache){const hit=await cache.match(key);if(hit)return hit.json()}
   const fetchBars=async(tf,size)=>{
+    if(!env.TWELVEDATA_API_KEY)throw Error("TWELVEDATA_API_KEY missing");
     const u=new URL("https://api.twelvedata.com/time_series");
     Object.entries({symbol:"XAU/USD",interval:tf,outputsize:String(size),timezone:"UTC",apikey:env.TWELVEDATA_API_KEY,format:"JSON"}).forEach(([k,v])=>u.searchParams.set(k,v));
     const d=await get(u);
     if(d.status==="error"||!Array.isArray(d.values)||!d.values.length)throw Error(d.message||"Twelve Data returned no "+tf+" XAU/USD candles");
     return d.values.map(v=>({time:Math.floor(Date.parse(String(v.datetime).replace(" ","T")+"Z")/1000),open:Number(v.open),high:Number(v.high),low:Number(v.low),close:Number(v.close),volume:Number(v.volume)||0})).filter(v=>Number.isFinite(v.time)&&[v.open,v.high,v.low,v.close].every(Number.isFinite)).sort((a,b)=>a.time-b.time);
   };
-  const [candles,htf]=await Promise.all([fetchBars(interval,500),fetchBars("1h",500)]);
-  if(candles.length<20)throw Error("Not enough XAU/USD candles to draw the chart");
-  const result={symbol:"XAU/USD",interval,source:"Twelve Data",updated_at:new Date().toISOString(),refresh_seconds:60,candles,order_block_candles:htf};
+  let candles,htf,source="Twelve Data · XAU/USD";
+  try{
+    [candles,htf]=await Promise.all([fetchBars(interval,500),fetchBars("1h",500)]);
+    if(candles.length<20)throw Error("Twelve Data returned fewer than 20 "+interval+" candles");
+  }catch(primaryError){
+    console.warn("Twelve Data chart unavailable; trying Yahoo Finance fallback:",primaryError.message);
+    const [intraday,hourly]=await Promise.all([yahooGoldCandles(interval),yahooGoldCandles("1h")]);
+    candles=intraday.bars;htf=hourly.bars;source="Yahoo Finance · "+intraday.symbol+" (fallback; verify against OANDA XAUUSD)";
+  }
+  const result={symbol:"XAU/USD",interval,source,updated_at:new Date().toISOString(),refresh_seconds:60,candles,order_block_candles:htf};
   if(cache)await cache.put(key,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=45"}}));
   return result;
 }
@@ -329,6 +352,23 @@ async function scheduledReport(env,kind){
 
   await telegramSend(env,report.body);
 }
+async function scheduledSmokeTest(env){
+  const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1");
+  if(cache&&await cache.match(key))return false;
+  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return false;
+  const data=await terminalData(env);
+  if(!data.market||!Array.isArray(data.news)||!Array.isArray(data.calendar))throw Error("Telegram test blocked: terminal data is incomplete");
+  const chart=await chartCandles(env,"5min"),context=sessionEvidence(chart,"asia");
+  const report=await telegramReport(env,data,"asia",chart,context);
+  const required=["1. علاش الذهب تحرك اليوم؟","2. الأخبار تاع اليوم وتأثيرها على الذهب","3. واش راهم يقولو المحترفين؟","4. واش راهم يديرو الحيتان الضخمة؟","5. ملخص جلسة آسيا"];
+  const plain=report.body.replace(/<[^>]+>/g,""),missing=required.filter(x=>!plain.includes(x));
+  if(missing.length)throw Error("Telegram test blocked: report missing sections: "+missing.join(", "));
+  const sent=await telegramSend(env,"<b>اختبار جاهزية TradZ Academy — رسالة اختبار</b>\n\n"+report.body);
+  if(!sent?.ok)throw Error("Telegram test was not confirmed by Telegram");
+  if(cache)await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
+  console.log("Telegram readiness test delivered and confirmed by Telegram.");
+  return true;
+}
 async function scheduledAlerts(env){
  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
  const data=await terminalData(env),events=data.calendar||[],now=Date.now(),cache=typeof caches!=="undefined"?caches.default:null;
@@ -374,7 +414,7 @@ async scheduled(controller,env,ctx){
  const nh=Number(ny.find(x=>x.type==="hour")?.value||0),nm=Number(ny.find(x=>x.type==="minute")?.value||0);
  const local=p.hour+":"+String(p.minute).padStart(2,"0");let kind=null;
  if(local==="08:00")kind="asia";if(local==="17:00")kind="london";if(nh===12&&nm===0)kind="ny_am";if(nh===16&&nm===0)kind="ny_pm";
- try{if(kind)await scheduledReport(env,kind);await scheduledAlerts(env)}catch(err){console.error("Scheduled Telegram task failed:",err?.message||err)}
+ try{const testSent=await scheduledSmokeTest(env);if(kind&&!testSent)await scheduledReport(env,kind);await scheduledAlerts(env)}catch(err){console.error("Scheduled Telegram task failed:",err?.message||err)}
 },
 async fetch(req,env){let u=new URL(req.url);
 if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
