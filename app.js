@@ -5,7 +5,7 @@ const $=id=>document.getElementById(id);let news=[],calendar=[],history=[],intra
  history=Array.isArray(d.history)?d.history:[];
  intradayHistory=Array.isArray(d.intraday_history)?d.intraday_history:[];
  positioning=d.positioning||null;
- renderStory(d);renderOther();
+ renderStory(d);renderOther();window.dispatchEvent(new Event('gold-terminal-updated'));
  if(source==='cache'){
   const age=d.updated_at?Math.max(0,Math.round((Date.now()-Date.parse(d.updated_at))/60000)):null;
   $('story-time').textContent='Saved market data'+(age==null?'':' · '+age+' min old')+' · checking for live updates';
