@@ -413,3 +413,8 @@ body{top:0!important}
 .goog-te-gadget .goog-te-combo{display:none!important}
 html[dir="rtl"] body{text-align:inherit}
 @media(max-width:580px){.floating-tools{right:14px;bottom:16px;gap:8px}.language-float{width:42px;height:42px}}
+
+/* Keep the language glyph visually centered and make EN fit cleanly. */
+.language-float{font-size:20px;line-height:1;transform:translateY(1px);padding:0;letter-spacing:0}
+.language-float.is-english{font-size:14px;letter-spacing:-.4px;white-space:nowrap}
+.language-float:hover{transform:translateY(-1px)}
