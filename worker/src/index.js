@@ -312,7 +312,9 @@ function telegramApiUrl(env,method){
 }
 async function telegramSend(env,text){
   if(!env.TELEGRAM_CHAT_ID)throw Error("TELEGRAM_CHAT_ID is missing");
-  const r=await fetch(telegramApiUrl(env,"sendMessage"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:String(env.TELEGRAM_CHAT_ID).trim(),text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
+  const token=String(env.TELEGRAM_BOT_TOKEN||"").trim().replace(/^bot/i,"").split("/")[0];
+  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(token))throw Error("TELEGRAM_BOT_TOKEN is invalid");
+  const r=await fetch("https://api.telegram.org/bot"+token+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:String(env.TELEGRAM_CHAT_ID).trim(),text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
   const d=await r.json();if(!r.ok||!d.ok)throw Error("Telegram sendMessage failed: "+(d.description||r.status));return d;
 }
 async function telegramPhoto(env,caption){
@@ -337,7 +339,9 @@ async function telegramPhoto(env,caption){
   if(bytes.byteLength<5000)throw Error("Real-source chart image is too small to be valid");
   const mime=type.includes("png")?"image/png":"image/jpeg";
   const form=new FormData();form.set("chat_id",String(env.TELEGRAM_CHAT_ID).trim());form.set("photo",new Blob([bytes],{type:mime}),mime==="image/png"?"tradz-real-gold-chart.png":"tradz-real-gold-chart.jpg");form.set("caption",(caption+"\n\n<b>Chart source:</b> "+tgEscape(source)).slice(0,1000));
-  const sent=await fetch(telegramApiUrl(env,"sendPhoto"),{method:"POST",body:form,signal:AbortSignal.timeout(30000)});
+  const token=String(env.TELEGRAM_BOT_TOKEN||"").trim().replace(/^bot/i,"").split("/")[0];
+  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(token))throw Error("TELEGRAM_BOT_TOKEN is invalid");
+  const sent=await fetch("https://api.telegram.org/bot"+token+"/sendPhoto",{method:"POST",body:form,signal:AbortSignal.timeout(30000)});
   const result=await sent.json();if(!sent.ok||!result.ok)throw Error("Telegram sendPhoto failed: "+(result.description||sent.status));
   return{source,bytes:bytes.byteLength};
 }
