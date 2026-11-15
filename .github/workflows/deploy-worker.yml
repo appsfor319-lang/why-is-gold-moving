@@ -31,6 +31,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
+          export CLOUDFLARE_ACCOUNT_ID="$(printf '%s' "$CLOUDFLARE_ACCOUNT_ID" | tr -d '[:space:]')"
           npx wrangler secret list --format json | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{for(const x of JSON.parse(s))console.log(x.name)})'
       - name: Smoke test live terminal API
         shell: bash
