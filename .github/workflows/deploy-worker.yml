@@ -51,6 +51,9 @@ jobs:
           if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources) || !Array.isArray(data.history) || !Array.isArray(data.intraday_history)) {
             throw new Error("News, calendar and sources must be arrays");
           }
+          if (!data.market?.gold || !data.market?.dxy || !data.market?.yield || data.news.length === 0) {
+            throw new Error("Required gold spot, DXY, US 10Y or gold news feed is missing");
+          }
           if (data.briefing?.engine !== "gemini" || data.briefing?.ai_status !== "ok") {
             throw new Error("Gemini briefing is not live: " + (data.briefing?.ai_error || data.briefing?.engine || "unknown"));
           }
@@ -66,7 +69,7 @@ jobs:
           if (chart.symbol !== "XAU/USD" || !Array.isArray(chart.candles) || chart.candles.length < 20 || !Array.isArray(chart.order_block_candles)) {
             throw new Error("XAU/USD chart endpoint returned incomplete candle data");
           }
-          console.log("Chart smoke test: " + chart.candles.length + " XAU/USD 5m candles; " + chart.order_block_candles.length + " 1H candles.");
+          console.log("Chart smoke test: " + chart.candles.length + " XAU/USD 5m candles; " + chart.order_block_candles.length + " 1H candles; source=" + chart.source + ".");
           const analysisResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/chart-analysis", {
             method: "POST",
             headers: { "content-type": "application/json" },
