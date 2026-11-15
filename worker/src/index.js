@@ -268,7 +268,7 @@ async function explainChart(env,payload){
     if(yieldData?.change_bp!=null&&!yieldData.stale)parts.push("The US 10-year yield has changed "+yieldData.change_bp+" bp; check its timestamp because this feed may be daily.");
     return{headline:sweeps.length?"A session liquidity sweep is visible on the chart":s.direction?"Gold chart: "+s.direction:"Gold chart loaded; waiting for a clearer setup",body:parts.join(" "),confidence:"LOW",engine:"rules-chart-context",updated_at:new Date().toISOString()};
   };
-  if(!env.GEMINI_API_KEY)return fallback();
+  if(!env.GEMINI_API_KEY)return{body:fallback(),engine:"rules-fallback",model:null};
   const prompt=[
     "Explain the supplied live XAU/USD chart evidence to a retail gold trader.",
     "The chart indicator is a JavaScript translation of the user's UFD Sessions & Liquidity Pine indicator.",
