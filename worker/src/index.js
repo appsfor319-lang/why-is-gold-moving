@@ -252,11 +252,30 @@ async function telegramSend(env,text){
   const r=await fetch("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:env.TELEGRAM_CHAT_ID,text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
   const d=await r.json();if(!r.ok||!d.ok)throw Error("Telegram sendMessage failed: "+(d.description||r.status));return d;
 }
+
+async function telegramChartPhoto(env){
+  const chart=await chartCandles(env,"5min");
+  const candles=(chart.candles||[]).slice(-72);
+  if(candles.length<10)throw Error("Not enough recent candles to render Telegram chart");
+  const labels=candles.map(c=>new Date(c.time*1000).toLocaleTimeString("en-GB",{timeZone:"Africa/Algiers",hour:"2-digit",minute:"2-digit"}));
+  const prices=candles.map(c=>Number(c.close));
+  const last=prices[prices.length-1],first=prices[0];
+  const direction=last>=first?"up":"down";
+  const config={type:"line",data:{labels,datasets:[{label:"XAU/USD · 5m close",data:prices,borderColor:direction==="up"?"#16a34a":"#dc2626",backgroundColor:"rgba(59,130,246,0.10)",borderWidth:3,pointRadius:0,fill:true,tension:0.18}]},options:{plugins:{legend:{display:false},title:{display:true,text:"TRADZ ACADEMY · XAU/USD · 5 MIN",color:"#f8fafc",font:{size:20,weight:"bold"}},subtitle:{display:true,text:"Latest price: "+last.toFixed(2)+" · Twelve Data",color:"#cbd5e1",font:{size:15}}},scales:{x:{ticks:{color:"#cbd5e1",maxTicksLimit:8},grid:{color:"rgba(148,163,184,0.12)"}},y:{ticks:{color:"#cbd5e1"},grid:{color:"rgba(148,163,184,0.16)"}}}},backgroundColor:"#0b1220"};
+  const qr=await fetch("https://quickchart.io/chart",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({width:1100,height:620,format:"png",backgroundColor:"#0b1220",version:"4",chart:config}),signal:AbortSignal.timeout(20000)});
+  if(!qr.ok)throw Error("Chart renderer HTTP "+qr.status);
+  const imageBytes=await qr.arrayBuffer();
+  if(imageBytes.byteLength<1000)throw Error("Chart renderer returned an invalid image");
+  const form=new FormData();form.set("chat_id",env.TELEGRAM_CHAT_ID);form.set("photo",new Blob([imageBytes],{type:"image/png"}),"tradz-xauusd-5m.png");form.set("caption","TradZ Academy · XAU/USD 5-minute live chart\nLatest price: "+last.toFixed(2)+" | Source: Twelve Data");
+  const sent=await fetch("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/sendPhoto",{method:"POST",body:form,signal:AbortSignal.timeout(20000)});
+  const result=await sent.json();if(!sent.ok||!result.ok)throw Error("Telegram sendPhoto failed: "+(result.description||sent.status));
+  return{candles:candles.length,last};
+}
 async function scheduledReport(env,kind){
   const url="https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
   const r=await fetch(url,{signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error("Terminal API HTTP "+r.status);
   const data=await r.json();if(!data.market||!data.briefing)throw Error("Terminal API returned incomplete market data");
-  await telegramSend(env,telegramReport(data,kind));
+  await telegramSend(env,telegramReport(data,kind));\n  await telegramChartPhoto(env);
 }
 async function scheduledAlerts(env){
   if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
