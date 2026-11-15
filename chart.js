@@ -8,7 +8,7 @@ const sessions=[
  {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
  {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
 ];
-let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false;
+let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[];
 const tfLabel={"1min":"1m","5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
 function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
@@ -62,7 +62,7 @@ function calculateIndicator(bars,htf){
  }
  const activeObs=[];
  obs.forEach(o=>{
-  const broken=bars.some(b=>b.time>=o.activatedAt&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
+  const broken=bars.concat(htf).some(b=>b.time>=o.activatedAt&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
   if(!broken)activeObs.push(o);
  });
  const capped=[];
@@ -87,6 +87,20 @@ function calculateIndicator(bars,htf){
   ranges,liquidity:kept,sweeps:sweeps.sort((a,b)=>b.time-a.time).slice(0,8),activeObs:capped,
   summary:{timeframe:interval,last:{time:last.time,open:last.open,high:last.high,low:last.low,close:last.close,change_pct:prev?((last.close/prev.close)-1)*100:null},structure:{direction,recent_swing_highs:pivH.slice(-2),recent_swing_lows:pivL.slice(-2)},session:sessionState.slice(-1)[0]||null,session_ranges:ranges.slice(-9).map(x=>({name:x.name,date:x.date,high:x.high,low:x.low,active:x.active})),active_liquidity:kept.map(x=>({price:x.price,label:x.label,side:x.isHigh?"above":"below"})),recent_sweeps:sweeps.sort((a,b)=>b.time-a.time).slice(0,5).map(x=>({price:x.price,label:x.label,time:x.time})),order_blocks:capped.map(x=>({direction:x.direction,top:x.top,bottom:x.bottom,time:x.time})),candle_window:{from:bars[0].time,to:last.time,count:bars.length}}
  };
+}
+function updateObZones(){
+ if(!obZoneLayer||!chart||!candleSeries)return;
+ obZoneLayer.innerHTML="";
+ const width=$("xau-chart").clientWidth;
+ activeZoneData.forEach(o=>{
+  const x=chart.timeScale().timeToCoordinate(o.time),y1=candleSeries.priceToCoordinate(o.top),y2=candleSeries.priceToCoordinate(o.bottom);
+  if(x==null||y1==null||y2==null)return;
+  const left=Math.max(0,Math.floor(x)),right=Math.max(left,width-68),top=Math.max(0,Math.floor(Math.min(y1,y2))),height=Math.max(2,Math.abs(y2-y1));
+  if(left>=width-68||top>$("xau-chart").clientHeight)return;
+  const box=document.createElement("div");box.className="ob-zone "+(o.direction==="bullish"?"bull":"bear");
+  box.style.left=left+"px";box.style.top=top+"px";box.style.width=(right-left)+"px";box.style.height=height+"px";
+  const label=document.createElement("span");label.textContent=(o.direction==="bullish"?"Bullish":"Bearish")+" Order Block · 1H";box.appendChild(label);obZoneLayer.appendChild(box);
+ });
 }
 function removeOverlays(){
  overlaySeries.forEach(s=>{try{chart.removeSeries(s)}catch{}});
@@ -114,7 +128,12 @@ function drawIndicator(result,bars){
   });
  });
  const marks=[];
+ result.ranges.forEach(r=>{const mid=r.start+Math.floor((r.end-r.start)/2),bar=bars.reduce((best,x)=>Math.abs(x.time-mid)<Math.abs(best.time-mid)?x:best,bars[0]);if(bar)marks.push({time:bar.time,position:"aboveBar",color:r.color,shape:"circle",text:r.name})});
  result.sweeps.forEach(s=>marks.push({time:s.time,position:s.direction==="high"?"aboveBar":"belowBar",color:"#e4b85f",shape:s.direction==="high"?"arrowDown":"arrowUp",text:s.label}));
+ marks.sort((a,b)=>a.time-b.time);
+ activeZoneData=result.activeObs;updateObZones();
+ const latest=bars[bars.length-1],recentSweep=result.sweeps.find(s=>s.time===latest.time);
+ $("chart-indicator-status").textContent=recentSweep?"SWEEP ALERT · "+recentSweep.label+" · "+fmt(recentSweep.price):"UFD Sessions & Liquidity · Asia / London / New York · 1H OB";
  if(LightweightCharts.createSeriesMarkers){
   if(markersApi&&markersApi.setMarkers)markersApi.setMarkers(marks);
   else markersApi=LightweightCharts.createSeriesMarkers(candleSeries,marks);
@@ -126,7 +145,9 @@ function initChart(){
  candleSeries=chart.addSeries(LightweightCharts.CandlestickSeries,{upColor:"#55c89b",downColor:"#ee8178",borderUpColor:"#55c89b",borderDownColor:"#ee8178",wickUpColor:"#55c89b",wickDownColor:"#ee8178"});
  volumeSeries=chart.addSeries(LightweightCharts.HistogramSeries,{priceFormat:{type:"volume"},priceScaleId:"volume",lastValueVisible:false,priceLineVisible:false});
  chart.priceScale("volume").applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
- const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0)chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)})}});
+ obZoneLayer=document.createElement("div");obZoneLayer.className="ob-zones";el.appendChild(obZoneLayer);
+ chart.timeScale().subscribeVisibleTimeRangeChange(updateObZones);
+ const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0){chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)});updateObZones()}}});
  ro.observe(el);
 }
 function renderPrice(data){

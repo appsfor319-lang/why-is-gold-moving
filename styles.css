@@ -456,3 +456,9 @@ body{top:0!important;position:static!important;}
 .chart-ai-context .chart-ai-meta{font:9px 'DM Mono';color:#82919e;margin-top:9px}
 @media(max-width:900px){.live-desk{grid-template-columns:1fr}.xau-chart{height:390px}}
 @media(max-width:580px){.live-chart-panel{padding:13px}.chart-head{flex-direction:column}.chart-controls{justify-content:flex-start;width:100%}.xau-chart{height:340px;min-height:280px}.chart-foot{flex-direction:column}}
+
+.ob-zones{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden}
+.ob-zone{position:absolute;min-width:2px;border:1px solid;box-sizing:border-box;opacity:.85}
+.ob-zone.bull{background:rgba(38,166,154,.09);border-color:rgba(38,166,154,.6)}
+.ob-zone.bear{background:rgba(239,83,80,.09);border-color:rgba(239,83,80,.6)}
+.ob-zone span{position:absolute;right:4px;bottom:2px;color:#aab6c0;font:8px 'DM Mono';white-space:nowrap;text-shadow:0 1px 2px #000}
