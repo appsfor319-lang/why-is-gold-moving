@@ -247,9 +247,24 @@ function telegramReport(data,kind){
   const links='\n\n<a href="https://appsfor319-lang.github.io/why-is-gold-moving/">Open live TradZ Academy dashboard / Ouvrir le tableau de bord</a>';
   return (enText+"\n\n━━━━━━━━━━━━\n\n"+frText+links+"\n\n<tg-spoiler>Updated / Mis à jour: "+tgEscape(stamp)+" · Data may be delayed. / Les données peuvent être retardées.</tg-spoiler>").slice(0,3900);
 }
+function telegramApiUrl(env,method){
+  const raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
+  if(!raw)throw Error("TELEGRAM_BOT_TOKEN is missing");
+  // Accept either the raw BotFather token, a token prefixed with "bot", or the full Telegram Bot API URL.
+  if(/^https?:\\/\\//i.test(raw)){
+    const u=new URL(raw);
+    if(u.hostname!=="api.telegram.org")throw Error("TELEGRAM_BOT_TOKEN URL must use api.telegram.org");
+    const match=u.pathname.match(/\\/(bot[^/]+)/i);
+    if(!match)throw Error("TELEGRAM_BOT_TOKEN URL does not contain a bot token");
+    return "https://api.telegram.org/"+match[1]+"/"+method;
+  }
+  const token=raw.replace(/^bot/i,"").replace(/\\/(sendMessage|sendPhoto).*$/i,"").trim();
+  if(!token||token.includes("/")||/\\s/.test(token))throw Error("TELEGRAM_BOT_TOKEN format is invalid");
+  return "https://api.telegram.org/bot"+token+"/"+method;
+}
 async function telegramSend(env,text){
-  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram secrets are missing");
-  const r=await fetch("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:env.TELEGRAM_CHAT_ID,text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
+  if(!env.TELEGRAM_CHAT_ID)throw Error("TELEGRAM_CHAT_ID is missing");
+  const r=await fetch(telegramApiUrl(env,"sendMessage"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:String(env.TELEGRAM_CHAT_ID).trim(),text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
   const d=await r.json();if(!r.ok||!d.ok)throw Error("Telegram sendMessage failed: "+(d.description||r.status));return d;
 }
 
@@ -266,8 +281,8 @@ async function telegramChartPhoto(env){
   if(!qr.ok)throw Error("Chart renderer HTTP "+qr.status);
   const imageBytes=await qr.arrayBuffer();
   if(imageBytes.byteLength<1000)throw Error("Chart renderer returned an invalid image");
-  const form=new FormData();form.set("chat_id",env.TELEGRAM_CHAT_ID);form.set("photo",new Blob([imageBytes],{type:"image/png"}),"tradz-xauusd-5m.png");form.set("caption","TradZ Academy · XAU/USD 5-minute live chart\nLatest price: "+last.toFixed(2)+" | Source: Twelve Data");
-  const sent=await fetch("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/sendPhoto",{method:"POST",body:form,signal:AbortSignal.timeout(20000)});
+  const form=new FormData();form.set("chat_id",String(env.TELEGRAM_CHAT_ID).trim());form.set("photo",new Blob([imageBytes],{type:"image/png"}),"tradz-xauusd-5m.png");form.set("caption","TradZ Academy · XAU/USD 5-minute live chart\nLatest price: "+last.toFixed(2)+" | Source: Twelve Data");
+  const sent=await fetch(telegramApiUrl(env,"sendPhoto"),{method:"POST",body:form,signal:AbortSignal.timeout(20000)});
   const result=await sent.json();if(!sent.ok||!result.ok)throw Error("Telegram sendPhoto failed: "+(result.description||sent.status));
   return{candles:candles.length,last};
 }
