@@ -14,7 +14,7 @@ async function metal(env,s){let goldError=null;if(env.GOLDAPI_KEY){try{let d=awa
 async function oilWTI(env){let a=await fredSeries(env,'DCOILWTICO');let change=a[1]?((+a[0].value/+a[1].value)-1)*100:null;return{value:+a[0].value,change_pct:change,timestamp:a[0].date,source:'FRED · WTI spot (daily)'}}
 async function yahooDXY(){let u='https://query1.finance.yahoo.com/v8/finance/chart/DX-Y.NYB?range=5d&interval=1d';let d=await get(u,{'User-Agent':'Mozilla/5.0'});let r=d.chart?.result?.[0];if(!r)throw Error(d.chart?.error?.description||'Yahoo Finance returned no DXY data');let q=r.indicators?.quote?.[0],cl=(q?.close||[]).filter(x=>Number.isFinite(x));let value=Number(cl.at(-1)??r.meta?.regularMarketPrice),prev=Number(cl.at(-2));if(!Number.isFinite(value))throw Error('DXY price unavailable');return{value,change_pct:Number.isFinite(prev)&&prev!==0?(value/prev-1)*100:null,timestamp:r.meta?.regularMarketTime?new Date(r.meta.regularMarketTime*1000).toISOString():new Date().toISOString(),source:'Yahoo Finance · ICE Dollar Index'}}
 async function yahooMetalQuote(symbol){
-  const u=new URL("https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(symbol));
+  const u=new URL("https://query1.finance.yahoo.com/v8/finance/chart/"+symbol);
   u.searchParams.set("range","5d");u.searchParams.set("interval","1d");
   const d=await get(u,{"User-Agent":"Mozilla/5.0 (compatible; TradZAcademy/1.0)"});
   const r=d.chart?.result?.[0],meta=r?.meta,q=r?.indicators?.quote?.[0],cl=(q?.close||[]).filter(Number.isFinite);
@@ -189,7 +189,7 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
 async function cftcGoldPositioning(){const url=new URL("https://publicreporting.cftc.gov/resource/72hh-3qpy.json");url.searchParams.set("$where","commodity_name='GOLD'");url.searchParams.set("$order","report_date_as_yyyy_mm_dd DESC");url.searchParams.set("$limit","3");const rows=await get(url);if(!Array.isArray(rows)||!rows.length)throw Error("CFTC returned no gold positioning rows");const pick=(r,names)=>{for(const n of names){const v=r?.[n];if(v!==undefined&&v!==null&&v!=="")return Number(v)}return null};const longNames=["m_money_positions_long_all","managed_money_positions_long","managed_money_positions_long_all","managed_money_long_all"];const shortNames=["m_money_positions_short_all","managed_money_positions_short","managed_money_positions_short_all","managed_money_short_all"];const latest=rows[0],long=pick(latest,longNames),short=pick(latest,shortNames);if(long===null||short===null||!Number.isFinite(long)||!Number.isFinite(short))throw Error("CFTC managed-money fields were not present in the returned gold record");const previous=rows[1],priorLong=previous?pick(previous,longNames):null,priorShort=previous?pick(previous,shortNames):null,net=long-short,priorNet=priorLong!==null&&priorShort!==null?priorLong-priorShort:null;const reportDate=latest.report_date_as_yyyy_mm_dd||latest.report_date||null;const ageDays=reportDate?Math.max(0,Math.floor((Date.now()-Date.parse(reportDate))/86400000)):null;return{report_date:reportDate,age_days:ageDays,freshness:ageDays!==null&&ageDays>8?"stale":"current",market:latest.market_and_exchange_names||latest.contract_market_name||"COMEX gold futures",managed_money_long:long,managed_money_short:short,managed_money_net:net,weekly_net_change:priorNet===null?null:net-priorNet,open_interest:pick(latest,["open_interest_all"]),source:"US Commodity Futures Trading Commission · Disaggregated Futures Only",source_url:"https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",timing:"Positions as of Tuesday; normally published Friday",method:"Managed Money is an aggregated trader category, not a list of individual funds or whales."}}
 
 async function yahooGoldCandles(interval){
-  const map={"5min":{interval:"5m",range:"5d"},"1h":{interval:"1h",range:"3mo"}};
+  const map={"1min":{interval:"1m",range:"5d"},"5min":{interval:"5m",range:"5d"},"15min":{interval:"15m",range:"1mo"},"30min":{interval:"30m",range:"1mo"},"1h":{interval:"1h",range:"3mo"}};
   const cfg=map[interval];if(!cfg)throw Error("Unsupported Yahoo chart interval");
   const symbols=["XAUUSD=X","GC=F"];let lastError=null;
   for(const symbol of symbols){
@@ -310,7 +310,7 @@ function sessionEvidence(chart,kind){
     kind==="ny_am"?{london,ny_am:nyAm}:
     {london,ny_am:nyAm,ny_pm:nyPm};
   const latest=dayBars[dayBars.length-1]||null;
-  return{date_algiers:today,report_session:kind,latest:latest?{time_algiers:algiersParts(latest.time*1000).clock,open:latest.open,high:latest.high,low:latest.low,close:latest.close}:null,previous_day:prior,periods,recent_candles:dayBars.slice(-18).map(c=>({time:algiersParts(c.time*1000).clock,open:c.open,high:c.high,low:c.low,close:c.close}))};
+  return{date_algiers:today,report_session:kind,chart_source:chart.source||"unknown",latest:latest?{time_algiers:algiersParts(latest.time*1000).clock,open:latest.open,high:latest.high,low:latest.low,close:latest.close}:null,previous_day:prior,periods,recent_candles:dayBars.slice(-18).map(c=>({time:algiersParts(c.time*1000).clock,open:c.open,high:c.high,low:c.low,close:c.close}))};
 }
 async function sessionDarijaBrief(env,data,kind,chart,context){
  const names={asia:"آسيا",london:"لندن",ny_am:"نيويورك الصباحية",ny_pm:"نيويورك المسائية"};
