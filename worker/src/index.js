@@ -227,4 +227,61 @@ async function explainChart(env,payload){
   }catch(e){const f=fallback();f.ai_error=String(e.message||e).slice(0,180);return f}
 }
 
-export default{async fetch(req,env){let u=new URL(req.url);if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);let [g,s,d,y,o,n,cal,h,ih,cot]=await Promise.all([safe(()=>metal(env,'XAU')),safe(()=>metal(env,'XAG')),safe(()=>yahooDXY()),safe(()=>yield10(env)),safe(()=>oilWTI(env)),safe(headlines),safe(()=>economicCalendar(env)),safe(()=>historicalReactions(env)),safe(()=>intradayReactions(env)),safe(cftcGoldPositioning)]);let market={gold:markFreshness(g.data,48),silver:markFreshness(s.data,48),dxy:markFreshness(d.data,48),yield:markFreshness(y.data,48),oil:markFreshness(o.data,48)},news=n.data||[],briefing=fallback(market,news),sources=[['Gold spot',g],['Silver spot',s],['DXY · ICE Dollar Index',d],['US 10Y',y],['WTI oil · FRED daily',o],['Gold newsdesk',n],['Economic calendar',cal]].map(([name,x])=>({name,status:x.status==='ok'&&((name==='Gold spot'&&market.gold?.stale)||(name==='Silver spot'&&market.silver?.stale)||(name==='DXY · ICE Dollar Index'&&market.dxy?.stale)||(name==='US 10Y'&&market.yield?.stale)||(name==='WTI oil · FRED daily'&&market.oil?.stale))?'stale':x.status,error:x.error||null}));sources.push({name:'CFTC gold futures positioning',status:cot.status==='ok'&&cot.data?.freshness==='stale'?'stale':cot.status,error:cot.error||null});sources.push({name:'Gemini AI analysis',status:briefing.ai_status==='ok'?'ok':'fallback',error:briefing.ai_error||null});sources.push({name:'Historical event reactions',status:h.status,error:h.error||null});sources.push({name:'Intraday event reactions',status:ih.status==='ok'?(env.FINANCE_CALENDAR_API_KEY?'ok':'not_configured'):ih.status,error:ih.error||null});return out({status:Object.values(market).every(Boolean)&&n.status==='ok'&&cal.status==='ok'&&h.status==='ok'&&ih.status==='ok'&&!Object.values(market).some(x=>x?.stale)?'ok':'partial',updated_at:new Date().toISOString(),market,briefing,news,calendar:cal.data||[],history:h.data||[],intraday_history:ih.data||[],positioning:cot.data||null,sources})}}
+
+function tgEscape(v){return String(v??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function fmtPrice(v){return Number.isFinite(Number(v))?Number(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"N/A"}
+function signedPct(v){return Number.isFinite(Number(v))?(Number(v)>0?"+":"")+Number(v).toFixed(2)+"%":"n/a"}
+function marketLine(label,x){return label+": "+(x?.value!=null?fmtPrice(x.value):"unavailable")+(x?.change_pct!=null?" ("+signedPct(x.change_pct)+")":"")+(x?.freshness==="stale"?" · STALE":"")}
+function telegramReport(data,kind){
+  const m=data.market||{},b=data.briefing||{},cal=Array.isArray(data.calendar)?data.calendar:[],news=Array.isArray(data.news)?data.news:[];
+  const titles={asia:["ASIA SESSION OUTLOOK","POINT SUR L’ASIE"],london:["LONDON SESSION CHECK","POINT LONDRES"],ny_open:["NEW YORK OPEN","OUVERTURE DE NEW YORK"],ny_mid:["NEW YORK MID-SESSION","MILIEU DE SÉANCE NEW YORK"],close:["GOLD DAILY WRAP","BILAN QUOTIDIEN DE L’OR"]};
+  const [en,fr]=titles[kind]||titles.asia;
+  const gold=marketLine("Gold",m.gold),dxy=marketLine("DXY",m.dxy),silver=marketLine("Silver",m.silver),yieldLine="US 10Y: "+(m.yield?.value!=null?m.yield.value+"%":"unavailable")+(m.yield?.change_bp!=null?" ("+(m.yield.change_bp>0?"+":"")+m.yield.change_bp+" bp)":"");
+  const upcoming=cal.filter(x=>x.datetime&&Date.parse(x.datetime)>=Date.now()-30*60000).slice(0,4).map(x=>"• "+(x.datetime||"time TBA")+" — "+(x.event||"US event")+" ["+(x.impact||"impact n/a")+"]");
+  const headlines=news.slice(0,3).map(x=>"• "+(x.title||x.headline||"Market headline")+" — "+(x.source||x.publisher||"source"));
+  const body=(b.body||"No AI briefing available.").slice(0,1500);
+  const confidence=b.confidence||"UNAVAILABLE";
+  const stamp=new Date().toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false});
+  const enText="<b>"+en+"</b>\n"+gold+"\n"+dxy+"\n"+silver+"\n"+yieldLine+"\n\n<b>MARKET READ</b>\n"+tgEscape(body)+"\n\n<b>CONFIDENCE</b>: "+tgEscape(confidence)+"\n\n<b>UPCOMING US EVENTS</b>\n"+(upcoming.length?upcoming.map(tgEscape).join("\n"):"No timed high-impact release is currently listed.")+"\n\n<b>HEADLINES</b>\n"+(headlines.length?headlines.map(tgEscape).join("\n"):"No fresh headlines available.");
+  const frText="<b>"+fr+"</b>\n<b>Lecture du marché :</b> "+tgEscape(body)+"\n<b>Confiance :</b> "+tgEscape(confidence)+"\n<b>À surveiller :</b> les niveaux de liquidité, la réaction du dollar et la confirmation du prix. Aucun signal d’achat ou de vente automatique.";
+  const links='\n\n<a href="https://appsfor319-lang.github.io/why-is-gold-moving/">Open live TradZ Academy dashboard / Ouvrir le tableau de bord</a>';
+  return (enText+"\n\n━━━━━━━━━━━━\n\n"+frText+links+"\n\n<tg-spoiler>Updated / Mis à jour: "+tgEscape(stamp)+" · Data may be delayed. / Les données peuvent être retardées.</tg-spoiler>").slice(0,3900);
+}
+async function telegramSend(env,text){
+  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram secrets are missing");
+  const r=await fetch("https://api.telegram.org/bot"+env.TELEGRAM_BOT_TOKEN+"/sendMessage",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:env.TELEGRAM_CHAT_ID,text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
+  const d=await r.json();if(!r.ok||!d.ok)throw Error("Telegram sendMessage failed: "+(d.description||r.status));return d;
+}
+async function scheduledReport(env,kind){
+  const url="https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
+  const r=await fetch(url,{signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error("Terminal API HTTP "+r.status);
+  const data=await r.json();if(!data.market||!data.briefing)throw Error("Terminal API returned incomplete market data");
+  await telegramSend(env,telegramReport(data,kind));
+}
+async function scheduledAlerts(env){
+  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
+  const url="https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
+  const r=await fetch(url,{signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error("Terminal API HTTP "+r.status);
+  const data=await r.json(),events=(data.calendar||[]),now=Date.now(),cache=typeof caches!=="undefined"?caches.default:null;
+  for(const e of events){
+    if(!/high|3/i.test(String(e.impact||"")))continue;
+    const t=Date.parse(e.datetime||"");if(!Number.isFinite(t)||t<now-10*60000||t>now+5*60000)continue;
+    const key="https://gold-brief-cache.local/telegram-event/"+encodeURIComponent((e.event||"event")+"|"+e.datetime);
+    if(cache&&await cache.match(key))continue;
+    const gold=data.market?.gold,dxy=data.market?.dxy;
+    const msg="<b>MAJOR US EVENT ALERT / ALERTE ÉCONOMIQUE MAJEURE</b>\n"+tgEscape(e.event||"US high-impact event")+"\nTime / Heure: "+tgEscape(e.datetime)+"\nImpact: HIGH\nGold: "+tgEscape(fmtPrice(gold?.value))+" ("+tgEscape(signedPct(gold?.change_pct))+")\nDXY: "+tgEscape(fmtPrice(dxy?.value))+" ("+tgEscape(signedPct(dxy?.change_pct))+")\n\nEN: Watch the actual release and the price reaction. Do not assume the first spike is the true direction.\nFR: Surveillez le chiffre publié et la réaction du prix. Ne supposez pas que la première impulsion donne la direction réelle.";
+    await telegramSend(env,msg);
+    if(cache)await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));
+  }
+}
+
+export default{
+async scheduled(controller,env,ctx){
+  const cron=controller.cron||"";
+  const reports={"0 0 * * *":"asia","0 6 * * *":"london","0 12 * * *":"ny_open","0 15 * * *":"ny_mid","0 19 * * *":"close"};
+  try{
+    if(cron==="*/5 * * * *")await scheduledAlerts(env);
+    else await scheduledReport(env,reports[cron]||"asia");
+  }catch(e){console.error("Scheduled Telegram task failed:",e?.message||e)}
+},
+async fetch(req,env){let u=new URL(req.url);if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);let [g,s,d,y,o,n,cal,h,ih,cot]=await Promise.all([safe(()=>metal(env,'XAU')),safe(()=>metal(env,'XAG')),safe(()=>yahooDXY()),safe(()=>yield10(env)),safe(()=>oilWTI(env)),safe(headlines),safe(()=>economicCalendar(env)),safe(()=>historicalReactions(env)),safe(()=>intradayReactions(env)),safe(cftcGoldPositioning)]);let market={gold:markFreshness(g.data,48),silver:markFreshness(s.data,48),dxy:markFreshness(d.data,48),yield:markFreshness(y.data,48),oil:markFreshness(o.data,48)},news=n.data||[],briefing=fallback(market,news),sources=[['Gold spot',g],['Silver spot',s],['DXY · ICE Dollar Index',d],['US 10Y',y],['WTI oil · FRED daily',o],['Gold newsdesk',n],['Economic calendar',cal]].map(([name,x])=>({name,status:x.status==='ok'&&((name==='Gold spot'&&market.gold?.stale)||(name==='Silver spot'&&market.silver?.stale)||(name==='DXY · ICE Dollar Index'&&market.dxy?.stale)||(name==='US 10Y'&&market.yield?.stale)||(name==='WTI oil · FRED daily'&&market.oil?.stale))?'stale':x.status,error:x.error||null}));sources.push({name:'CFTC gold futures positioning',status:cot.status==='ok'&&cot.data?.freshness==='stale'?'stale':cot.status,error:cot.error||null});sources.push({name:'Gemini AI analysis',status:briefing.ai_status==='ok'?'ok':'fallback',error:briefing.ai_error||null});sources.push({name:'Historical event reactions',status:h.status,error:h.error||null});sources.push({name:'Intraday event reactions',status:ih.status==='ok'?(env.FINANCE_CALENDAR_API_KEY?'ok':'not_configured'):ih.status,error:ih.error||null});return out({status:Object.values(market).every(Boolean)&&n.status==='ok'&&cal.status==='ok'&&h.status==='ok'&&ih.status==='ok'&&!Object.values(market).some(x=>x?.stale)?'ok':'partial',updated_at:new Date().toISOString(),market,briefing,news,calendar:cal.data||[],history:h.data||[],intraday_history:ih.data||[],positioning:cot.data||null,sources})}}
