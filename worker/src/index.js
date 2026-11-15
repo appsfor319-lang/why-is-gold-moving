@@ -351,10 +351,10 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(model===primary?8000:4500),body:JSON.stringify({systemInstruction:{parts:[{text:"Evidence-only gold analyst. Never fabricate."}]},contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:1000}})});
    if(!r.ok){lastError="Gemini "+model+" HTTP "+r.status+": "+(await r.text()).slice(0,180);if([408,429,500,502,503,504].includes(r.status))continue;throw Error(lastError)}
    const d=await r.json(),body=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();
-   if(body)return body;lastError="Gemini "+model+" returned an empty response";
+   if(body)return{body,engine:"gemini",model};lastError="Gemini "+model+" returned an empty response";
   }catch(e){lastError=e.message}
  }
- console.error("Telegram briefing fallback:",lastError);return fallback();
+ console.error("Telegram briefing fallback:",lastError);return{body:fallback(),engine:"rules-fallback",model:null};
 }
 function telegramApiUrl(env,method){
   let raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
@@ -404,12 +404,13 @@ async function telegramPhoto(env,caption){
 }
 async function telegramReport(env,data,kind,chart,context){
  const names={asia:"آسيا",london:"لندن",ny_am:"نيويورك الصباحية",ny_pm:"نيويورك المسائية"};
- const report=await sessionDarijaBrief(env,data,kind,chart,context);
+ const generated=await sessionDarijaBrief(env,data,kind,chart,context);
+ const report=generated.body;
  const links=(data.news||[]).slice(0,4).map(n=>"<a href=\""+tgEscape(n.url||"https://www.kitco.com/")+"\">"+tgEscape((n.source||"مصدر")+" — "+(n.title||"خبر").slice(0,115))+"</a>");
  if(data.positioning?.source_url)links.push("<a href=\""+tgEscape(data.positioning.source_url)+"\">CFTC · بيانات تمركز العقود</a>");
  if(data.positioning?.etf_flows?.source_url)links.push("<a href=\""+tgEscape(data.positioning.etf_flows.source_url)+"\">World Gold Council · تدفقات صناديق الذهب</a>");
  if(data.positioning?.central_bank?.source_url)links.push("<a href=\""+tgEscape(data.positioning.central_bank.source_url)+"\">XAUS · احتياطيات البنوك المركزية</a>");
- return{body:["<b>TradZ Academy | التحليل اليومي للذهب</b>","<b>ملخص جلسة "+names[kind]+"</b>","",telegramSafeReport(report),"","<b>المصادر</b>",links.length?links.join("\n"):"لا توجد روابط أخبار حديثة متاحة."].join("\n")};
+ return{body:["<b>TradZ Academy | التحليل اليومي للذهب</b>","<b>ملخص جلسة "+names[kind]+"</b>","",telegramSafeReport(report),"","<b>المصادر</b>",links.length?links.join("\n"):"لا توجد روابط أخبار حديثة متاحة."].join("\n"),engine:generated.engine,model:generated.model};
 }
 async function terminalData(env){let [g,s,d,y,o,n,cal,h,ih,cot,wgc]=await Promise.all([safe(()=>metal(env,'XAU')),safe(()=>metal(env,'XAG')),safe(()=>yahooDXY()),safe(()=>yield10(env)),safe(()=>oilWTI(env)),safe(headlines),safe(()=>economicCalendar(env)),safe(()=>historicalReactions(env)),safe(()=>intradayReactions(env)),safe(cftcGoldPositioning),safe(goldInstitutionalFlows)]);let market={gold:markFreshness(g.data,48),silver:markFreshness(s.data,48),dxy:markFreshness(d.data,48),yield:markFreshness(y.data,48),oil:markFreshness(o.data,48)},news=n.data||[],briefing=await aiBrief(env,market,news),sources=[['Gold spot',g],['Silver spot',s],['DXY · ICE Dollar Index',d],['US 10Y',y],['WTI oil · FRED daily',o],['Gold newsdesk',n],['Economic calendar',cal]].map(([name,x])=>({name,status:x.status==='ok'&&((name==='Gold spot'&&market.gold?.stale)||(name==='Silver spot'&&market.silver?.stale)||(name==='DXY · ICE Dollar Index'&&market.dxy?.stale)||(name==='US 10Y'&&market.yield?.stale)||(name==='WTI oil · FRED daily'&&market.oil?.stale))?'stale':x.status,error:x.error||null}));sources.push({name:'CFTC gold futures positioning',status:cot.status==='ok'&&cot.data?.freshness==='stale'?'stale':cot.status,error:cot.error||null});sources.push({name:'World Gold Council ETF flows',status:wgc.status==='ok'&&wgc.data?.freshness==='stale'?'stale':wgc.status,error:wgc.error||null});sources.push({name:'Gemini AI analysis',status:briefing.ai_status==='ok'?'ok':'fallback',error:briefing.ai_error||null});sources.push({name:'Historical event reactions',status:h.status,error:h.error||null});sources.push({name:'Intraday event reactions',status:ih.status==='ok'?(env.FINANCE_CALENDAR_API_KEY?'ok':'not_configured'):ih.status,error:ih.error||null});return {status:Object.values(market).every(Boolean)&&n.status==='ok'&&cal.status==='ok'&&h.status==='ok'&&ih.status==='ok'&&!Object.values(market).some(x=>x?.stale)?'ok':'partial',updated_at:new Date().toISOString(),market,briefing,news,calendar:cal.data||[],history:h.data||[],intraday_history:ih.data||[],positioning:cot.data?{...cot.data,etf_flows:wgc.data||null,central_bank:market.gold?.central_bank||null}:wgc.data?{etf_flows:wgc.data,central_bank:market.gold?.central_bank||null}:market.gold?.central_bank?{central_bank:market.gold.central_bank}:null,sources}}
 
@@ -418,6 +419,7 @@ async function scheduledReport(env,kind){
   const chart=await chartCandles(env,"5min");
   const context=sessionEvidence(chart,kind);
   const report=await telegramReport(env,data,kind,chart,context);
+  if(report.engine!=="gemini")throw Error("Session report blocked: Gemini generation is not available");
 
   await telegramSend(env,report.body);
 }
@@ -433,6 +435,7 @@ async function scheduledSmokeTest(env){
   const analysis=await explainChart(env,{chart:{timeframe:"5min",last:chart.candles.at(-1),structure:{direction:"test"},session:context.periods,session_ranges:[],active_liquidity:[],recent_sweeps:[],order_blocks:[]},market:data.market,headlines:data.news.slice(0,5)});
   if(typeof analysis?.body!=="string"||!analysis.body.trim())throw Error("Telegram test blocked: chart analysis returned no explanation");
   const report=await telegramReport(env,data,"asia",chart,context);
+  if(report.engine!=="gemini")throw Error("Telegram test blocked: session report Gemini generation is not available");
   const required=["1. علاش الذهب تحرك اليوم؟","2. الأخبار تاع اليوم وتأثيرها على الذهب","3. واش راهم يقولو المحترفين؟","4. واش راهم يديرو الحيتان الضخمة؟","5. ملخص جلسة آسيا"];
   const plain=report.body.replace(/<[^>]+>/g,""),missing=required.filter(x=>!plain.includes(x));
   if(missing.length)throw Error("Telegram test blocked: report missing sections: "+missing.join(", "));
@@ -459,7 +462,7 @@ async function scheduledAlerts(env){
   const key="https://gold-brief-cache.local/telegram-breaking/"+encodeURIComponent(unique);
   if(cache&&await cache.match(key))continue;
   const m=data.market||{},evidence={headline:n.title,source:n.source,published_at:n.published_at,gold:m.gold?{direction:m.gold.change_pct>0?"rising":m.gold.change_pct<0?"falling":"little changed",freshness:m.gold.freshness}:null,dxy:m.dxy?{direction:m.dxy.change_pct>0?"stronger":m.dxy.change_pct<0?"weaker":"little changed",freshness:m.dxy.freshness}:null,yields:m.yield?{change_bp:m.yield.change_bp,freshness:m.yield.freshness}:null};
-  let explanation="هذا خبر مهم للسوق. لازم نراقبو التفاصيل ورد فعل الذهب والدولار والعوائد قبل ما نعتبروه السبب المباشر للحركة.";
+  let explanation=null;
   if(env.GEMINI_API_KEY){
    try{
     const prompt="Explain this breaking gold-market headline in clear Algerian Darija using Arabic script. State what happened, why it matters to gold, the transmission mechanism through rates/dollar/yields/risk demand, and what to watch next. Do not invent facts or claim causality without evidence. No prices or percentages. 3-5 short sentences. Evidence: "+JSON.stringify(evidence);
@@ -468,6 +471,7 @@ async function scheduledAlerts(env){
     if(r.ok){const d=await r.json(),v=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();if(v)explanation=v}
    }catch(err){console.error("Breaking-news explanation failed:",err.message)}
   }
+  if(!explanation)continue;
   const msg=`<b>خبر عاجل وتأثيره على الذهب</b>\n<b>${tgEscape(n.title||"تطور جديد")}</b>\n\n${tgEscape(explanation)}\n\n<a href="${tgEscape(n.url||"https://www.kitco.com/")}">المصدر: ${tgEscape(n.source||"افتح الخبر")}</a>`;
   await telegramSend(env,msg);sentToday++;if(cache){await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));await cache.put(dayKey,new Response(String(sentToday),{headers:{"cache-control":"public, max-age=86400"}}))}
  }
