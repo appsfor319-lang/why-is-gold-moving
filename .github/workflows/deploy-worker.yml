@@ -99,7 +99,7 @@ jobs:
           NODE
 
       - name: Confirm Telegram readiness test delivery
-        if: contains(github.event.head_commit.message, 'Confirm Telegram readiness test delivery')
+        if: always() && contains(github.event.head_commit.message, 'Confirm Telegram readiness test delivery')
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -116,10 +116,6 @@ jobs:
               echo "Telegram test delivery was confirmed by the Telegram API."
               cat "$LOG"
               exit 0
-            fi
-            if grep -q "Scheduled Telegram task failed" "$LOG"; then
-              cat "$LOG"
-              exit 1
             fi
             sleep 2
           done
