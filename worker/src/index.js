@@ -132,7 +132,7 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
   try{
     cache=typeof caches!=="undefined"?caches.default:null;
     const bucket=Math.floor(Date.now()/1800000);
-    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v2/"+bucket);
+    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v3/"+bucket);
     if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
     const prompt=[
       "Analyze why spot gold (XAU/USD) is moving using ONLY the evidence JSON below.",
