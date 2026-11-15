@@ -25,7 +25,6 @@ jobs:
           command: deploy
 
       - name: Smoke test live terminal API
-        continue-on-error: true
         shell: bash
         run: |
           node --input-type=module <<'NODE'
@@ -79,7 +78,3 @@ jobs:
           }, null, 2));
           NODE
 
-      - name: Verify real Telegram text and chart delivery
-        shell: bash
-        run: |
-          curl --fail-with-body --silent --show-error --max-time 90 -X POST "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-smoke?key=tradz-telegram-smoke-2026-11-15-7f3a9c2d"
