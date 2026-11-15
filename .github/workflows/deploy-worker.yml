@@ -105,22 +105,24 @@ jobs:
         shell: bash
         run: |
           node <<'NODE'
-          const base = process.env.WORKER_API_URL;
-          const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-          for (let i = 0; i < 210; i++) {
-            try {
-              const response = await fetch(base + "/api/telegram-test-status", { signal: AbortSignal.timeout(8000) });
-              if (response.ok) {
-                const status = await response.json();
-                if (status.sent === true) {
-                  console.log("Telegram test delivery confirmed by the Worker after Telegram API acceptance.");
-                  process.exit(0);
+          (async () => {
+            const base = process.env.WORKER_API_URL;
+            const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+            for (let i = 0; i < 210; i++) {
+              try {
+                const response = await fetch(base + "/api/telegram-test-status", { signal: AbortSignal.timeout(8000) });
+                if (response.ok) {
+                  const status = await response.json();
+                  if (status.sent === true) {
+                    console.log("Telegram test delivery confirmed by the Worker after Telegram API acceptance.");
+                    process.exit(0);
+                  }
                 }
+              } catch (error) {
+                console.log("Waiting for Telegram test confirmation:", error.message);
               }
-            } catch (error) {
-              console.log("Waiting for Telegram test confirmation:", error.message);
+              await sleep(2000);
             }
-            await sleep(2000);
-          }
-          throw new Error("Telegram test has not been confirmed yet. The Worker will keep retrying when Gemini is available.");
+            throw new Error("Telegram test has not been confirmed yet. The Worker will keep retrying when Gemini is available.");
+          })().catch(error => { console.error(error); process.exit(1); });
           NODE
