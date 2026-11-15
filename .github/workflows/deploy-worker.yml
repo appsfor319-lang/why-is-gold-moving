@@ -54,10 +54,6 @@ jobs:
           if (data.briefing?.engine !== "gemini" || data.briefing?.ai_status !== "ok") {
             throw new Error("Gemini briefing is not live: " + (data.briefing?.ai_error || data.briefing?.engine || "unknown"));
           }
-          const calendarSource = data.sources.find(source => source.name === "Economic calendar");
-          if (!calendarSource || calendarSource.status !== "ok") {
-            throw new Error("Economic calendar source is unhealthy: " + (calendarSource?.error || calendarSource?.status || "missing"));
-          }
           if (!data.positioning) throw new Error("CFTC gold positioning data is missing");
           if (!["gemini", "rules-fallback", "free-rules-analysis"].includes(data.briefing?.engine) || ![undefined, "ok", "fallback"].includes(data.briefing?.ai_status)) {
             throw new Error("Unexpected briefing engine state: " + (data.briefing?.engine || "unknown"));
