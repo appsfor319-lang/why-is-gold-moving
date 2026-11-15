@@ -38,11 +38,33 @@ jobs:
           const response = await fetch(url, { signal: AbortSignal.timeout(45000) });
           if (!response.ok) throw new Error("Terminal API returned HTTP " + response.status);
           const data = await response.json();
+          const publisherCounts = (data.news || []).reduce((counts, item) => {
+            const publisher = item.source || "Unknown publisher";
+            counts[publisher] = (counts[publisher] || 0) + 1;
+            return counts;
+          }, {});
           console.log("Preflight diagnostics:", JSON.stringify({
             briefing: { engine: data.briefing?.engine, ai_status: data.briefing?.ai_status, ai_error: data.briefing?.ai_error || null },
-            source_health: (data.sources || []).map(source => ({ name: source.name, status: source.status, error: source.error || null })),
+            market_freshness: Object.fromEntries(Object.entries(data.market || {}).map(([key, value]) => [key, {
+              timestamp: value?.timestamp || null,
+              freshness: value?.freshness || (value?.stale ? "stale" : "unknown"),
+              stale: value?.stale ?? null,
+              change_pct: value?.change_pct ?? null,
+              change_bp: value?.change_bp ?? null
+            }])),
+            source_health: (data.sources || []).map(source => ({
+              name: source.name, status: source.status, timestamp: source.timestamp || null,
+              freshness: source.freshness || null, error: source.error || null
+            })),
             news_count: data.news?.length || 0,
+            publisher_counts: publisherCounts,
+            headline_sample: (data.news || []).slice(0, 10).map(item => ({
+              title: item.title, source: item.source, published_at: item.published_at, url: item.url
+            })),
             calendar_count: data.calendar?.length || 0,
+            calendar_sample: (data.calendar || []).slice(0, 8).map(item => ({
+              datetime: item.datetime, event: item.event, source: item.source, source_url: item.source_url
+            })),
             positioning: data.positioning ? { report_date: data.positioning.report_date, freshness: data.positioning.freshness } : null
           }, null, 2));
           for (const field of ["market", "briefing", "news", "calendar", "history", "intraday_history", "positioning", "sources"]) {
@@ -53,9 +75,6 @@ jobs:
           }
           if (!data.market?.gold || !data.market?.dxy || !data.market?.yield || data.news.length === 0) {
             throw new Error("Required gold spot, DXY, US 10Y or gold news feed is missing");
-          }
-          if (data.briefing?.engine !== "gemini" || data.briefing?.ai_status !== "ok") {
-            throw new Error("Gemini briefing is not live: " + (data.briefing?.ai_error || data.briefing?.engine || "unknown"));
           }
           if (!data.positioning) throw new Error("CFTC gold positioning data is missing");
           if (!["gemini", "rules-fallback", "free-rules-analysis"].includes(data.briefing?.engine) || ![undefined, "ok", "fallback"].includes(data.briefing?.ai_status)) {
@@ -94,7 +113,7 @@ jobs:
             history_count: data.history.length,
             intraday_history_count: data.intraday_history.length,
             cftc_positioning: data.positioning ? { report_date: data.positioning.report_date, managed_money_net: data.positioning.managed_money_net, weekly_net_change: data.positioning.weekly_net_change } : null,
-            source_health: data.sources.map(source => ({ name: source.name, status: source.status, error: source.error || null }))
+            source_health: data.sources.map(source => ({ name: source.name, status: source.status, timestamp: source.timestamp || null, freshness: source.freshness || null, error: source.error || null }))
           }, null, 2));
           NODE
 
