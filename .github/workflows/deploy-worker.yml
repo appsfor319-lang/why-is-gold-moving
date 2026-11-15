@@ -28,6 +28,17 @@ jobs:
           workingDirectory: worker
           command: deploy
 
+
+      - name: Verify Darija report and real TradingView screenshot delivery
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const response = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-format-test?key=TRADZ_DAR_TEST_94f3a8c12d", { method: "POST", signal: AbortSignal.timeout(120000) });
+          const result = await response.json();
+          if (!response.ok || result.ok !== true || result.photo_and_darija_report_sent !== true) throw new Error("Darija Telegram test failed: " + JSON.stringify(result));
+          console.log("Darija report and real TradingView screenshot delivered: " + JSON.stringify(result));
+          NODE
+
       - name: Smoke test live terminal API
         shell: bash
         run: |
