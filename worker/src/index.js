@@ -298,7 +298,7 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
 async function telegramPhoto(env,caption){
   const target=new URL("https://www.tradingview.com/widgetembed/");
   Object.entries({symbol:"OANDA:XAUUSD",interval:"5",hidesidetoolbar:"1",symboledit:"0",saveimage:"0",toolbarbg:"0b1220",theme:"dark",style:"1",timezone:"Etc/UTC",withdateranges:"1",hideideas:"1"}).forEach(([k,v])=>target.searchParams.set(k,v));
-  const screenshotUrl="https://image.thum.io/get/width/1200/crop/800/noanimate/"+encodeURIComponent(target.toString());
+  const screenshotUrl="https://image.thum.io/get/width/1200/crop/800/noanimate/?url="+encodeURIComponent(target.toString());
   const imageResponse=await fetch(screenshotUrl,{headers:{"User-Agent":"Mozilla/5.0 TradZAcademy/1.0"},signal:AbortSignal.timeout(35000)});
   const type=imageResponse.headers.get("content-type")||"";
   if(!imageResponse.ok||!type.startsWith("image/"))throw Error("TradingView live screenshot unavailable: HTTP "+imageResponse.status+" ("+type+")");
