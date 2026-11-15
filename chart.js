@@ -1,0 +1,188 @@
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const apiBase=()=>{try{return(localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev").replace(/\/+$/,"")}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
+const fmt=n=>Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const sessions=[
+ {key:"asia",name:"Asia/Tokyo",timezone:"Asia/Tokyo",start:"0900",end:"1800",color:"#26c6da"},
+ {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
+ {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
+];
+let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false;
+const tfLabel={"1min":"1m","5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
+function localParts(ts,tz){
+ const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
+ const o={};p.forEach(x=>o[x.type]=x.value);return{date:o.year+"-"+o.month+"-"+o.day,minute:Number(o.hour)*60+Number(o.minute)};
+}
+function inSession(minute,s){
+ const a=Number(s.start.slice(0,2))*60+Number(s.start.slice(2)),b=Number(s.end.slice(0,2))*60+Number(s.end.slice(2));
+ return a<=b?minute>=a&&minute<b:minute>=a||minute<b;
+}
+function calculateIndicator(bars,htf){
+ const ranges=[],liquidity=[],sweeps=[],sessionState=[];
+ sessions.forEach(s=>{
+  const groups=new Map();
+  bars.forEach((bar,i)=>{
+   const lp=localParts(bar.time,s.timezone);
+   if(!inSession(lp.minute,s))return;
+   if(!groups.has(lp.date))groups.set(lp.date,{date:lp.date,first:bar.time,last:bar.time,firstIndex:i,lastIndex:i,high:bar.high,low:bar.low});
+   const g=groups.get(lp.date);g.last=bar.time;g.lastIndex=i;g.high=Math.max(g.high,bar.high);g.low=Math.min(g.low,bar.low);
+  });
+  const arr=[...groups.values()].sort((a,b)=>a.first-b.first);
+  arr.forEach(g=>{
+   const active=g.lastIndex===bars.length-1;
+   ranges.push({session:s.key,name:s.name,color:s.color,date:g.date,start:g.first,end:g.last,high:g.high,low:g.low,active});
+   if(active)sessionState.push({name:s.name,date:g.date,high:g.high,low:g.low});
+   if(!active){
+    const later=bars.slice(g.lastIndex+1);
+    let hiSweep=null,loSweep=null;
+    for(const bar of later){
+     if(!hiSweep&&bar.high>g.high)hiSweep={time:bar.time,price:bar.high};
+     if(!loSweep&&bar.low<g.low)loSweep={time:bar.time,price:bar.low};
+     if(hiSweep&&loSweep)break;
+    }
+    if(hiSweep)sweeps.push({time:hiSweep.time,price:g.high,label:"HH session · "+s.name,direction:"high"});
+    else liquidity.push({price:g.high,isHigh:true,label:"HH session · "+s.name,session:s.name,date:g.date});
+    if(loSweep)sweeps.push({time:loSweep.time,price:g.low,label:"HL session · "+s.name,direction:"low"});
+    else liquidity.push({price:g.low,isHigh:false,label:"HL session · "+s.name,session:s.name,date:g.date});
+   }
+  });
+ });
+ const kept=[];
+ for(const side of [true,false]){
+  liquidity.filter(x=>x.isHigh===side).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,4).forEach(x=>kept.push(x));
+ }
+ const obs=[];
+ for(let i=1;i<htf.length;i++){
+  const prev=htf[i-1],cur=htf[i];
+  const bull=cur.close>prev.high&&prev.close<prev.open;
+  const bear=cur.close<prev.low&&prev.close>prev.open;
+  if(bull)obs.push({direction:"bullish",top:prev.high,bottom:prev.low,time:prev.time,activatedAt:cur.time});
+  if(bear)obs.push({direction:"bearish",top:prev.high,bottom:prev.low,time:prev.time,activatedAt:cur.time});
+ }
+ const activeObs=[];
+ obs.forEach(o=>{
+  const broken=bars.some(b=>b.time>=o.activatedAt&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
+  if(!broken)activeObs.push(o);
+ });
+ const capped=[];
+ ["bullish","bearish"].forEach(d=>activeObs.filter(x=>x.direction===d).slice(-3).forEach(x=>capped.push(x)));
+ const pivH=[],pivL=[];
+ for(let i=2;i<bars.length-2;i++){
+  const b=bars[i];
+  if(b.high>bars[i-1].high&&b.high>bars[i-2].high&&b.high>=bars[i+1].high&&b.high>=bars[i+2].high)pivH.push(b.high);
+  if(b.low<bars[i-1].low&&b.low<bars[i-2].low&&b.low<=bars[i+1].low&&b.low<=bars[i+2].low)pivL.push(b.low);
+ }
+ let direction="mixed / range";
+ if(pivH.length>=2&&pivL.length>=2){
+  const hh=pivH[pivH.length-1]>pivH[pivH.length-2],hl=pivL[pivL.length-1]>pivL[pivL.length-2];
+  const lh=pivH[pivH.length-1]<pivH[pivH.length-2],ll=pivL[pivL.length-1]<pivL[pivL.length-2];
+  if(hh&&hl)direction="higher highs and higher lows";
+  else if(lh&&ll)direction="lower highs and lower lows";
+  else if(hh||hl)direction="partly bullish structure";
+  else if(lh||ll)direction="partly bearish structure";
+ }
+ const last=bars[bars.length-1],prev=bars[bars.length-2];
+ return{
+  ranges,liquidity:kept,sweeps:sweeps.sort((a,b)=>b.time-a.time).slice(0,8),activeObs:capped,
+  summary:{timeframe:interval,last:{time:last.time,open:last.open,high:last.high,low:last.low,close:last.close,change_pct:prev?((last.close/prev.close)-1)*100:null},structure:{direction,recent_swing_highs:pivH.slice(-2),recent_swing_lows:pivL.slice(-2)},session:sessionState.slice(-1)[0]||null,session_ranges:ranges.slice(-9).map(x=>({name:x.name,date:x.date,high:x.high,low:x.low,active:x.active})),active_liquidity:kept.map(x=>({price:x.price,label:x.label,side:x.isHigh?"above":"below"})),recent_sweeps:sweeps.sort((a,b)=>b.time-a.time).slice(0,5).map(x=>({price:x.price,label:x.label,time:x.time})),order_blocks:capped.map(x=>({direction:x.direction,top:x.top,bottom:x.bottom,time:x.time})),candle_window:{from:bars[0].time,to:last.time,count:bars.length}}
+ };
+}
+function removeOverlays(){
+ overlaySeries.forEach(s=>{try{chart.removeSeries(s)}catch{}});
+ overlaySeries=[];
+ priceLines.forEach(x=>{try{x.series.removePriceLine(x.line)}catch{}});
+ priceLines=[];
+}
+function drawIndicator(result,bars){
+ removeOverlays();
+ const ranges=result.ranges;
+ ranges.forEach(r=>{
+  const source=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,pointMarkersVisible:false});
+  source.setData([{time:r.start,value:r.high},{time:r.end,value:r.high}]);overlaySeries.push(source);
+  const low=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
+  low.setData([{time:r.start,value:r.low},{time:r.end,value:r.low}]);overlaySeries.push(low);
+ });
+ result.liquidity.forEach(l=>{
+  const line=candleSeries.createPriceLine({price:l.price,color:l.isHigh?"#ef5350":"#26a69a",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,axisLabelVisible:true,title:l.label});
+  priceLines.push({series:candleSeries,line});
+ });
+ result.activeObs.forEach(o=>{
+  [o.top,o.bottom].forEach((p,i)=>{
+   const line=candleSeries.createPriceLine({price:p,color:o.direction==="bullish"?"rgba(38,166,154,.9)":"rgba(239,83,80,.9)",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:(o.direction==="bullish"?"Bull OB ":"Bear OB ")+(i?"low":"high")});
+   priceLines.push({series:candleSeries,line});
+  });
+ });
+ const marks=[];
+ result.sweeps.forEach(s=>marks.push({time:s.time,position:s.direction==="high"?"aboveBar":"belowBar",color:"#e4b85f",shape:s.direction==="high"?"arrowDown":"arrowUp",text:s.label}));
+ if(LightweightCharts.createSeriesMarkers){
+  if(markersApi&&markersApi.setMarkers)markersApi.setMarkers(marks);
+  else markersApi=LightweightCharts.createSeriesMarkers(candleSeries,marks);
+ }
+}
+function initChart(){
+ const el=$("xau-chart");if(!el||!window.LightweightCharts)return;
+ chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clientHeight,layout:{background:{type:LightweightCharts.ColorType.Solid,color:"#101820"},textColor:"#a9b6c2",fontFamily:"DM Mono, monospace"},grid:{vertLines:{color:"#1e2b35"},horzLines:{color:"#1e2b35"}},rightPriceScale:{borderColor:"#34424e"},timeScale:{borderColor:"#34424e",timeVisible:true,secondsVisible:false},crosshair:{mode:LightweightCharts.CrosshairMode.Normal},localization:{priceFormatter:fmt}});
+ candleSeries=chart.addSeries(LightweightCharts.CandlestickSeries,{upColor:"#55c89b",downColor:"#ee8178",borderUpColor:"#55c89b",borderDownColor:"#ee8178",wickUpColor:"#55c89b",wickDownColor:"#ee8178"});
+ volumeSeries=chart.addSeries(LightweightCharts.HistogramSeries,{priceFormat:{type:"volume"},priceScaleId:"volume",lastValueVisible:false,priceLineVisible:false});
+ chart.priceScale("volume").applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
+ const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0)chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)})}});
+ ro.observe(el);
+}
+function renderPrice(data){
+ const bars=data.candles;
+ candleSeries.setData(bars.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close})));
+ volumeSeries.setData(bars.map(b=>({time:b.time,value:b.volume||0,color:b.close>=b.open?"rgba(85,200,155,.22)":"rgba(238,129,120,.22)"})));
+ chart.timeScale().fitContent();
+ const last=bars[bars.length-1],first=bars[Math.max(0,bars.length-2)];
+ $("chart-last-price").textContent="$"+fmt(last.close);
+ const ch=first?((last.close/first.close)-1)*100:0;
+ $("chart-last-change").textContent=(ch>=0?"+":"")+ch.toFixed(2)+"% · latest candle";
+ $("chart-last-change").style.color=ch>=0?"#55c89b":"#ee8178";
+ $("chart-feed-status").textContent="DATA CONNECTED · "+data.source+" · refresh "+data.refresh_seconds+"s";
+ $("chart-candle-time").textContent=tfLabel[interval]+" candles · last bar "+new Date(last.time*1000).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria";
+ $("chart-indicator-status").textContent="UFD Sessions & Liquidity · Asia / London / New York · 1H OB";
+}
+function renderExplanation(a){
+ if(!$("chart-ai-context"))return;
+ $("chart-ai-context").innerHTML='<div class="chart-ai-label">CHART + MACRO EXPLANATION · '+(a.engine==="gemini-chart"?"AI":"RULES FALLBACK")+'</div><h3>'+escapeHtml(a.headline||"Chart analysis")+'</h3><p>'+escapeHtml(a.body||"Waiting for chart analysis.")+'</p><div class="chart-ai-meta">Confidence: '+escapeHtml(a.confidence||"LOW")+' · '+new Date(a.updated_at||Date.now()).toLocaleTimeString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+' Algeria time</div>';
+}
+function escapeHtml(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+async function explain(summary,force){
+ const candle=summary.last?.time;
+ if(analysisBusy||(!force&&candle===lastAnalysisCandle))return;
+ analysisBusy=true;lastAnalysisCandle=candle;
+ try{
+  const terminal=window.goldTerminalData||{};
+  const response=await fetch(apiBase()+"/api/chart-analysis",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chart:summary,market:terminal.market||{},headlines:(terminal.news||[]).slice(0,6).map(n=>({title:n.title,source:n.source,published_at:n.published_at}))}),signal:AbortSignal.timeout(14000)});
+  if(!response.ok)throw Error("Chart analysis HTTP "+response.status);
+  const data=await response.json();if(data.analysis)renderExplanation(data.analysis);
+ }catch(e){renderExplanation({headline:"Chart is live; AI explanation unavailable",body:"The chart and indicator are still updating. The analysis service returned: "+e.message,confidence:"LOW",engine:"offline",updated_at:new Date().toISOString()})}
+ finally{analysisBusy=false}
+}
+async function loadChart(forceAnalysis){
+ $("chart-feed-status").textContent="UPDATING · TWELVE DATA";
+ try{
+  const r=await fetch(apiBase()+"/api/chart?interval="+encodeURIComponent(interval),{cache:"no-store",signal:AbortSignal.timeout(20000)});
+  if(!r.ok){const d=await r.json().catch(()=>({}));throw Error(d.error||"Chart API HTTP "+r.status)}
+  const data=await r.json();if(!Array.isArray(data.candles)||!data.candles.length)throw Error("No chart candles returned");
+  chartData=data;renderPrice(data);
+  const ind=calculateIndicator(data.candles,data.order_block_candles||[]);
+  drawIndicator(ind,data.candles);
+  await explain(ind.summary,!!forceAnalysis);
+ }catch(e){$("chart-feed-status").textContent="FEED ERROR · "+e.message}
+}
+function setIntervalChart(v){
+ if(!tfLabel[v])return;interval=v;lastAnalysisCandle=null;
+ document.querySelectorAll(".chart-tf").forEach(b=>b.classList.toggle("active",b.dataset.interval===v));
+ loadChart(true);
+}
+window.addEventListener("gold-terminal-updated",()=>{if(!chartData||!chart)return;const ind=calculateIndicator(chartData.candles,chartData.order_block_candles||[]);explain(ind.summary,true)});
+document.addEventListener("DOMContentLoaded",()=>{
+ if(!$("xau-chart"))return;
+ if(!window.LightweightCharts){$("chart-feed-status").textContent="Chart library failed to load";return}
+ initChart();
+ document.querySelectorAll(".chart-tf").forEach(b=>b.addEventListener("click",()=>setIntervalChart(b.dataset.interval)));
+ loadChart(true);setInterval(()=>loadChart(false),60000);
+});
+})();

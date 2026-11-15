@@ -43,6 +43,13 @@ jobs:
           }
           const ai = data.sources.find(source => source.name === "Gemini AI analysis");
           if (!ai || !["ok", "fallback"].includes(ai.status)) throw new Error("AI source health check failed");
+          const chartResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/chart?interval=5min", { signal: AbortSignal.timeout(45000) });
+          if (!chartResponse.ok) throw new Error("XAU/USD chart endpoint returned HTTP " + chartResponse.status);
+          const chart = await chartResponse.json();
+          if (chart.symbol !== "XAU/USD" || !Array.isArray(chart.candles) || chart.candles.length < 20 || !Array.isArray(chart.order_block_candles)) {
+            throw new Error("XAU/USD chart endpoint returned incomplete candle data");
+          }
+          console.log("Chart smoke test: " + chart.candles.length + " XAU/USD 5m candles; " + chart.order_block_candles.length + " 1H candles.");
           console.log(JSON.stringify({
             api_status: data.status,
             ai_engine: data.briefing.engine,
