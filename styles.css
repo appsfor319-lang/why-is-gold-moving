@@ -390,3 +390,12 @@ footer{border-color:#292929!important}
  .academy-masthead{align-items:flex-start;flex-direction:column;gap:8px;padding-bottom:17px}
  .academy-subtitle{font-size:9px}
 }
+
+
+/* Fixed Telegram community link */
+.telegram-float{position:fixed;right:22px;bottom:22px;z-index:1000;display:flex;flex-direction:column;align-items:center;gap:5px;text-decoration:none;color:#fff;filter:drop-shadow(0 5px 14px rgba(0,0,0,.55));}
+.telegram-float-icon{width:56px;height:56px;display:grid;place-items:center;border-radius:50%;background:#229ed9;border:1px solid rgba(255,255,255,.22);transition:transform .2s,background .2s;}
+.telegram-float-icon svg{width:29px;height:29px;display:block}
+.telegram-float-label{font:700 9px/1 'DM Sans',sans-serif;letter-spacing:.16em;color:#f2f2f2;text-shadow:0 2px 5px #000;padding:4px 7px;border-radius:3px;background:rgba(5,5,5,.82)}
+.telegram-float:hover .telegram-float-icon{transform:translateY(-3px);background:#168ac3}
+@media(max-width:580px){.telegram-float{right:14px;bottom:16px}.telegram-float-icon{width:52px;height:52px}.telegram-float-icon svg{width:27px;height:27px}}
