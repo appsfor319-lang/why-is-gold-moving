@@ -296,18 +296,30 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
   }catch(e){console.error("Darija session analysis fallback:",e.message);return fallback()}
 }
 async function telegramPhoto(env,caption){
-  const target=new URL("https://www.tradingview.com/widgetembed/");
-  Object.entries({symbol:"OANDA:XAUUSD",interval:"5",hidesidetoolbar:"1",symboledit:"0",saveimage:"0",toolbarbg:"0b1220",theme:"dark",style:"1",timezone:"Etc/UTC",withdateranges:"1",hideideas:"1"}).forEach(([k,v])=>target.searchParams.set(k,v));
-  const screenshotUrl="https://image.thum.io/get/width/1200/crop/800/noanimate/?url="+encodeURIComponent(target.toString());
-  const imageResponse=await fetch(screenshotUrl,{headers:{"User-Agent":"Mozilla/5.0 TradZAcademy/1.0"},signal:AbortSignal.timeout(35000)});
-  const type=imageResponse.headers.get("content-type")||"";
-  if(!imageResponse.ok||!type.startsWith("image/"))throw Error("TradingView live screenshot unavailable: HTTP "+imageResponse.status+" ("+type+")");
-  const bytes=await imageResponse.arrayBuffer();
-  if(bytes.byteLength<5000)throw Error("TradingView screenshot response is too small to be a valid chart image");
-  const form=new FormData();form.set("chat_id",String(env.TELEGRAM_CHAT_ID).trim());form.set("photo",new Blob([bytes],{type}),"tradz-live-tradingview-xauusd.png");form.set("caption",caption.slice(0,1000));
+  const target="https://goldcharts.org/xauusd-tradingview-chart";
+  const screenshotUrl="https://s.wordpress.com/mshots/v1/"+encodeURIComponent(target)+"?w=1200";
+  let bytes=null,type="",source="";
+  try{
+    const r=await fetch(screenshotUrl,{headers:{"User-Agent":"Mozilla/5.0 TradZAcademy/1.0"},signal:AbortSignal.timeout(30000)});
+    type=r.headers.get("content-type")||"";
+    if(r.ok&&type.startsWith("image/")){bytes=await r.arrayBuffer();source="GoldCharts.org page screenshot · embedded TradingView OANDA:XAUUSD"}
+  }catch(e){console.error("TradingView page screenshot unavailable:",e.message)}
+  if(!bytes||bytes.byteLength<5000){
+    const imageUrl=new URL("https://images.weserv.nl/");
+    imageUrl.searchParams.set("url","goldprice.com/img/chart/gold-1Y.svg");
+    imageUrl.searchParams.set("output","jpg");
+    const r=await fetch(imageUrl.toString(),{headers:{"User-Agent":"Mozilla/5.0 TradZAcademy/1.0"},signal:AbortSignal.timeout(25000)});
+    type=r.headers.get("content-type")||"";
+    if(!r.ok||!type.startsWith("image/"))throw Error("No real-source gold chart image is available (screenshot and GoldPrice chart fallback failed)");
+    bytes=await r.arrayBuffer();
+    source="GoldPrice.com · real 1-year gold chart image, updated hourly";
+  }
+  if(bytes.byteLength<5000)throw Error("Real-source chart image is too small to be valid");
+  const mime=type.includes("png")?"image/png":"image/jpeg";
+  const form=new FormData();form.set("chat_id",String(env.TELEGRAM_CHAT_ID).trim());form.set("photo",new Blob([bytes],{type:mime}),mime==="image/png"?"tradz-real-gold-chart.png":"tradz-real-gold-chart.jpg");form.set("caption",(caption+"\n\n<b>Chart source:</b> "+tgEscape(source)).slice(0,1000));
   const sent=await fetch(telegramApiUrl(env,"sendPhoto"),{method:"POST",body:form,signal:AbortSignal.timeout(30000)});
   const result=await sent.json();if(!sent.ok||!result.ok)throw Error("Telegram sendPhoto failed: "+(result.description||sent.status));
-  return{source:"TradingView OANDA:XAUUSD live chart screenshot",bytes:bytes.byteLength};
+  return{source,bytes:bytes.byteLength};
 }
 async function telegramReport(env,data,kind,chart,context){
   const m=data.market||{},news=(data.news||[]).slice(0,4),cal=(data.calendar||[]).filter(e=>e.datetime&&Date.parse(e.datetime)>=Date.now()-2*3600000).slice(0,5);
