@@ -275,7 +275,8 @@ async function scheduledReport(env,kind){
   const url="https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
   const r=await fetch(url,{signal:AbortSignal.timeout(45000)});if(!r.ok)throw Error("Terminal API HTTP "+r.status);
   const data=await r.json();if(!data.market||!data.briefing)throw Error("Terminal API returned incomplete market data");
-  await telegramSend(env,telegramReport(data,kind));\n  await telegramChartPhoto(env);
+  await telegramSend(env,telegramReport(data,kind));
+  await telegramChartPhoto(env);
 }
 async function scheduledAlerts(env){
   if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
