@@ -124,13 +124,11 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
     },
     headlines:(news||[]).slice(0,18).map((n,i)=>({id:i,title:n.title,source:n.source,published_at:n.published_at,category:n.category}))
   };
-  let cacheKey=null;
+  let cacheKey=null,cache=null;
   try{
-    const cache=typeof caches!=="undefined"?caches.default:null;
-    const raw=JSON.stringify(evidence);
-    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(raw));
-    const hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
-    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v1/"+hash);
+    cache=typeof caches!=="undefined"?caches.default:null;
+    const bucket=Math.floor(Date.now()/1800000);
+    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v2/"+bucket);
     if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
     const prompt=[
       "Analyze why spot gold (XAU/USD) is moving using ONLY the evidence JSON below.",
@@ -179,12 +177,12 @@ function factorSignals(m){let g=m.gold?.change_pct,s={};s.yield=m.yield?.stale?'
           limitations:Array.isArray(parsed.limitations)?parsed.limitations.filter(x=>typeof x==="string").slice(0,3):[],
           generated_at:new Date().toISOString(),engine:"gemini",model:activeModel,ai_status:"ok"
         };
-        if(cache&&cacheKey)await cache.put(cacheKey,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=720"}}));
+        if(cache&&cacheKey)await cache.put(cacheKey,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=1800"}}));
         return result;
       }catch(e){lastError=e?.message||"Gemini request failed"}
     }
     throw Error(lastError||"All Gemini models were unavailable");
-  }catch(e){return fail(e?.message||"Gemini request failed")}
+  }catch(e){const result=fail(e?.message||"Gemini request failed");if(cache&&cacheKey){try{await cache.put(cacheKey,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=300"}}))}catch(cacheError){console.warn("Gemini fallback cache failed:",cacheError.message)}}return result}
 }
 async function cftcGoldPositioning(){const url=new URL("https://publicreporting.cftc.gov/resource/72hh-3qpy.json");url.searchParams.set("$where","market_and_exchange_names='GOLD - COMMODITY EXCHANGE INC.'");url.searchParams.set("$order","report_date_as_yyyy_mm_dd DESC");url.searchParams.set("$limit","3");const rows=await get(url);if(!Array.isArray(rows)||!rows.length)throw Error("CFTC returned no gold positioning rows");const pick=(r,names)=>{for(const n of names){const v=r?.[n];if(v!==undefined&&v!==null&&v!=="")return Number(v)}return null};const longNames=["m_money_positions_long_all","managed_money_positions_long","managed_money_positions_long_all","managed_money_long_all"];const shortNames=["m_money_positions_short_all","managed_money_positions_short","managed_money_positions_short_all","managed_money_short_all"];const latest=rows[0],long=pick(latest,longNames),short=pick(latest,shortNames);if(long===null||short===null||!Number.isFinite(long)||!Number.isFinite(short))throw Error("CFTC managed-money fields were not present in the returned gold record");const previous=rows[1],priorLong=previous?pick(previous,longNames):null,priorShort=previous?pick(previous,shortNames):null,net=long-short,priorNet=priorLong!==null&&priorShort!==null?priorLong-priorShort:null;const reportDate=latest.report_date_as_yyyy_mm_dd||latest.report_date||null;const ageDays=reportDate?Math.max(0,Math.floor((Date.now()-Date.parse(reportDate))/86400000)):null;return{report_date:reportDate,age_days:ageDays,freshness:ageDays!==null&&ageDays>14?"stale":"current",market:latest.market_and_exchange_names||latest.contract_market_name||"COMEX gold futures",managed_money_long:long,managed_money_short:short,managed_money_net:net,weekly_net_change:priorNet===null?null:net-priorNet,open_interest:pick(latest,["open_interest_all"]),source:"US Commodity Futures Trading Commission · Disaggregated Futures Only",source_url:"https://publicreporting.cftc.gov/Commitments-of-Traders/Disaggregated-Futures-Only/72hh-3qpy",timing:"Positions as of Tuesday; normally published Friday",method:"Managed Money is an aggregated trader category, not a list of individual funds or whales."}}
 
