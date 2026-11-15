@@ -418,3 +418,12 @@ html[dir="rtl"] body{text-align:inherit}
 .language-float{font-size:20px;line-height:1;transform:translateY(1px);padding:0;letter-spacing:0}
 .language-float.is-english{font-size:14px;letter-spacing:-.4px;white-space:nowrap}
 .language-float:hover{transform:translateY(-1px)}
+
+/* Keep the page layout fixed in English direction and suppress Google Translate overlays. */
+html,html[dir="rtl"],body,body[dir="rtl"]{direction:ltr!important;}
+body{top:0!important;position:static!important;}
+.goog-te-banner-frame,.goog-te-menu-frame,.goog-te-balloon-frame,.goog-te-spinner-pos,#goog-gt-tt,.goog-tooltip,.goog-text-highlight,body>.skiptranslate{display:none!important;visibility:hidden!important;}
+#google_translate_element{position:fixed!important;left:-10000px!important;top:0!important;width:1px!important;height:1px!important;overflow:hidden!important;}
+.goog-te-gadget{height:1px!important;overflow:hidden!important;font-size:0!important;}
+.goog-te-gadget .goog-te-combo{display:block!important;width:1px!important;height:1px!important;opacity:0!important;}
+.language-float.is-english{font-size:14px!important;letter-spacing:-.35px!important;}
