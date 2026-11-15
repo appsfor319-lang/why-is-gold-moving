@@ -295,6 +295,26 @@ async function sessionDarijaBrief(env,data,kind,chart,context){
     return body;
   }catch(e){console.error("Darija session analysis fallback:",e.message);return fallback()}
 }
+function telegramApiUrl(env,method){
+  let raw=String(env.TELEGRAM_BOT_TOKEN||"").trim();
+  if(!raw)throw Error("TELEGRAM_BOT_TOKEN is missing");
+  if((raw.startsWith('"')&&raw.endsWith('"'))||(raw.startsWith("'")&&raw.endsWith("'")))raw=raw.slice(1,-1).trim();
+  if(/^https?:\/\//i.test(raw)){
+    const u=new URL(raw);
+    if(u.hostname.toLowerCase()!=="api.telegram.org")throw Error("TELEGRAM_BOT_TOKEN URL must use api.telegram.org");
+    const match=u.pathname.match(/(?:^|\/)(bot[0-9]+:[A-Za-z0-9_-]+)/);
+    if(!match)throw Error("Full Telegram API URL does not contain a valid bot-token path");
+    return "https://api.telegram.org/"+match[1]+"/"+method;
+  }
+  raw=raw.replace(/^bot/i,"").split("/")[0].trim();
+  if(!/^[0-9]+:[A-Za-z0-9_-]+$/.test(raw))throw Error("TELEGRAM_BOT_TOKEN must be a BotFather token or a full api.telegram.org Bot API URL");
+  return "https://api.telegram.org/bot"+raw+"/"+method;
+}
+async function telegramSend(env,text){
+  if(!env.TELEGRAM_CHAT_ID)throw Error("TELEGRAM_CHAT_ID is missing");
+  const r=await fetch(telegramApiUrl(env,"sendMessage"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:String(env.TELEGRAM_CHAT_ID).trim(),text,parse_mode:"HTML",disable_web_page_preview:true}),signal:AbortSignal.timeout(15000)});
+  const d=await r.json();if(!r.ok||!d.ok)throw Error("Telegram sendMessage failed: "+(d.description||r.status));return d;
+}
 async function telegramPhoto(env,caption){
   const target="https://goldcharts.org/xauusd-tradingview-chart";
   const screenshotUrl="https://s.wordpress.com/mshots/v1/"+encodeURIComponent(target)+"?w=1200";
