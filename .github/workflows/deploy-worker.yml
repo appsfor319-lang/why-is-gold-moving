@@ -24,6 +24,11 @@ jobs:
           workingDirectory: worker
           command: deploy
 
+      - name: List configured Worker secret names only
+        working-directory: worker
+        shell: bash
+        run: |
+          npx wrangler secret list --format json | node -e 'let s="";process.stdin.on("data",d=>s+=d);process.stdin.on("end",()=>{for(const x of JSON.parse(s))console.log(x.name)})'
       - name: Smoke test live terminal API
         shell: bash
         run: |
