@@ -11,4 +11,4 @@ compatibility_date = "2026-11-14"
 # One 5-minute cron handles all five Algeria-time reports and high-impact event alerts.
 # Report slots: 01:00, 07:00, 13:00, 16:00, 20:00 Africa/Algiers.
 [triggers]
-crons = []
+crons = ["*/5 * * * *"]
