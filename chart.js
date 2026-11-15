@@ -146,7 +146,8 @@ function initChart(){
  volumeSeries=chart.addSeries(LightweightCharts.HistogramSeries,{priceFormat:{type:"volume"},priceScaleId:"volume",lastValueVisible:false,priceLineVisible:false});
  chart.priceScale("volume").applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
  obZoneLayer=document.createElement("div");obZoneLayer.className="ob-zones";el.appendChild(obZoneLayer);
- chart.timeScale().subscribeVisibleTimeRangeChange(updateObZones);\n const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0){chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)});updateObZones()}}});
+ chart.timeScale().subscribeVisibleTimeRangeChange(updateObZones);
+ const ro=new ResizeObserver(entries=>{for(const e of entries){if(e.contentRect.width>0&&e.contentRect.height>0){chart.applyOptions({width:Math.floor(e.contentRect.width),height:Math.floor(e.contentRect.height)});updateObZones()}}});
  ro.observe(el);
 }
 function renderPrice(data){
