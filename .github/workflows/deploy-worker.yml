@@ -61,20 +61,25 @@ jobs:
           throw new Error("GoldSquawk live feed verification failed: " + lastError);
           NODE
 
-      - name: Create one-time Telegram test authorization
+      - name: Generate one-time Telegram test authorization
         id: telegram_test_auth
-        working-directory: worker
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
           token=$(openssl rand -hex 32)
-          account_id=$(printf '%s' "$CF_ACCOUNT_ID" | tr -d '\\r\\n ')
-          if [ "${#account_id}" -ne 32 ]; then echo "Cloudflare account ID has an unexpected length"; exit 1; fi
           echo "::add-mask::$token"
           echo "token=$token" >> "$GITHUB_OUTPUT"
-          printf '%s' "$token" | npx wrangler secret put TELEGRAM_TEST_SECRET --name why-is-gold-movingm --account-id "$account_id"
+
+      - name: Deploy Worker with Telegram test authorization
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: worker
+          command: deploy
+          secrets: |
+            TELEGRAM_TEST_SECRET
+        env:
+          TELEGRAM_TEST_SECRET: ${{ steps.telegram_test_auth.outputs.token }}
 
       - name: Verify real Telegram delivery
         shell: bash
