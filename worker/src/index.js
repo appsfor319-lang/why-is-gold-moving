@@ -196,7 +196,7 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
       "A headline is not proof of causation. Do not say an event caused the move unless supplied evidence supports timing and market reaction. Separate facts, plausible explanations and unknowns.",
       "Use freshness flags exactly: stale:false means the latest available reading is current for its market session, even when a weekend or holiday means its timestamp is from the previous trading day. Never call a stale:false reading stale just because of its calendar age. Only stale:true readings are stale and they are omitted from the market evidence and listed in data_quality.excluded_stale_readings; identify those as stale and excluded, not as missing or current drivers. If data_quality.missing_changes lists a market, say its percentage/rate change is unavailable and do not infer direction from its price alone. Explicitly mention delayed, missing or contradictory data. DXY, US 10Y and WTI observations may be daily, not intraday.",
       "Never invent prices, changes, release results, forecasts, dates, quotes, URLs or events. Do not give buy/sell advice or price targets.",
-      "Write clear concise English for a retail gold trader. Explain the main driver, opposing forces, and what evidence could change the picture.",
+      "Write clear concise English for a retail gold trader. Explain the main driver, opposing forces, and what evidence could change the picture. Do not mention a confidence rating in the body; confidence is reported separately.",
       "Return ONLY valid JSON with this shape:",
       '{"headline":"short conclusion","body":"3 to 6 concise sentences","confidence":"HIGH|MEDIUM|LOW|MIXED","factors":{"yield":"reading","dxy":"reading","silver":"reading","oil":"reading","risk":"reading"},"drivers":[{"name":"driver","role":"primary|counterforce|secondary","evidence":"evidence"}],"headline_refs":[0],"what_to_watch":["item"],"limitations":["item"]}',
       "headline_refs must contain only integer IDs of supplied headlines actually used. Maximum 4 drivers, 3 watch items and 3 limitations. If evidence is weak, say the driver is unclear and set confidence LOW."
@@ -229,7 +229,7 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
         const drivers=(Array.isArray(parsed.drivers)?parsed.drivers:[]).slice(0,4).filter(x=>x&&typeof x.name==="string"&&typeof x.evidence==="string").map(x=>({name:x.name.slice(0,90),role:["primary","counterforce","secondary"].includes(x.role)?x.role:"secondary",evidence:x.evidence.slice(0,500)}));
         const f=parsed.factors&&typeof parsed.factors==="object"?parsed.factors:{};
         const result={
-          headline:parsed.headline.slice(0,180),body:parsed.body.slice(0,1800),confidence,
+          headline:parsed.headline.slice(0,180),body:parsed.body.slice(0,1800).replace(/\\bconfidence\\s+(?:is\\s+)?(?:high|medium|low|mixed)\\b/gi,"confidence is "+confidence.toLowerCase()),confidence,
           factors:{...signals,risk:typeof f.risk==="string"?f.risk:"No confirmed headline signal"},
           drivers,headline_refs:refs.map(i=>(news||[])[i]?.url).filter(Boolean),
           what_to_watch:Array.isArray(parsed.what_to_watch)?parsed.what_to_watch.filter(x=>typeof x==="string").slice(0,3):[],
