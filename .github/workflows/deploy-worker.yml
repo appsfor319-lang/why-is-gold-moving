@@ -36,7 +36,7 @@ jobs:
         run: |
           node --input-type=module <<'NODE'
           const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test-once-7d3d0cdd8a";
-          const response = await fetch(url, { method: "POST", signal: AbortSignal.timeout(20000) });
+          const response = await fetch(url, { method: "GET", signal: AbortSignal.timeout(20000) });
           const result = await response.json();
           if (!response.ok || result.sent !== true) {
             throw new Error("Worker Telegram test failed: " + JSON.stringify(result));
