@@ -562,15 +562,15 @@ async function goldSquawkPage(){
  const r=await fetch("https://www.goldsquawk.com/",{headers:{"User-Agent":"Mozilla/5.0 (compatible; TradZAcademy/1.0)","Accept":"text/html,application/xhtml+xml"},signal:AbortSignal.timeout(20000)});
  if(!r.ok)throw Error("GoldSquawk homepage HTTP "+r.status);
  const html=await r.text();
- if(!/WHY\\s+IS\\s+GOLD\\s+MOVING/i.test(html))throw Error("GoldSquawk page did not contain its public gold explanation");
- const clean=x=>String(x||"").replace(/<script[\\s\\S]*?<\\/script>/gi," ").replace(/<style[\\s\\S]*?<\\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/\\s+/g," ").trim();
- const whyAt=html.search(/WHY\\s+IS\\s+GOLD\\s+MOVING/i),calAt=html.search(/ECONOMIC\\s+CALENDAR/i);
- const why=clean(html.slice(whyAt,calAt>whyAt?calAt:whyAt+14000)).replace(/^WHY\\s+IS\\s+GOLD\\s+MOVING/i,"").slice(0,2200);
+ if(!/WHY\s+IS\s+GOLD\s+MOVING/i.test(html))throw Error("GoldSquawk page did not contain its public gold explanation");
+ const clean=x=>String(x||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/\s+/g," ").trim();
+ const whyAt=html.search(/WHY\s+IS\s+GOLD\s+MOVING/i),calAt=html.search(/ECONOMIC\s+CALENDAR/i);
+ const why=clean(html.slice(whyAt,calAt>whyAt?calAt:whyAt+14000)).replace(/^WHY\s+IS\s+GOLD\s+MOVING/i,"").slice(0,2200);
  if(why.length<50)throw Error("GoldSquawk explanation could not be extracted from its public page");
- const newsAt=html.search(/TOP\\s+NEWS/i),voiceAt=html.search(/VOICE\\s+SQUAWK/i),newsHtml=newsAt>=0?html.slice(newsAt,voiceAt>newsAt?voiceAt:newsAt+50000):"";
+ const newsAt=html.search(/TOP\s+NEWS/i),voiceAt=html.search(/VOICE\s+SQUAWK/i),newsHtml=newsAt>=0?html.slice(newsAt,voiceAt>newsAt?voiceAt:newsAt+50000):"";
  const urgent=[];
- const blocks=[...newsHtml.matchAll(/<(?:article|li|div)[^>]*>([\\s\\S]{0,5000}?)<\\/(?:article|li|div)>/gi)];
- for(const m of blocks){const raw=clean(m[1]);if(!/\\b(URGENT|BREAKING)\\b/i.test(raw))continue;const title=raw.replace(/\\b(URGENT|BREAKING|HIGH|MEDIUM|LOW|GEOPOLITICS|NEWS)\\b/gi," ").replace(/\\s+/g," ").trim();if(title.length>25)urgent.push({title:title.slice(0,500)});}
+ const blocks=[...newsHtml.matchAll(/<(?:article|li|div)[^>]*>([\s\S]{0,5000}?)<\/(?:article|li|div)>/gi)];
+ for(const m of blocks){const raw=clean(m[1]);if(!/\b(URGENT|BREAKING)\b/i.test(raw))continue;const title=raw.replace(/\b(URGENT|BREAKING|HIGH|MEDIUM|LOW|GEOPOLITICS|NEWS)\b/gi," ").replace(/\s+/g," ").trim();if(title.length>25)urgent.push({title:title.slice(0,500)});}
  return{why,urgent:[...new Map(urgent.map(x=>[x.title.toLowerCase(),x])).values()].slice(0,8),checked_at:new Date().toISOString()};
 }
 async function goldSquawkAI(env,prompt,maxTokens=600){
@@ -593,18 +593,18 @@ async function scheduledGoldSquawk(env){
  for(const item of page.urgent){
   const urgentKey="https://gold-brief-cache.local/goldsquawk-urgent/"+encodeURIComponent(item.title.toLowerCase().slice(0,180));
   if(cache&&await cache.match(urgentKey))continue;
-  const prompt="Write a concise urgent Telegram alert in Algerian Darija using Arabic script. First say what happened, then the impact on gold: صاعد / هابط / مختلط / غير واضح. Explain the mechanism through risk demand, oil/inflation, dollar, yields or Fed expectations. Do not assume geopolitical news automatically lifts gold. If direction is uncertain, say so. 3-5 short sentences. Headline: "+item.title+"\\nGoldSquawk context: "+page.why+"\\nMarket: "+JSON.stringify(page.market);
+  const prompt="Write a concise urgent Telegram alert in Algerian Darija using Arabic script. First say what happened, then the impact on gold: صاعد / هابط / مختلط / غير واضح. Explain the mechanism through risk demand, oil/inflation, dollar, yields or Fed expectations. Do not assume geopolitical news automatically lifts gold. If direction is uncertain, say so. 3-5 short sentences. Headline: "+item.title+"\nGoldSquawk context: "+page.why+"\nMarket: "+JSON.stringify(page.market);
   const explanation=await goldSquawkAI(env,prompt,400);
-  await telegramSend(env,"<b>خبر عاجل | تأثيره على الذهب</b>\\n"+tgEscape(item.title)+"\\n\\n"+tgEscape(explanation)+"\\n\\n<a href=\\"https://www.goldsquawk.com/\\">GoldSquawk</a>");
+  await telegramSend(env,"<b>خبر عاجل | تأثيره على الذهب</b>\n"+tgEscape(item.title)+"\n\n"+tgEscape(explanation)+"\n\n<a href=\"https://www.goldsquawk.com/\">GoldSquawk</a>");
   if(cache)await cache.put(urgentKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
  }
  const now=Date.now(),hourKey="https://gold-brief-cache.local/goldsquawk-hourly/"+new Date(now).toISOString().slice(0,13),lastKey="https://gold-brief-cache.local/goldsquawk-last-content";
  if(cache&&await cache.match(hourKey))return;
  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(page.why)),hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
  if(cache){const last=await cache.match(lastKey);if(last&&await last.text()===hash)return;}
- const prompt="You write concise natural Algerian Darija in Arabic script for a gold-trading Telegram community. Explain WHY gold is moving using the GoldSquawk explanation and supplied market readings. State the driver, mechanism and directional bias: صاعد / هابط / مختلط / مازال ما بانش. Distinguish GoldSquawk's stated explanation from inference. Never invent facts or claim certainty. If evidence conflicts say mixed. 4-7 short lines, no generic intro. GoldSquawk update: "+page.why+"\\nMarket context: "+JSON.stringify(page.market);
+ const prompt="You write concise natural Algerian Darija in Arabic script for a gold-trading Telegram community. Explain WHY gold is moving using the GoldSquawk explanation and supplied market readings. State the driver, mechanism and directional bias: صاعد / هابط / مختلط / مازال ما بانش. Distinguish GoldSquawk's stated explanation from inference. Never invent facts or claim certainty. If evidence conflicts say mixed. 4-7 short lines, no generic intro. GoldSquawk update: "+page.why+"\nMarket context: "+JSON.stringify(page.market);
  const body=await goldSquawkAI(env,prompt,650);
- await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\\n\\n"+tgEscape(body)+"\\n\\n<a href=\\"https://www.goldsquawk.com/\\">GoldSquawk</a>");
+ await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\n\n"+tgEscape(body)+"\n\n<a href=\"https://www.goldsquawk.com/\">GoldSquawk</a>");
  if(cache){await cache.put(lastKey,new Response(hash,{headers:{"cache-control":"public, max-age=604800"}}));await cache.put(hourKey,new Response("sent",{headers:{"cache-control":"public, max-age=7200"}}));}
 }
 export default{
