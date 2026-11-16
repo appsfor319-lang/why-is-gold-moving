@@ -30,6 +30,32 @@ jobs:
 
 
 
+      - name: Send and confirm Telegram test
+        if: always() && contains(github.event.head_commit.message, 'Send Telegram readiness test')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const token = process.env.TELEGRAM_BOT_TOKEN;
+          const chatId = process.env.TELEGRAM_CHAT_ID;
+          if (!token || !chatId) throw new Error("Telegram bot token or chat ID secret is missing");
+          const message = "<b>TradZ Academy — Telegram test</b>\n\nالاختبار وصل. البوت راه يخدم، وGoldSquawk feed تْقرا بنجاح.";
+          const response = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML", disable_web_page_preview: true }),
+            signal: AbortSignal.timeout(20000)
+          });
+          const result = await response.json();
+          if (!response.ok || result.ok !== true || !result.result?.message_id) {
+            throw new Error("Telegram rejected the test message: " + JSON.stringify(result));
+          }
+          console.log("TELEGRAM_TEST=CONFIRMED");
+          console.log("Telegram accepted message_id=" + result.result.message_id);
+          NODE
+
       - name: Verify live GoldSquawk feed extraction
         shell: bash
         run: |
@@ -59,32 +85,6 @@ jobs:
             }
           }
           throw new Error("GoldSquawk live feed verification failed: " + lastError);
-          NODE
-
-      - name: Send and confirm Telegram test
-        if: always() && contains(github.event.head_commit.message, 'Send Telegram readiness test')
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        shell: bash
-        run: |
-          node --input-type=module <<'NODE'
-          const token = process.env.TELEGRAM_BOT_TOKEN;
-          const chatId = process.env.TELEGRAM_CHAT_ID;
-          if (!token || !chatId) throw new Error("Telegram bot token or chat ID secret is missing");
-          const message = "<b>TradZ Academy — Telegram test</b>\n\nالاختبار وصل. البوت راه يخدم، وGoldSquawk feed تْقرا بنجاح.";
-          const response = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML", disable_web_page_preview: true }),
-            signal: AbortSignal.timeout(20000)
-          });
-          const result = await response.json();
-          if (!response.ok || result.ok !== true || !result.result?.message_id) {
-            throw new Error("Telegram rejected the test message: " + JSON.stringify(result));
-          }
-          console.log("TELEGRAM_TEST=CONFIRMED");
-          console.log("Telegram accepted message_id=" + result.result.message_id);
           NODE
 
       - name: Smoke test live GitHub Pages site
