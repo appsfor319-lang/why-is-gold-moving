@@ -1,7 +1,7 @@
 name: Deploy Gold Briefing Worker
 
 concurrency:
-  group: deploy-gold-briefing-worker-recovery
+  group: deploy-gold-briefing-worker-final-test
   cancel-in-progress: true
 
 on:
