@@ -601,7 +601,21 @@ async function scheduledGoldSquawk(env){
  const clock=algiersClock();
  // No Telegram posts of any kind on Saturday or Sunday in Algeria.
  if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
- const cache=typeof caches!=="undefined"?caches.default:null,page=await goldSquawkPage();
+ const cache=typeof caches!=="undefined"?caches.default:null;
+ if(!cache)throw Error("Cache API unavailable; refusing an unprotected repeatable Telegram test");
+ const testKey=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1");
+ const testFailureKey=new Request("https://gold-brief-cache.local/telegram-smoke-test-failure-v1");
+ if(!await cache.match(testKey)){
+  try{
+   await telegramSend(env,"<b>TradZ Academy | اختبار تقني</b>\\n\\nهذا اختبار للتأكد أن إرسال رسائل Telegram يعمل. إذا وصلتك هذه الرسالة، الاتصال والبوت والمجموعة يعملون.");
+   await cache.put(testKey,new Response(JSON.stringify({sent:true,at:new Date().toISOString()}),{headers:{"cache-control":"public, max-age=2592000","content-type":"application/json"}}));
+   await cache.delete(testFailureKey);
+  }catch(error){
+   await cache.put(testFailureKey,new Response(JSON.stringify({sent:false,error:error?.message||String(error),at:new Date().toISOString()}),{headers:{"cache-control":"public, max-age=300","content-type":"application/json"}}));
+   throw error;
+  }
+ }
+ const page=await goldSquawkPage();
  const market=await Promise.allSettled([metal(env,"XAU"),yahooDXY(),yield10(env)]);
  page.market={};
  if(market[0].status==="fulfilled")page.market.gold={value:market[0].value.value,change_pct:market[0].value.change_pct,timestamp:market[0].value.timestamp};
@@ -631,4 +645,4 @@ async scheduled(controller,env,ctx){
  try{await scheduledGoldSquawk(env)}catch(err){console.error("GoldSquawk Telegram automation failed:",err?.stack||err?.message||err)}
 },
 async fetch(req,env){let u=new URL(req.url);
-if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/goldsquawk-preview'&&req.method==='GET'){try{return out(await goldSquawkPage())}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/telegram-test-status'&&req.method==='GET'){try{const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1"),hit=cache?await cache.match(key):null;return out({sent:!!hit,status:hit?"confirmed":"pending"})}catch(e){return out({sent:false,status:"unavailable",error:e.message},503)}}if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
+if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/goldsquawk-preview'&&req.method==='GET'){try{return out(await goldSquawkPage())}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/telegram-test-status'&&req.method==='GET'){try{const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1"),failureKey=new Request("https://gold-brief-cache.local/telegram-smoke-test-failure-v1"),hit=cache?await cache.match(key):null,failure=cache?await cache.match(failureKey):null;return out({configured:!!(env.TELEGRAM_BOT_TOKEN&&env.TELEGRAM_CHAT_ID),sent:!!hit,status:hit?"confirmed":failure?"failed":"pending",result:hit?await hit.json():failure?await failure.json():null})}catch(e){return out({sent:false,status:"unavailable",error:e.message},503)}}if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
