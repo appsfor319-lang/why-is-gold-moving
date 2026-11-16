@@ -610,7 +610,7 @@ async function scheduledGoldSquawk(env){
  if(cache){const last=await cache.match(lastKey);if(last&&await last.text()===hash)return;}
  const prompt="You write concise natural Algerian Darija in Arabic script for a gold-trading Telegram community. Explain WHY gold is moving using the GoldSquawk explanation and supplied market readings. State the driver, mechanism and directional bias: صاعد / هابط / مختلط / مازال ما بانش. Distinguish GoldSquawk's stated explanation from inference. Never invent facts or claim certainty. If evidence conflicts say mixed. 4-7 short lines, no generic intro. GoldSquawk update: "+page.why+"\nMarket context: "+JSON.stringify(page.market);
  const body=await goldSquawkAI(env,prompt,650);
- await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\n\n"+tgEscape(body)+"\n\n<a href=\"https://www.goldsquawk.com/\">GoldSquawk</a>");
+ await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\n\n"+tgEscape(body));
  if(cache){await cache.put(lastKey,new Response(hash,{headers:{"cache-control":"public, max-age=604800"}}));await cache.put(hourKey,new Response("sent",{headers:{"cache-control":"public, max-age=7200"}}));}
 }
 export default{
