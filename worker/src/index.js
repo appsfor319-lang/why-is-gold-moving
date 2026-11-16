@@ -564,11 +564,11 @@ async function goldSquawkPage(){
  const html=await r.text();
  if(!/WHY\s+IS\s+GOLD\s+MOVING/i.test(html))throw Error("GoldSquawk page did not contain its public gold explanation");
  const clean=x=>String(x||"").replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/\s+/g," ").trim();
-  const visibleHtml=html.replace(/<script[\\s\\S]*?<\\/script>/gi," ").replace(/<style[\\s\\S]*?<\\/style>/gi," "),upper=visibleHtml.toUpperCase(),whyMatches=[...upper.matchAll(/WHY\\s+IS\\s+GOLD\\s+MOVING/g)];
+  const visibleHtml=html.replace(/<script[\s\S]*?<\/script>/gi," ").replace(/<style[\s\S]*?<\/style>/gi," "),upper=visibleHtml.toUpperCase(),whyMatches=[...upper.matchAll(/WHY\s+IS\s+GOLD\s+MOVING/g)];
   let whyAt=-1,calAt=-1,why="";
   for(const match of whyMatches.reverse()){
     const start=match.index,end=upper.indexOf("ECONOMIC CALENDAR",start);
-    const candidate=clean(visibleHtml.slice(start,end>start?end:start+10000)).replace(/^WHY\\s+IS\\s+GOLD\\s+MOVING/i,"").trim();
+    const candidate=clean(visibleHtml.slice(start,end>start?end:start+10000)).replace(/^WHY\s+IS\s+GOLD\s+MOVING/i,"").trim();
     if(candidate.length>50){whyAt=start;calAt=end;why=candidate;break;}
   }
   if(why.length<50)throw Error("GoldSquawk explanation could not be extracted from its public page");
