@@ -455,15 +455,19 @@ async function terminalData(env){
     sourceEntry('DXY · ICE Dollar Index',statusFor(d.status,market.dxy),market.dxy,d.error),
     sourceEntry('US 10Y',statusFor(y.status,market.yield),market.yield,y.error),
     sourceEntry('WTI oil · FRED daily',statusFor(o.status,market.oil),market.oil,o.error),
-    sourceEntry('Gold newsdesk',n.status,news[0]||null,n.error,news.length?'current':'unavailable'),
-    sourceEntry('Economic calendar',cal.status,cal.data,cal.error,cal.status==='ok'?'release schedule':'unavailable',{next_event_date:cal.data?.[0]?.datetime||null}),
+    sourceEntry('Gold newsdesk',n.status==='ok'&&!news.length?'empty':n.status,news[0]||null,n.error,news.length?'current':'no headlines'),
+    sourceEntry('Economic calendar',cal.status==='ok'&&(!Array.isArray(cal.data)||!cal.data.length)?'empty':cal.status,cal.data,cal.error,cal.data?.length?'release schedule':'no matching releases',{next_event_date:cal.data?.[0]?.datetime||null}),
     sourceEntry('CFTC gold futures positioning',statusFor(cot.status,cot.data),cot.data,cot.error),
     sourceEntry('World Gold Council ETF flows',statusFor(wgc.status,wgc.data),wgc.data,wgc.error),
     sourceEntry('Gemini AI analysis',briefing.ai_status==='ok'?'ok':'fallback',briefing,briefing.ai_error),
     sourceEntry('Historical event reactions',h.status,h.data,h.error,h.status==='ok'?'historical dataset':'unavailable',{latest_event_date:h.data?.[0]?.date||null}),
-    sourceEntry('Intraday event reactions',ih.status==='ok'?(env.FINANCE_CALENDAR_API_KEY?'ok':'not_configured'):ih.status,ih.data,ih.error,env.FINANCE_CALENDAR_API_KEY?'historical dataset':'not configured',{latest_event_date:ih.data?.[0]?.date||null})
+    sourceEntry('Intraday event reactions',!env.FINANCE_CALENDAR_API_KEY?'not_configured':ih.status==='ok'&&(!Array.isArray(ih.data)||!ih.data.length)?'empty':ih.status,ih.data,ih.error,env.FINANCE_CALENDAR_API_KEY?(ih.data?.length?'historical dataset':'no matched released events'):'not configured',{latest_event_date:ih.data?.[0]?.date||null})
   ];
-  const overall=Object.values(market).every(Boolean)&&n.status==='ok'&&cal.status==='ok'&&h.status==='ok'&&ih.status==='ok'&&briefing.ai_status==='ok'&&!Object.values(market).some(x=>x?.stale)?'ok':'partial';
+  const newsReady=n.status==='ok'&&news.length>0;
+  const calendarReady=cal.status==='ok'&&Array.isArray(cal.data)&&cal.data.length>0;
+  const historyReady=h.status==='ok'&&Array.isArray(h.data)&&h.data.length>0;
+  const intradayReady=!!env.FINANCE_CALENDAR_API_KEY&&ih.status==='ok'&&Array.isArray(ih.data)&&ih.data.length>0;
+  const overall=Object.values(market).every(Boolean)&&newsReady&&calendarReady&&historyReady&&intradayReady&&briefing.ai_status==='ok'&&!Object.values(market).some(x=>x?.stale)?'ok':'partial';
   return{
     status:overall,
     updated_at:new Date().toISOString(),
