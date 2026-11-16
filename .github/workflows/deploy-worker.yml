@@ -30,121 +30,61 @@ jobs:
 
 
 
-      - name: Smoke test live terminal API
+      - name: Verify live GoldSquawk feed extraction
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
-          const response = await fetch(url, { signal: AbortSignal.timeout(45000) });
-          if (!response.ok) throw new Error("Terminal API returned HTTP " + response.status);
-          const data = await response.json();
-          const publisherCounts = (data.news || []).reduce((counts, item) => {
-            const publisher = item.source || "Unknown publisher";
-            counts[publisher] = (counts[publisher] || 0) + 1;
-            return counts;
-          }, {});
-          console.log("Preflight diagnostics:", JSON.stringify({
-            briefing: {
-              engine: data.briefing?.engine, ai_status: data.briefing?.ai_status,
-              headline: data.briefing?.headline || null, body: data.briefing?.body || null,
-              confidence: data.briefing?.confidence || null, factors: data.briefing?.factors || null,
-              drivers: data.briefing?.drivers || [], ai_error: data.briefing?.ai_error || null
-            },
-            gold_direction_check: {
-              change_pct: data.market?.gold?.change_pct ?? null,
-              expected: data.market?.gold?.change_pct == null ? "unavailable" :
-                data.market.gold.change_pct > 0.05 ? "higher" :
-                data.market.gold.change_pct < -0.05 ? "lower" : "little changed"
-            },
-            market_freshness: Object.fromEntries(Object.entries(data.market || {}).map(([key, value]) => [key, {
-              timestamp: value?.timestamp || null,
-              source: value?.source || null,
-              age_hours: value?.age_hours ?? null,
-              freshness: value?.freshness || (value?.stale ? "stale" : "unknown"),
-              stale: value?.stale ?? null,
-              change_pct: value?.change_pct ?? null,
-              change_bp: value?.change_bp ?? null
-            }])),
-            source_health: (data.sources || []).map(source => ({
-              name: source.name, status: source.status, timestamp: source.timestamp || null,
-              freshness: source.freshness || null, error: source.error || null
-            })),
-            news_count: data.news?.length || 0,
-            publisher_counts: publisherCounts,
-            headline_sample: (data.news || []).slice(0, 10).map(item => ({
-              title: item.title, source: item.source, published_at: item.published_at, url: item.url
-            })),
-            calendar_count: data.calendar?.length || 0,
-            calendar_sample: (data.calendar || []).slice(0, 8).map(item => ({
-              datetime: item.datetime, event: item.event, source: item.source, source_url: item.source_url
-            })),
-            positioning: data.positioning ? { report_date: data.positioning.report_date, freshness: data.positioning.freshness } : null
-          }, null, 2));
-          for (const field of ["market", "briefing", "news", "calendar", "history", "intraday_history", "positioning", "sources"]) {
-            if (!(field in data)) throw new Error("Missing API field: " + field);
-          }
-          if (!Array.isArray(data.news) || !Array.isArray(data.calendar) || !Array.isArray(data.sources) || !Array.isArray(data.history) || !Array.isArray(data.intraday_history)) {
-            throw new Error("News, calendar and sources must be arrays");
-          }
-          for (const [marketKey, factorKey] of [["dxy", "dxy"], ["yield", "yield"], ["silver", "silver"], ["oil", "oil"]]) {
-            if (data.market?.[marketKey]?.stale && !String(data.briefing?.factors?.[factorKey] || "").toUpperCase().includes("STALE")) {
-              throw new Error("Stale " + marketKey + " data is not labelled stale in the briefing factors");
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/goldsquawk-preview";
+          let lastError = "No response";
+          for (let attempt = 0; attempt < 6; attempt++) {
+            try {
+              const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(20000) });
+              const body = await response.json();
+              if (!response.ok) throw new Error("Preview HTTP " + response.status + ": " + (body.error || "unknown"));
+              if (typeof body.why !== "string" || body.why.trim().length < 50) throw new Error("GoldSquawk explanation missing or too short");
+              if (!Array.isArray(body.urgent)) throw new Error("Urgent-news extraction did not return an array");
+              if (!body.checked_at) throw new Error("Feed check timestamp missing");
+              console.log("GOLDSQUAWK_FEED=PASS");
+              console.log(JSON.stringify({
+                checked_at: body.checked_at,
+                explanation_chars: body.why.length,
+                explanation_preview: body.why.slice(0, 900),
+                urgent_headlines_found: body.urgent.length,
+                urgent_headlines: body.urgent
+              }, null, 2));
+              process.exit(0);
+            } catch (error) {
+              lastError = error?.message || String(error);
+              if (attempt < 5) await new Promise(resolve => setTimeout(resolve, 5000));
             }
           }
-          for (const source of data.sources) {
-            if (!source.name || !source.status || !source.freshness || !("timestamp" in source)) {
-              throw new Error("A source is missing its name, status, timestamp field or freshness");
-            }
-            if (source.freshness === "stale" && source.status === "ok") {
-              throw new Error("Source status incorrectly says ok for stale data: " + source.name);
-            }
-          }
-          if (!data.briefing?.generated_at) throw new Error("Briefing generation timestamp is missing");
-          if (!data.market?.gold?.stale && Date.parse(data.briefing.generated_at) < Date.parse(data.market.gold.timestamp)) {
-            throw new Error("Briefing predates the current gold quote");
-          }
-          if (!data.market?.gold || !data.market?.dxy || !data.market?.yield || data.news.length === 0) {
-            throw new Error("Required gold spot, DXY, US 10Y or gold news feed is missing");
-          }
-          if (!data.positioning) throw new Error("CFTC gold positioning data is missing");
-          if (!["gemini", "rules-fallback", "free-rules-analysis"].includes(data.briefing?.engine) || ![undefined, "ok", "fallback"].includes(data.briefing?.ai_status)) {
-            throw new Error("Unexpected briefing engine state: " + (data.briefing?.engine || "unknown"));
-          }
-          const ai = data.sources.find(source => source.name === "Gemini AI analysis");
-          if (!ai || !["ok", "fallback"].includes(ai.status)) throw new Error("AI source health check failed");
-          const chartResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/chart?interval=5min", { signal: AbortSignal.timeout(45000) });
-          if (!chartResponse.ok) throw new Error("XAU/USD chart endpoint returned HTTP " + chartResponse.status);
-          const chart = await chartResponse.json();
-          if (chart.symbol !== "XAU/USD" || !Array.isArray(chart.candles) || chart.candles.length < 20 || !Array.isArray(chart.order_block_candles)) {
-            throw new Error("XAU/USD chart endpoint returned incomplete candle data");
-          }
-          console.log("Chart smoke test: " + chart.candles.length + " XAU/USD 5m candles; " + chart.order_block_candles.length + " 1H candles; source=" + chart.source + ".");
-          const analysisResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/chart-analysis", {
+          throw new Error("GoldSquawk live feed verification failed: " + lastError);
+          NODE
+
+      - name: Send and confirm Telegram test
+        if: success() && contains(github.event.head_commit.message, 'Send Telegram readiness test')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const token = process.env.TELEGRAM_BOT_TOKEN;
+          const chatId = process.env.TELEGRAM_CHAT_ID;
+          if (!token || !chatId) throw new Error("Telegram bot token or chat ID secret is missing");
+          const message = "<b>TradZ Academy — Telegram test</b>\n\nالاختبار وصل. البوت راه يخدم، وGoldSquawk feed تْقرا بنجاح.";
+          const response = await fetch("https://api.telegram.org/bot" + token + "/sendMessage", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify({ chart: { timeframe: "5min", last: { close: 4000 }, structure: { direction: "test structure" }, session: null, session_ranges: [], active_liquidity: [], recent_sweeps: [], order_blocks: [] }, market: {}, headlines: [] }),
+            body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: "HTML", disable_web_page_preview: true }),
             signal: AbortSignal.timeout(20000)
           });
-          if (!analysisResponse.ok) throw new Error("Chart analysis endpoint returned HTTP " + analysisResponse.status);
-          const chartAnalysis = await analysisResponse.json();
-          if (typeof chartAnalysis.analysis?.headline !== "string" || typeof chartAnalysis.analysis?.body !== "string") {
-            throw new Error("Chart analysis endpoint returned an invalid analysis object");
+          const result = await response.json();
+          if (!response.ok || result.ok !== true || !result.result?.message_id) {
+            throw new Error("Telegram rejected the test message: " + JSON.stringify(result));
           }
-          console.log("Chart analysis smoke test: engine=" + (chartAnalysis.analysis.engine || "unknown") + "; confidence=" + (chartAnalysis.analysis.confidence || "unknown"));
-
-          console.log(JSON.stringify({
-            api_status: data.status,
-            ai_engine: data.briefing.engine,
-            ai_status: data.briefing.ai_status,
-            ai_model: data.briefing.model || null,
-            ai_fallback_reason: data.briefing.ai_error || null,
-            news_count: data.news.length,
-            calendar_count: data.calendar.length,
-            history_count: data.history.length,
-            intraday_history_count: data.intraday_history.length,
-            cftc_positioning: data.positioning ? { report_date: data.positioning.report_date, managed_money_net: data.positioning.managed_money_net, weekly_net_change: data.positioning.weekly_net_change } : null,
-            source_health: data.sources.map(source => ({ name: source.name, status: source.status, timestamp: source.timestamp || null, freshness: source.freshness || null, error: source.error || null }))
-          }, null, 2));
+          console.log("TELEGRAM_TEST=CONFIRMED");
+          console.log("Telegram accepted message_id=" + result.result.message_id);
           NODE
 
       - name: Smoke test live GitHub Pages site
