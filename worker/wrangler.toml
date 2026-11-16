@@ -8,6 +8,6 @@ compatibility_date = "2026-11-14"
 # Optional: Finance Calendar API key enables actual/consensus figures and timed intraday release studies.
 # Configure with: wrangler secret put FINANCE_CALENDAR_API_KEY
 
-# Poll every 5 minutes for GoldSquawk urgent/breaking headlines; send the WHY IS GOLD MOVING brief at most once per hour when its published explanation changes.
+# Poll every 5 minutes for deduplicated urgent/breaking headlines. Send the regular WHY IS GOLD MOVING brief every 2 hours on weekdays, Algeria time.
 [triggers]
 crons = ["*/5 * * * *"]
