@@ -229,7 +229,7 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
         const drivers=(Array.isArray(parsed.drivers)?parsed.drivers:[]).slice(0,4).filter(x=>x&&typeof x.name==="string"&&typeof x.evidence==="string").map(x=>({name:x.name.slice(0,90),role:["primary","counterforce","secondary"].includes(x.role)?x.role:"secondary",evidence:x.evidence.slice(0,500)}));
         const f=parsed.factors&&typeof parsed.factors==="object"?parsed.factors:{};
         const result={
-          headline:parsed.headline.slice(0,180),body:parsed.body.slice(0,1800).replace(/\\bconfidence\\s+(?:is\\s+)?(?:high|medium|low|mixed)\\b/gi,"confidence is "+confidence.toLowerCase()),confidence,
+          headline:parsed.headline.slice(0,180),body:parsed.body.slice(0,1800).replace(/\bconfidence\s+(?:is\s+)?(?:high|medium|low|mixed)\b/gi,"confidence is "+confidence.toLowerCase()),confidence,
           factors:{...signals,risk:typeof f.risk==="string"?f.risk:"No confirmed headline signal"},
           drivers,headline_refs:refs.map(i=>(news||[])[i]?.url).filter(Boolean),
           what_to_watch:Array.isArray(parsed.what_to_watch)?parsed.what_to_watch.filter(x=>typeof x==="string").slice(0,3):[],
