@@ -89,6 +89,14 @@ jobs:
               throw new Error("Stale " + marketKey + " data is not labelled stale in the briefing factors");
             }
           }
+          for (const source of data.sources) {
+            if (!source.name || !source.status || !source.freshness || !("timestamp" in source)) {
+              throw new Error("A source is missing its name, status, timestamp field or freshness");
+            }
+            if (source.freshness === "stale" && source.status === "ok") {
+              throw new Error("Source status incorrectly says ok for stale data: " + source.name);
+            }
+          }
           if (!data.market?.gold || !data.market?.dxy || !data.market?.yield || data.news.length === 0) {
             throw new Error("Required gold spot, DXY, US 10Y or gold news feed is missing");
           }
