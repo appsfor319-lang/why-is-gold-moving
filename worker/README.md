@@ -14,7 +14,7 @@ wrangler secret put GEMINI_API_KEY
 ```
 
 Optional Worker variables:
-- `GEMINI_MODEL` (defaults to `gemini-3.8-flash`)
+- `GEMINI_MODEL` (dashboard default: `gemini-3.5-flash-lite`; scheduled breaking-news alerts default to `gemini-3.8-flash` when this variable is unset)
 
 Then deploy:
 
@@ -32,7 +32,7 @@ In the published dashboard, open **Settings** and enter the Worker URL.
 - WTI oil: FRED DCOILWTICO (daily spot observation).
 - Gold-related headline discovery: RSS feeds from Google News, Mining.com, CNBC, MarketWatch, OilPrice, Kitco and Yahoo Finance. The dashboard stores headline metadata and links to publishers; it is not a licensed Bloomberg/Reuters/Kitco terminal.
 - Economic calendar: FRED release dates. It does not supply consensus forecasts, actual results or precise release times.
-- Interpretation: Gemini Developer API (`gemini-3.8-flash` by default) receives the current market readings and a small set of recent headlines. It must distinguish observed data from plausible explanations, discount stale readings, identify opposing forces, and avoid claiming that a headline caused a move without supporting evidence. The Worker caches identical analyses for 12 minutes. If `GEMINI_API_KEY` is absent, the quota is exhausted, or the AI request fails, the Worker uses the limited rules-based fallback and labels the AI source as `fallback`.
+- Interpretation: Gemini Developer API receives the current market readings and a small set of recent headlines. The dashboard briefing defaults to `gemini-3.5-flash-lite`, then tries `gemini-4-hydrogen` and `gemini-3.8-flash` as fallbacks; a configured `GEMINI_MODEL` overrides that order's first model. It must distinguish observed data from plausible explanations, discount stale readings, identify opposing forces, and avoid claiming that a headline caused a move without supporting evidence. The Worker caches identical analyses for 12 minutes. If `GEMINI_API_KEY` is absent, the quota is exhausted, or the AI request fails, the Worker uses the limited rules-based fallback and labels the AI source as `fallback`.
 
 ## How the gold briefing reasons
 
