@@ -58,6 +58,8 @@ jobs:
             },
             market_freshness: Object.fromEntries(Object.entries(data.market || {}).map(([key, value]) => [key, {
               timestamp: value?.timestamp || null,
+              source: value?.source || null,
+              age_hours: value?.age_hours ?? null,
               freshness: value?.freshness || (value?.stale ? "stale" : "unknown"),
               stale: value?.stale ?? null,
               change_pct: value?.change_pct ?? null,
