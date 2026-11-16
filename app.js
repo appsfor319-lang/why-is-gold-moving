@@ -8,7 +8,7 @@ const $=id=>document.getElementById(id);let news=[],calendar=[],history=[],intra
  $('gold-change').textContent=(stale?'STALE · ':'')+pct(g.change_pct);
  $('gold-change').className=(dir==='up'?'up':dir==='down'?'down':'')+(stale?' stale':'');
  $('gold-price').textContent=g.value==null?'—':'$'+fmt(g.value,2);
- $('gold-period').textContent=stale?'· last available reading':'· today';
+ $('gold-period').textContent=stale?'· last available reading':'· '+(g.change_period||'today');
  $('story-status').textContent='';
  $('story-headline').textContent=d.briefing?.headline||d.briefing?.title||'Gold move is being assessed';
  $('story-copy').textContent=d.briefing?.body||'Waiting for the market and gold-related headlines to build the briefing.';
