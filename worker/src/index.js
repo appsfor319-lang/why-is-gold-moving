@@ -26,7 +26,7 @@ async function yahooMetalQuote(symbol){
 function surpriseValue(actual,forecast){const parse=v=>{if(v==null)return null;const m=String(v).trim().match(/^([+-]?\d+(?:\.\d+)?)\s*(%|K|M|B|bp|bps)?$/i);return m?{n:Number(m[1]),unit:(m[2]||'').toLowerCase()}:null};const a=parse(actual),f=parse(forecast);if(!a||!f||a.unit!==f.unit)return null;const delta=a.n-f.n;return(delta>0?'+':'')+Number(delta.toFixed(4))+' '+(a.unit==='%'?'pp':a.unit)}
 async function economicCalendar(env){
   const cache=typeof caches!=="undefined"?caches.default:null;
-  const cacheKey=new Request("https://gold-brief-cache.local/economic-calendar-v2");
+  const cacheKey=new Request("https://gold-brief-cache.local/economic-calendar-v3");
   if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
   if(env.FINANCE_CALENDAR_API_KEY){
     try{
@@ -51,12 +51,11 @@ async function economicCalendar(env){
     {match:/personal income and outlays/i,impact:"HIGH"},
     {match:/gross domestic product/i,impact:"HIGH"},
     {match:/producer price index/i,impact:"MEDIUM"},
-    {match:/federal open market|FOMC/i,impact:"HIGH"},
     {match:/employment cost index/i,impact:"MEDIUM"},
-    {match:/retail sales/i,impact:"MEDIUM"},
-    {match:/import and export price/i,impact:"MEDIUM"},
-    {match:/job openings/i,impact:"MEDIUM"},
-    {match:/industrial production/i,impact:"MEDIUM"}
+    {match:/advance retail sales/i,impact:"MEDIUM"},
+    {match:/import and export price indexes/i,impact:"MEDIUM"},
+    {match:/job openings and labor turnover survey/i,impact:"MEDIUM"},
+    {match:/industrial production and capacity utilization/i,impact:"MEDIUM"}
   ];
   const selected=wanted.map(w=>({...w,release:releases.find(r=>w.match.test(r.name||""))})).filter(x=>x.release?.id);
   if(!selected.length)throw Error("FRED did not return the expected major US economic releases");
