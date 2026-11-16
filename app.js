@@ -4,7 +4,7 @@ const $=id=>document.getElementById(id);let news=[],calendar=[],history=[],intra
  const move=hasMove?Number(g.change_pct):null;
  const dir=stale||!hasMove?'unknown':move>0.05?'up':move< -0.05?'down':'flat';
  document.documentElement.dataset.goldTrend=dir;
- $('gold-move').textContent=stale?'LATEST GOLD READING IS STALE':!hasMove?'GOLD MOVE UNAVAILABLE':move>0?'GOLD IS RISING':move<0?'GOLD IS FALLING':'GOLD IS LITTLE CHANGED';
+ $('gold-move').textContent=stale?'LATEST GOLD READING IS STALE':!hasMove?'GOLD MOVE UNAVAILABLE':dir==='up'?'GOLD IS RISING':dir==='down'?'GOLD IS FALLING':'GOLD IS LITTLE CHANGED';
  $('gold-change').textContent=(stale?'STALE · ':'')+pct(g.change_pct);
  $('gold-change').className=(dir==='up'?'up':dir==='down'?'down':'')+(stale?' stale':'');
  $('gold-price').textContent=g.value==null?'—':'$'+fmt(g.value,2);
