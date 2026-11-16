@@ -588,30 +588,43 @@ async function goldSquawkAI(env,prompt,maxTokens=600){
  if(!body)throw Error("Gemini returned an empty explanation");
  return body;
 }
+function algiersClock(date=new Date()){
+ const parts=new Intl.DateTimeFormat("en-GB",{timeZone:"Africa/Algiers",weekday:"short",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(date);
+ const get=t=>parts.find(p=>p.type===t)?.value||"";
+ return{weekday:get("weekday"),hour:Number(get("hour")),minute:Number(get("minute")),date:new Intl.DateTimeFormat("en-CA",{timeZone:"Africa/Algiers",year:"numeric",month:"2-digit",day:"2-digit"}).format(date)};
+}
+function hideProviderBranding(value){
+ return String(value||"").replace(/Gold\\s?Squawk/gi,"market sources").replace(/\\s{2,}/g," ").trim();
+}
 async function scheduledGoldSquawk(env){
  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram credentials are not configured");
+ const clock=algiersClock();
+ // No Telegram posts of any kind on Saturday or Sunday in Algeria.
+ if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
  const cache=typeof caches!=="undefined"?caches.default:null,page=await goldSquawkPage();
  const market=await Promise.allSettled([metal(env,"XAU"),yahooDXY(),yield10(env)]);
  page.market={};
  if(market[0].status==="fulfilled")page.market.gold={value:market[0].value.value,change_pct:market[0].value.change_pct,timestamp:market[0].value.timestamp};
  if(market[1].status==="fulfilled")page.market.dxy={value:market[1].value.value,change_pct:market[1].value.change_pct,timestamp:market[1].value.timestamp};
  if(market[2].status==="fulfilled")page.market.us10y={value:market[2].value.value,change_bp:market[2].value.change_bp,timestamp:market[2].value.timestamp};
+ // Urgent alerts are checked on the five-minute poll, deduplicated for seven days.
  for(const item of page.urgent){
-  const urgentKey="https://gold-brief-cache.local/goldsquawk-urgent/"+encodeURIComponent(item.title.toLowerCase().slice(0,180));
+  const urgentKey="https://gold-brief-cache.local/urgent-v2/"+encodeURIComponent(item.title.toLowerCase().slice(0,180));
   if(cache&&await cache.match(urgentKey))continue;
-  const prompt="Write a concise urgent Telegram alert in Algerian Darija using Arabic script. First say what happened, then the impact on gold: صاعد / هابط / مختلط / غير واضح. Explain the mechanism through risk demand, oil/inflation, dollar, yields or Fed expectations. Do not assume geopolitical news automatically lifts gold. If direction is uncertain, say so. 3-5 short sentences. Headline: "+item.title+"\nGoldSquawk context: "+page.why+"\nMarket: "+JSON.stringify(page.market);
-  const explanation=await goldSquawkAI(env,prompt,400);
-  await telegramSend(env,"<b>خبر عاجل | تأثيره على الذهب</b>\n"+tgEscape(item.title)+"\n\n"+tgEscape(explanation));
+  const prompt="Write a concise urgent Telegram alert in natural Algerian Darija using Arabic script. Never name, cite, credit, or mention any information provider or news service. First say what happened, then the likely impact on gold: صاعد / هابط / مختلط / غير واضح. Explain the mechanism through risk demand, oil/inflation, dollar, yields or Fed expectations. Do not assume geopolitical news automatically lifts gold. If direction is uncertain, say so. 3-5 short sentences. Headline: "+item.title+"\\nBackground context: "+page.why+"\\nMarket readings: "+JSON.stringify(page.market);
+  const explanation=hideProviderBranding(await goldSquawkAI(env,prompt,400));
+  const headline=hideProviderBranding(item.title);
+  await telegramSend(env,"<b>خبر عاجل | تأثيره على الذهب</b>\\n"+tgEscape(headline)+"\\n\\n"+tgEscape(explanation));
   if(cache)await cache.put(urgentKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
  }
- const now=Date.now(),hourKey="https://gold-brief-cache.local/goldsquawk-hourly/"+new Date(now).toISOString().slice(0,13),lastKey="https://gold-brief-cache.local/goldsquawk-last-content";
- if(cache&&await cache.match(hourKey))return;
- const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(page.why)),hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
- if(cache){const last=await cache.match(lastKey);if(last&&await last.text()===hash)return;}
- const prompt="You write concise natural Algerian Darija in Arabic script for a gold-trading Telegram community. Explain WHY gold is moving using the GoldSquawk explanation and supplied market readings. State the driver, mechanism and directional bias: صاعد / هابط / مختلط / مازال ما بانش. Distinguish GoldSquawk's stated explanation from inference. Never invent facts or claim certainty. If evidence conflicts say mixed. 4-7 short lines, no generic intro. GoldSquawk update: "+page.why+"\nMarket context: "+JSON.stringify(page.market);
- const body=await goldSquawkAI(env,prompt,650);
- await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\n\n"+tgEscape(body));
- if(cache){await cache.put(lastKey,new Response(hash,{headers:{"cache-control":"public, max-age=604800"}}));await cache.put(hourKey,new Response("sent",{headers:{"cache-control":"public, max-age=7200"}}));}
+ // The regular WHY IS GOLD MOVING briefing is sent only at 00:00, 02:00, ... Algeria time.
+ if(clock.minute!==0||clock.hour%2!==0)return;
+ const slotKey="https://gold-brief-cache.local/why-gold-2hour-v2/"+clock.date+"-"+String(clock.hour).padStart(2,"0");
+ if(cache&&await cache.match(slotKey))return;
+ const prompt="Write a concise, useful WHY IS GOLD MOVING update in natural Algerian Darija using Arabic script. Never name, cite, credit, or mention any information provider or news service. Explain the main verified reason gold is moving, the cause-and-effect mechanism, relevant dollar/yield/Fed/geopolitical context, and the likely direction: صاعد / هابط / مختلط / مازال ما بانش. Use supplied market readings with timestamps; do not invent figures or causality. If evidence conflicts or is stale, say so. Explain what changed since the previous briefing only when evidence supports it. 5-8 short readable lines. Background explanation: "+page.why+"\\nMarket context: "+JSON.stringify(page.market);
+ const body=hideProviderBranding(await goldSquawkAI(env,prompt,650));
+ await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\\n\\n"+tgEscape(body));
+ if(cache)await cache.put(slotKey,new Response("sent",{headers:{"cache-control":"public, max-age=172800"}}));
 }
 export default{
 async scheduled(controller,env,ctx){
