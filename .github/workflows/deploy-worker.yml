@@ -61,32 +61,40 @@ jobs:
           throw new Error("GoldSquawk live feed verification failed: " + lastError);
           NODE
 
-      - name: Verify real Telegram delivery
+      - name: Create one-time Telegram test authorization
+        id: telegram_test_auth
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         shell: bash
         run: |
+          token=$(openssl rand -hex 32)
+          echo "::add-mask::$token"
+          echo "token=$token" >> "$GITHUB_OUTPUT"
+          printf '%s' "$token" | npx wrangler secret put TELEGRAM_TEST_SECRET --name why-is-gold-movingm
+
+      - name: Verify real Telegram delivery
+        shell: bash
+        env:
+          TELEGRAM_TEST_SECRET: ${{ steps.telegram_test_auth.outputs.token }}
+        run: |
           node --input-type=module <<'NODE'
-          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test-status";
-          let last = "No Telegram status response";
-          for (let attempt = 0; attempt < 72; attempt++) {
-            try {
-              const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
-              const body = await response.json();
-              if (!response.ok) throw new Error("Telegram status HTTP " + response.status);
-              if (!body.configured) throw new Error("Telegram bot token or chat ID is missing in Cloudflare Worker secrets");
-              if (body.status === "confirmed" && body.sent === true) {
-                console.log("TELEGRAM_DELIVERY=CONFIRMED");
-                console.log(JSON.stringify(body.result));
-                process.exit(0);
-              }
-              if (body.status === "failed") throw new Error("Telegram delivery failed: " + (body.result?.error || "unknown Telegram API error"));
-              last = "Waiting for the scheduled one-time Telegram delivery test";
-            } catch (error) {
-              last = error?.message || String(error);
-              if (/missing in Cloudflare|Telegram delivery failed/.test(last)) throw error;
-            }
-            await new Promise(resolve => setTimeout(resolve, 5000));
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test";
+          const token = process.env.TELEGRAM_TEST_SECRET;
+          if (!token) throw new Error("Telegram test authorization was not created");
+          const response = await fetch(url, {
+            method: "POST",
+            headers: { authorization: "Bearer " + token },
+            cache: "no-store",
+            signal: AbortSignal.timeout(30000)
+          });
+          const body = await response.json();
+          if (!response.ok || body.ok !== true || body.sent !== true || body.telegram_ok !== true || !body.message_id) {
+            throw new Error("Telegram delivery failed: " + (body.error || JSON.stringify(body)));
           }
-          throw new Error("Telegram delivery was not confirmed within six minutes: " + last);
+          console.log("TELEGRAM_DELIVERY=CONFIRMED");
+          console.log(JSON.stringify({ message_id: body.message_id, chat_id: body.chat_id, telegram_ok: body.telegram_ok }));
           NODE
 
       - name: Smoke test live GitHub Pages site
