@@ -181,8 +181,13 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
   let cacheKey=null,cache=null;
   try{
     cache=typeof caches!=="undefined"?caches.default:null;
-    const bucket=Math.floor(Date.now()/900000);
-    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v4/"+bucket);
+    const fingerprint=JSON.stringify({
+      market:Object.fromEntries(Object.entries(m||{}).map(([key,value])=>[key,value?{value:value.value,change_pct:value.change_pct,change_bp:value.change_bp,timestamp:value.timestamp,stale:value.stale}:null])),
+      headlines:(news||[]).slice(0,18).map(item=>[item.url,item.published_at,item.title])
+    });
+    const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(fingerprint));
+    const hash=Array.from(new Uint8Array(digest)).map(value=>value.toString(16).padStart(2,"0")).join("");
+    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v5/"+hash);
     if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
     const prompt=[
       "Analyze why spot gold (XAU/USD) is moving using ONLY the evidence JSON below.",
