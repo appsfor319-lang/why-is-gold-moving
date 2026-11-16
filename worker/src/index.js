@@ -487,6 +487,22 @@ async function terminalData(env){
     yield:markFreshness(y.data,48),
     oil:markFreshness(o.data,48)
   };
+  if(market.gold?.stale){
+    try{
+      const chart=await chartCandles(env,"5min"),candles=Array.isArray(chart.candles)?chart.candles:[];
+      if(chart.source?.startsWith("Twelve Data")&&candles.length>=2){
+        const last=candles.at(-1),parts=zonedParts(last.time*1000,"America/New_York");
+        const nextDate=date=>{const d=new Date(date+"T12:00:00Z");d.setUTCDate(d.getUTCDate()+1);return d.toISOString().slice(0,10)};
+        const sessionDate=parts.hour>=17?nextDate(parts.date):parts.date;
+        const sessionBars=candles.filter(c=>{const p=zonedParts(c.time*1000,"America/New_York");return(p.hour>=17?nextDate(p.date):p.date)===sessionDate});
+        const first=sessionBars[0],prior=first?candles.filter(c=>c.time<first.time).at(-1):null;
+        if(prior&&last&&last.close>0&&prior.close>0){
+          const live=markFreshness({value:last.close,change_pct:(last.close/prior.close-1)*100,timestamp:new Date(last.time*1000).toISOString(),source:"Twelve Data · XAU/USD · 5-minute session reference",change_period:"New York session",central_bank:market.gold.central_bank||null},6,true);
+          if(!live.stale)market.gold=live;
+        }
+      }
+    }catch(e){console.warn("Live XAU/USD chart fallback unavailable:",e.message)}
+  }
   const news=n.data||[];
   const briefing=await aiBrief(env,market,news);
   const sourceEntry=(name,status,data,error=null,defaultFreshness=null,extra={})=>{
