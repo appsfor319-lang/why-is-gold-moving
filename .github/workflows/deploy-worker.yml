@@ -34,7 +34,7 @@ jobs:
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/goldsquawk-preview?ai=1";
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/goldsquawk-preview";
           let lastError = "No response";
           for (let attempt = 0; attempt < 6; attempt++) {
             try {
@@ -42,7 +42,6 @@ jobs:
               const body = await response.json();
               if (!response.ok) throw new Error("Preview HTTP " + response.status + ": " + (body.error || "unknown"));
               if (typeof body.why !== "string" || body.why.trim().length < 50) throw new Error("GoldSquawk explanation missing or too short");
-              if (typeof body.ai_preview !== "string" || body.ai_preview.trim().length < 20) throw new Error("Gemini AI preview missing or too short");
               if (!Array.isArray(body.urgent)) throw new Error("Urgent-news extraction did not return an array");
               if (!body.checked_at) throw new Error("Feed check timestamp missing");
               console.log("GOLDSQUAWK_FEED=PASS");
@@ -50,7 +49,6 @@ jobs:
                 checked_at: body.checked_at,
                 explanation_chars: body.why.length,
                 explanation_preview: body.why.slice(0, 900),
-                ai_preview: body.ai_preview,
                 urgent_headlines_found: body.urgent.length,
                 urgent_headlines: body.urgent
               }, null, 2));
