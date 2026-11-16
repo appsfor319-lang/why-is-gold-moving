@@ -61,6 +61,34 @@ jobs:
           throw new Error("GoldSquawk live feed verification failed: " + lastError);
           NODE
 
+      - name: Verify real Telegram delivery
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test-status";
+          let last = "No Telegram status response";
+          for (let attempt = 0; attempt < 72; attempt++) {
+            try {
+              const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(10000) });
+              const body = await response.json();
+              if (!response.ok) throw new Error("Telegram status HTTP " + response.status);
+              if (!body.configured) throw new Error("Telegram bot token or chat ID is missing in Cloudflare Worker secrets");
+              if (body.status === "confirmed" && body.sent === true) {
+                console.log("TELEGRAM_DELIVERY=CONFIRMED");
+                console.log(JSON.stringify(body.result));
+                process.exit(0);
+              }
+              if (body.status === "failed") throw new Error("Telegram delivery failed: " + (body.result?.error || "unknown Telegram API error"));
+              last = "Waiting for the scheduled one-time Telegram delivery test";
+            } catch (error) {
+              last = error?.message || String(error);
+              if (/missing in Cloudflare|Telegram delivery failed/.test(last)) throw error;
+            }
+            await new Promise(resolve => setTimeout(resolve, 5000));
+          }
+          throw new Error("Telegram delivery was not confirmed within six minutes: " + last);
+          NODE
+
       - name: Smoke test live GitHub Pages site
         shell: bash
         run: |
