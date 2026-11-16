@@ -24,7 +24,56 @@ async function yahooMetalQuote(symbol){
   return{value,change_pct:Number.isFinite(previous)&&previous>0?(value/previous-1)*100:null,timestamp:meta.regularMarketTime?new Date(meta.regularMarketTime*1000).toISOString():(r.timestamp?.at(-1)?new Date(r.timestamp.at(-1)*1000).toISOString():null),source:"Yahoo Finance · "+symbol+" · spot reference"};
 }
 function surpriseValue(actual,forecast){const parse=v=>{if(v==null)return null;const m=String(v).trim().match(/^([+-]?\d+(?:\.\d+)?)\s*(%|K|M|B|bp|bps)?$/i);return m?{n:Number(m[1]),unit:(m[2]||'').toLowerCase()}:null};const a=parse(actual),f=parse(forecast);if(!a||!f||a.unit!==f.unit)return null;const delta=a.n-f.n;return(delta>0?'+':'')+Number(delta.toFixed(4))+' '+(a.unit==='%'?'pp':a.unit)}
-async function economicCalendar(env){if(env.FINANCE_CALENDAR_API_KEY){try{let now=new Date(),start=new Date(now.getTime()-7*86400000).toISOString().slice(0,10),end=new Date(now.getTime()+30*86400000).toISOString().slice(0,10),u=new URL('https://www.financecalendar.com/wp-json/fc/v1/calendar');Object.entries({from:start,to:end,country:'US',impact:'high,medium',tz:'America/New_York',limit:'500'}).forEach(([k,v])=>u.searchParams.set(k,v));let d=await get(u,{'X-API-Key':env.FINANCE_CALENDAR_API_KEY});if(!Array.isArray(d.events))throw Error('Finance Calendar returned an unexpected response');return d.events.filter(x=>/CPI|consumer price|employment situation|nonfarm|payroll|personal income and outlays|PCE|federal reserve|FOMC|GDP|producer price/i.test((x.name||'')+' '+(x.title||''))).map(x=>({datetime:x.release_at_utc||x.time_utc||x.date,event:x.title||x.name||x.series_name,country:x.country||'US',impact:x.impact||'HIGH',actual:x.actual??null,forecast:x.consensus??(Array.isArray(x.forecasts)?x.forecasts.map(v=>v.value+' '+v.measure).join(' / '):null),surprise:surpriseValue(x.actual,x.consensus),previous:x.prior??null,source:x.source_name||'Finance Calendar',source_url:x.source_url||x.url||'https://www.financecalendar.com/',updated_at:x.updated_at||null,release_status:x.status||null,period:x.period||null,all_day:x.all_day===true})).slice(0,80)}catch(e){console.error("Finance Calendar failed; using FRED release dates:",e.message)}}if(!env.FRED_API_KEY)throw Error('FRED_API_KEY missing');let now=new Date(),start=now.toISOString().slice(0,10),end=new Date(now.getTime()+60*86400000).toISOString().slice(0,10),u=new URL('https://api.stlouisfed.org/fred/releases/dates');Object.entries({api_key:env.FRED_API_KEY,file_type:'json',realtime_start:start,realtime_end:end,include_release_dates_with_no_data:'true',sort_order:'asc',limit:'1000'}).forEach(([k,v])=>u.searchParams.set(k,v));let d=await get(u),terms=/consumer price index|employment situation|personal income and outlays|gross domestic product|producer price index|federal open market|employment cost index|retail sales|import and export price|job openings|industrial production|personal consumption expenditures/i;let rows=(d.release_dates||[]).filter(x=>terms.test(x.release_name||'')).map(x=>{let n=x.release_name||'US economic release',high=/consumer price index|employment situation|personal income and outlays|gross domestic product|federal open market/i.test(n);return{datetime:x.date,event:n,country:'US',impact:high?'HIGH':'MEDIUM',actual:null,forecast:null,previous:null,source:'FRED release calendar',source_url:'https://fred.stlouisfed.org/releases/calendar'}});let seen=new Set();return rows.filter(x=>{let k=x.datetime+'|'+x.event;if(seen.has(k))return false;seen.add(k);return true}).slice(0,40)}
+async function economicCalendar(env){
+  const cache=typeof caches!=="undefined"?caches.default:null;
+  const cacheKey=new Request("https://gold-brief-cache.local/economic-calendar-v2");
+  if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
+  if(env.FINANCE_CALENDAR_API_KEY){
+    try{
+      const now=new Date(),start=new Date(now.getTime()-7*86400000).toISOString().slice(0,10),end=new Date(now.getTime()+30*86400000).toISOString().slice(0,10);
+      const u=new URL("https://www.financecalendar.com/wp-json/fc/v1/calendar");
+      Object.entries({from:start,to:end,country:"US",impact:"high,medium",tz:"America/New_York",limit:"250"}).forEach(([k,v])=>u.searchParams.set(k,v));
+      const d=await get(u,{"X-API-Key":env.FINANCE_CALENDAR_API_KEY});
+      if(!Array.isArray(d.events))throw Error("Finance Calendar returned an unexpected response");
+      const rows=d.events.filter(x=>/CPI|consumer price|employment situation|nonfarm|payroll|personal income and outlays|PCE|federal reserve|FOMC|GDP|producer price/i.test((x.name||"")+" "+(x.title||""))).map(x=>({datetime:x.release_at_utc||x.time_utc||x.date,event:x.title||x.name||x.series_name,country:x.country||"US",impact:x.impact||"HIGH",actual:x.actual??null,forecast:x.consensus??(Array.isArray(x.forecasts)?x.forecasts.map(v=>v.value+" "+v.measure).join(" / "):null),surprise:surpriseValue(x.actual,x.consensus),previous:x.prior??null,source:x.source_name||"Finance Calendar",source_url:x.source_url||x.url||"https://www.financecalendar.com/",updated_at:x.updated_at||null,release_status:x.status||null,period:x.period||null,all_day:x.all_day===true})).filter(x=>x.datetime).slice(0,80);
+      if(cache)await cache.put(cacheKey,new Response(JSON.stringify(rows),{headers:{"content-type":"application/json","cache-control":"public, max-age=21600"}}));
+      return rows;
+    }catch(e){console.error("Finance Calendar failed; using FRED release dates:",e.message)}
+  }
+  if(!env.FRED_API_KEY)throw Error("FRED_API_KEY missing");
+  const now=new Date(),start=now.toISOString().slice(0,10),end=new Date(now.getTime()+60*86400000).toISOString().slice(0,10);
+  const releaseUrl=new URL("https://api.stlouisfed.org/fred/releases");
+  Object.entries({api_key:env.FRED_API_KEY,file_type:"json",limit:"1000"}).forEach(([k,v])=>releaseUrl.searchParams.set(k,v));
+  const releaseResponse=await get(releaseUrl),releases=releaseResponse.releases||[];
+  const wanted=[
+    {match:/consumer price index/i,impact:"HIGH"},
+    {match:/employment situation/i,impact:"HIGH"},
+    {match:/personal income and outlays/i,impact:"HIGH"},
+    {match:/gross domestic product/i,impact:"HIGH"},
+    {match:/producer price index/i,impact:"MEDIUM"},
+    {match:/federal open market|FOMC/i,impact:"HIGH"},
+    {match:/employment cost index/i,impact:"MEDIUM"},
+    {match:/retail sales/i,impact:"MEDIUM"},
+    {match:/import and export price/i,impact:"MEDIUM"},
+    {match:/job openings/i,impact:"MEDIUM"},
+    {match:/industrial production/i,impact:"MEDIUM"}
+  ];
+  const selected=wanted.map(w=>({...w,release:releases.find(r=>w.match.test(r.name||""))})).filter(x=>x.release?.id);
+  if(!selected.length)throw Error("FRED did not return the expected major US economic releases");
+  const dateSets=await Promise.allSettled(selected.map(async item=>{
+    const u=new URL("https://api.stlouisfed.org/fred/release/dates");
+    Object.entries({release_id:String(item.release.id),api_key:env.FRED_API_KEY,file_type:"json",limit:"1000",sort_order:"desc",include_release_dates_with_no_data:"true"}).forEach(([k,v])=>u.searchParams.set(k,v));
+    const d=await get(u);
+    return{event:item.release.name,impact:item.impact,source_url:item.release.link||"https://fred.stlouisfed.org/releases",dates:(d.release_dates||[]).map(x=>x.date).filter(date=>date>=start&&date<=end)};
+  }));
+  const failed=dateSets.filter(x=>x.status==="rejected");
+  const coverage=failed.length?"FRED release calendar · partial":"FRED release calendar";
+  const rows=dateSets.filter(x=>x.status==="fulfilled").flatMap(x=>x.value.dates.map(date=>({datetime:date,event:x.value.event,country:"US",impact:x.value.impact,actual:null,forecast:null,previous:null,source:coverage,source_url:x.value.source_url})));
+  const seen=new Set(),result=rows.filter(x=>{const key=x.datetime+"|"+x.event;if(seen.has(key))return false;seen.add(key);return true}).sort((a,b)=>a.datetime.localeCompare(b.datetime)).slice(0,40);
+  if(failed.length===selected.length)throw Error("FRED release-date lookups failed: "+failed.map(x=>x.reason?.message||"unknown error").join("; "));
+  if(cache)await cache.put(cacheKey,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age="+(failed.length?1800:21600)}}));
+  return result;
+}
 async function historicalReactions(env){
   const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v1");
   const cache=typeof caches!=="undefined"?caches.default:null;
