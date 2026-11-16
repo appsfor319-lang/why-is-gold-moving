@@ -133,8 +133,8 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
   let cacheKey=null,cache=null;
   try{
     cache=typeof caches!=="undefined"?caches.default:null;
-    const bucket=Math.floor(Date.now()/1800000);
-    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v3/"+bucket);
+    const bucket=Math.floor(Date.now()/900000);
+    cacheKey=new Request("https://gold-brief-cache.local/gemini-brief-v4/"+bucket);
     if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
     const prompt=[
       "Analyze why spot gold (XAU/USD) is moving using ONLY the evidence JSON below.",
@@ -183,7 +183,7 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
           limitations:Array.isArray(parsed.limitations)?parsed.limitations.filter(x=>typeof x==="string").slice(0,3):[],
           generated_at:new Date().toISOString(),engine:"gemini",model:activeModel,ai_status:"ok"
         };
-        if(cache&&cacheKey)await cache.put(cacheKey,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=1800"}}));
+        if(cache&&cacheKey)await cache.put(cacheKey,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=900"}}));
         return result;
       }catch(e){lastError=e?.message||"Gemini request failed"}
     }
