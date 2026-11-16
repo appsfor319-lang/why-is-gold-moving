@@ -557,78 +557,59 @@ async function terminalData(env){
   };
 }
 
-async function scheduledReport(env,kind){
-  const data=await terminalData(env);if(!data.market)throw Error("Terminal API returned incomplete market data");
-  const chart=await chartCandles(env,"5min");
-  const context=sessionEvidence(chart,kind);
-  const report=await telegramReport(env,data,kind,chart,context);
-  if(report.engine!=="gemini")throw Error("Session report blocked: Gemini generation is not available");
 
-  await telegramSend(env,report.body);
+async function goldSquawkPage(){
+ const r=await fetch("https://www.goldsquawk.com/",{headers:{"User-Agent":"Mozilla/5.0 (compatible; TradZAcademy/1.0)","Accept":"text/html,application/xhtml+xml"},signal:AbortSignal.timeout(20000)});
+ if(!r.ok)throw Error("GoldSquawk homepage HTTP "+r.status);
+ const html=await r.text();
+ if(!/WHY\\s+IS\\s+GOLD\\s+MOVING/i.test(html))throw Error("GoldSquawk page did not contain its public gold explanation");
+ const clean=x=>String(x||"").replace(/<script[\\s\\S]*?<\\/script>/gi," ").replace(/<style[\\s\\S]*?<\\/style>/gi," ").replace(/<[^>]+>/g," ").replace(/&nbsp;|&#160;/gi," ").replace(/&amp;/gi,"&").replace(/&quot;/gi,'"').replace(/&#39;|&apos;/gi,"'").replace(/&lt;/gi,"<").replace(/&gt;/gi,">").replace(/\\s+/g," ").trim();
+ const whyAt=html.search(/WHY\\s+IS\\s+GOLD\\s+MOVING/i),calAt=html.search(/ECONOMIC\\s+CALENDAR/i);
+ const why=clean(html.slice(whyAt,calAt>whyAt?calAt:whyAt+14000)).replace(/^WHY\\s+IS\\s+GOLD\\s+MOVING/i,"").slice(0,2200);
+ if(why.length<50)throw Error("GoldSquawk explanation could not be extracted from its public page");
+ const newsAt=html.search(/TOP\\s+NEWS/i),voiceAt=html.search(/VOICE\\s+SQUAWK/i),newsHtml=newsAt>=0?html.slice(newsAt,voiceAt>newsAt?voiceAt:newsAt+50000):"";
+ const urgent=[];
+ const blocks=[...newsHtml.matchAll(/<(?:article|li|div)[^>]*>([\\s\\S]{0,5000}?)<\\/(?:article|li|div)>/gi)];
+ for(const m of blocks){const raw=clean(m[1]);if(!/\\b(URGENT|BREAKING)\\b/i.test(raw))continue;const title=raw.replace(/\\b(URGENT|BREAKING|HIGH|MEDIUM|LOW|GEOPOLITICS|NEWS)\\b/gi," ").replace(/\\s+/g," ").trim();if(title.length>25)urgent.push({title:title.slice(0,500)});}
+ return{why,urgent:[...new Map(urgent.map(x=>[x.title.toLowerCase(),x])).values()].slice(0,8),checked_at:new Date().toISOString()};
 }
-async function scheduledSmokeTest(env){
-  const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1");
-  if(cache&&await cache.match(key)){console.log("Telegram readiness test already confirmed by Telegram.");return false;}
-  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return false;
-  const data=await terminalData(env);
-  if(!data.market||!data.market.gold||!data.market.dxy||!data.market.yield||!Array.isArray(data.news)||data.news.length===0||!Array.isArray(data.calendar))throw Error("Telegram test blocked: required gold, DXY, yield or news data is missing");
-  if(data.briefing?.engine!=="gemini"||data.briefing?.ai_status!=="ok")throw Error("Telegram test blocked: Gemini analysis is not healthy ("+(data.briefing?.ai_error||data.briefing?.engine||"unknown")+")");
-  if(!data.positioning)throw Error("Telegram test blocked: CFTC positioning data is unavailable");
-  const chart=await chartCandles(env,"5min"),context=sessionEvidence(chart,"asia");
-  const analysis=await explainChart(env,{chart:{timeframe:"5min",last:chart.candles.at(-1),structure:{direction:"test"},session:context.periods,session_ranges:[],active_liquidity:[],recent_sweeps:[],order_blocks:[]},market:data.market,headlines:data.news.slice(0,5)});
-  if(typeof analysis?.body!=="string"||!analysis.body.trim())throw Error("Telegram test blocked: chart analysis returned no explanation");
-  const report=await telegramReport(env,data,"asia",chart,context);
-  if(report.engine!=="gemini")throw Error("Telegram test blocked: session report Gemini generation is not available");
-  const required=["1. علاش الذهب تحرك اليوم؟","2. الأخبار تاع اليوم وتأثيرها على الذهب","3. واش راهم يقولو المحترفين؟","4. واش راهم يديرو الحيتان الضخمة؟","5. ملخص جلسة آسيا"];
-  const plain=report.body.replace(/<[^>]+>/g,""),missing=required.filter(x=>!plain.includes(x));
-  if(missing.length)throw Error("Telegram test blocked: report missing sections: "+missing.join(", "));
-  const sent=await telegramSend(env,"<b>اختبار جاهزية TradZ Academy — رسالة اختبار</b>\n\n"+report.body);
-  if(!sent?.ok)throw Error("Telegram test was not confirmed by Telegram");
-  if(cache)await cache.put(key,new Response(JSON.stringify({sent:true,at:new Date().toISOString()}),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
-  console.log("Telegram readiness test delivered and confirmed by Telegram. Message ID:",sent.result?.message_id||"accepted");
-  return true;
+async function goldSquawkAI(env,prompt,maxTokens=600){
+ if(!env.GEMINI_API_KEY)throw Error("GEMINI_API_KEY missing");
+ const model=(env.GEMINI_MODEL||"gemini-3.5-flash-lite").trim();
+ const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:maxTokens}}),signal:AbortSignal.timeout(20000)});
+ if(!r.ok)throw Error("Gemini HTTP "+r.status);
+ const d=await r.json(),body=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();
+ if(!body)throw Error("Gemini returned an empty explanation");
+ return body;
 }
-async function scheduledAlerts(env){
- if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)return;
- const now=Date.now(),cache=typeof caches!=='undefined'?caches.default:null;
- const newsRows=await headlines();
- const headlinesToSend=newsRows.filter(n=>{
-  const title=String(n.title||"").toLowerCase(),published=Date.parse(n.published_at||"");
-  return Number.isFinite(published)&&now-published>=-5*60000&&now-published<=45*60000&&/(federal reserve|fed decision|powell|cpi|pce|inflation|nonfarm|payroll|unemployment|interest rate|rate decision|treasury yield|dollar index|central bank|tariff|sanction|iran|israel|war |military strike|ceasefire|gold etf|gold reserves|china gold|opec)/i.test(title);
- }).slice(0,5);
- const day=algiersParts(now).date,dayKey="https://gold-brief-cache.local/telegram-news-count/"+day;
- let sentToday=0;if(cache){const saved=await cache.match(dayKey);if(saved)sentToday=Number(await saved.text())||0}
- if(sentToday>=2||!headlinesToSend.length)return;
- const data=await terminalData(env);for(const n of headlinesToSend){
-  if(sentToday>=2)break;
-  const url=String(n.url||"");const unique=url||String(n.title||"");
-  const key="https://gold-brief-cache.local/telegram-breaking/"+encodeURIComponent(unique);
-  if(cache&&await cache.match(key))continue;
-  const m=data.market||{},evidence={headline:n.title,source:n.source,published_at:n.published_at,gold:m.gold?{direction:m.gold.change_pct>0?"rising":m.gold.change_pct<0?"falling":"little changed",freshness:m.gold.freshness}:null,dxy:m.dxy?{direction:m.dxy.change_pct>0?"stronger":m.dxy.change_pct<0?"weaker":"little changed",freshness:m.dxy.freshness}:null,yields:m.yield?{change_bp:m.yield.change_bp,freshness:m.yield.freshness}:null};
-  let explanation=null;
-  if(env.GEMINI_API_KEY){
-   try{
-    const prompt="Explain this breaking gold-market headline in clear Algerian Darija using Arabic script. State what happened, why it matters to gold, the transmission mechanism through rates/dollar/yields/risk demand, and what to watch next. Do not invent facts or claim causality without evidence. No prices or percentages. 3-5 short sentences. Evidence: "+JSON.stringify(evidence);
-    const model=(env.GEMINI_MODEL||"gemini-3.8-flash").trim();
-    const r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+encodeURIComponent(model)+":generateContent",{method:"POST",headers:{"content-type":"application/json","x-goog-api-key":env.GEMINI_API_KEY},signal:AbortSignal.timeout(12000),body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:{temperature:0.2,maxOutputTokens:450}})});
-    if(r.ok){const d=await r.json(),v=d.candidates?.[0]?.content?.parts?.map(x=>x.text||"").join("").trim();if(v)explanation=v}
-   }catch(err){console.error("Breaking-news explanation failed:",err.message)}
-  }
-  if(!explanation)continue;
-  const msg=`<b>خبر عاجل وتأثيره على الذهب</b>\n<b>${tgEscape(n.title||"تطور جديد")}</b>\n\n${tgEscape(explanation)}\n\n<a href="${tgEscape(n.url||"https://www.kitco.com/")}">المصدر: ${tgEscape(n.source||"افتح الخبر")}</a>`;
-  await telegramSend(env,msg);sentToday++;if(cache){await cache.put(key,new Response("sent",{headers:{"cache-control":"public, max-age=86400"}}));await cache.put(dayKey,new Response(String(sentToday),{headers:{"cache-control":"public, max-age=86400"}}))}
+async function scheduledGoldSquawk(env){
+ if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram credentials are not configured");
+ const cache=typeof caches!=="undefined"?caches.default:null,page=await goldSquawkPage();
+ const market=await Promise.allSettled([metal(env,"XAU"),yahooDXY(),yield10(env)]);
+ page.market={};
+ if(market[0].status==="fulfilled")page.market.gold={value:market[0].value.value,change_pct:market[0].value.change_pct,timestamp:market[0].value.timestamp};
+ if(market[1].status==="fulfilled")page.market.dxy={value:market[1].value.value,change_pct:market[1].value.change_pct,timestamp:market[1].value.timestamp};
+ if(market[2].status==="fulfilled")page.market.us10y={value:market[2].value.value,change_bp:market[2].value.change_bp,timestamp:market[2].value.timestamp};
+ for(const item of page.urgent){
+  const urgentKey="https://gold-brief-cache.local/goldsquawk-urgent/"+encodeURIComponent(item.title.toLowerCase().slice(0,180));
+  if(cache&&await cache.match(urgentKey))continue;
+  const prompt="Write a concise urgent Telegram alert in Algerian Darija using Arabic script. First say what happened, then the impact on gold: صاعد / هابط / مختلط / غير واضح. Explain the mechanism through risk demand, oil/inflation, dollar, yields or Fed expectations. Do not assume geopolitical news automatically lifts gold. If direction is uncertain, say so. 3-5 short sentences. Headline: "+item.title+"\\nGoldSquawk context: "+page.why+"\\nMarket: "+JSON.stringify(page.market);
+  const explanation=await goldSquawkAI(env,prompt,400);
+  await telegramSend(env,"<b>خبر عاجل | تأثيره على الذهب</b>\\n"+tgEscape(item.title)+"\\n\\n"+tgEscape(explanation)+"\\n\\n<a href=\\"https://www.goldsquawk.com/\\">GoldSquawk</a>");
+  if(cache)await cache.put(urgentKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
  }
+ const now=Date.now(),hourKey="https://gold-brief-cache.local/goldsquawk-hourly/"+new Date(now).toISOString().slice(0,13),lastKey="https://gold-brief-cache.local/goldsquawk-last-content";
+ if(cache&&await cache.match(hourKey))return;
+ const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(page.why)),hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
+ if(cache){const last=await cache.match(lastKey);if(last&&await last.text()===hash)return;}
+ const prompt="You write concise natural Algerian Darija in Arabic script for a gold-trading Telegram community. Explain WHY gold is moving using the GoldSquawk explanation and supplied market readings. State the driver, mechanism and directional bias: صاعد / هابط / مختلط / مازال ما بانش. Distinguish GoldSquawk's stated explanation from inference. Never invent facts or claim certainty. If evidence conflicts say mixed. 4-7 short lines, no generic intro. GoldSquawk update: "+page.why+"\\nMarket context: "+JSON.stringify(page.market);
+ const body=await goldSquawkAI(env,prompt,650);
+ await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\\n\\n"+tgEscape(body)+"\\n\\n<a href=\\"https://www.goldsquawk.com/\\">GoldSquawk</a>");
+ if(cache){await cache.put(lastKey,new Response(hash,{headers:{"cache-control":"public, max-age=604800"}}));await cache.put(hourKey,new Response("sent",{headers:{"cache-control":"public, max-age=7200"}}));}
 }
 export default{
 async scheduled(controller,env,ctx){
- const d=new Date(Number(controller.scheduledTime)||Date.now()),p=algiersParts(d.getTime());
- const ny=new Intl.DateTimeFormat("en-GB",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(d);
- const london=new Intl.DateTimeFormat("en-GB",{timeZone:"Europe/London",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(d);
- const part=(a,k)=>Number(a.find(x=>x.type===k)?.value||0);
- const nh=part(ny,"hour"),nm=part(ny,"minute"),lh=part(london,"hour"),lm=part(london,"minute");
- const local=p.hour+":"+String(p.minute).padStart(2,"0");let kind=null;
- if(local==="08:00")kind="asia";if(lh===17&&lm===0)kind="london";if(nh===12&&nm===0)kind="ny_am";if(nh===16&&nm===0)kind="ny_pm";
- try{const testSent=await scheduledSmokeTest(env);if(testSent)return;if(kind)await scheduledReport(env,kind);await scheduledAlerts(env)}catch(err){console.error("Scheduled Telegram task failed:",err?.message||err)}
+ try{await scheduledGoldSquawk(env)}catch(err){console.error("GoldSquawk Telegram automation failed:",err?.stack||err?.message||err)}
 },
 async fetch(req,env){let u=new URL(req.url);
 if(req.method==='OPTIONS')return out({ok:true});if(u.pathname==='/api/telegram-test-status'&&req.method==='GET'){try{const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/telegram-smoke-test-v1"),hit=cache?await cache.match(key):null;return out({sent:!!hit,status:hit?"confirmed":"pending"})}catch(e){return out({sent:false,status:"unavailable",error:e.message},503)}}if(u.pathname==='/api/chart'&&req.method==='GET'){try{return out(await chartCandles(env,u.searchParams.get('interval')||'5min'))}catch(e){return out({error:e.message},502)}}if(u.pathname==='/api/chart-analysis'&&req.method==='POST'){try{const payload=await req.json();return out({analysis:await explainChart(env,payload)})}catch(e){return out({error:e.message},400)}}if(u.pathname==='/api/diagnostics'){if(!env.TWELVEDATA_API_KEY)return out({error:'TWELVEDATA_API_KEY missing'},400);const lookups=await Promise.all(['DXY','US Dollar Index','WTI/USD'].map(async q=>{try{let x=new URL('https://api.twelvedata.com/symbol_search');x.searchParams.set('symbol',q);x.searchParams.set('apikey',env.TWELVEDATA_API_KEY);let z=await get(x);return{query:q,matches:(z.data||[]).slice(0,8).map(v=>({symbol:v.symbol,name:v.instrument_name,exchange:v.exchange,type:v.instrument_type,currency:v.currency}))}}catch(e){return{query:q,error:e.message}}}));return out({twelve_data_symbol_search:lookups})}if(u.pathname!=='/api/terminal')return out({error:'Not found'},404);if(u.pathname==='/api/terminal'){try{return out(await terminalData(env))}catch(e){return out({error:e.message},500)}}return out({error:'Not found'},404)}}
