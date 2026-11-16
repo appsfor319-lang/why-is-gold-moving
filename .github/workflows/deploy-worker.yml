@@ -99,6 +99,10 @@ jobs:
               throw new Error("Source status incorrectly says ok for stale data: " + source.name);
             }
           }
+          if (!data.briefing?.generated_at) throw new Error("Briefing generation timestamp is missing");
+          if (!data.market?.gold?.stale && Date.parse(data.briefing.generated_at) < Date.parse(data.market.gold.timestamp)) {
+            throw new Error("Briefing predates the current gold quote");
+          }
           if (!data.market?.gold || !data.market?.dxy || !data.market?.yield || data.news.length === 0) {
             throw new Error("Required gold spot, DXY, US 10Y or gold news feed is missing");
           }
