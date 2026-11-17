@@ -613,7 +613,7 @@ async function scheduledGoldSquawk(env){
 
 <a href="${url}">Open the live chart with UFD Sessions &amp; Liquidity</a>
 
-Live candles, Asia / London / New York session levels, liquidity sweeps, swing levels and 1H order blocks. Chart refreshes periodically; it is not tick-by-tick.`);
+Live candles, Asia / London / New York session levels, liquidity sweeps, swing levels and 1H order blocks. The chart stays pinned here; open it for the live website chart.`);
     pinState={message_id:sent.result.message_id,pinned:false};
     await cache.put(pinKey,new Response(JSON.stringify(pinState),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
    }
@@ -642,14 +642,8 @@ Live candles, Asia / London / New York session levels, liquidity sweeps, swing l
   await telegramSend(env,"<b>خبر عاجل | تأثيره على الذهب</b>\n"+tgEscape(headline)+"\n\n"+tgEscape(explanation));
   if(cache)await cache.put(urgentKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
  }
- // The regular WHY IS GOLD MOVING briefing is sent only at 00:00, 02:00, ... Algeria time.
- if(clock.minute!==0||clock.hour%2!==0)return;
- const slotKey="https://gold-brief-cache.local/why-gold-2hour-v2/"+clock.date+"-"+String(clock.hour).padStart(2,"0");
- if(cache&&await cache.match(slotKey))return;
- const prompt="Write a concise, useful WHY IS GOLD MOVING update in natural Algerian Darija using Arabic script. Never name, cite, credit, or mention any information provider or news service. Explain the main verified reason gold is moving, the cause-and-effect mechanism, relevant dollar/yield/Fed/geopolitical context, and the likely direction: صاعد / هابط / مختلط / مازال ما بانش. Use supplied market readings with timestamps; do not invent figures or causality. If evidence conflicts or is stale, say so. Explain what changed since the previous briefing only when evidence supports it. 5-8 short readable lines. Background explanation: "+page.why+"\nMarket context: "+JSON.stringify(page.market);
- const body=hideProviderBranding(await goldSquawkAI(env,prompt,650));
- await telegramSend(env,"<b>WHY IS GOLD MOVING?</b>\n\n"+tgEscape(body));
- if(cache)await cache.put(slotKey,new Response("sent",{headers:{"cache-control":"public, max-age=172800"}}));
+ // No routine or timed Telegram briefings. Only genuinely urgent, new gold-relevant news above can trigger a message.
+ return;
 }
 export default{
 async scheduled(controller,env,ctx){
