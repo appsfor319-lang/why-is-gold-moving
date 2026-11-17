@@ -609,7 +609,11 @@ async function scheduledGoldSquawk(env){
   try{
    if(!pinState?.message_id){
     const url="https://appsfor319-lang.github.io/why-is-gold-moving/";
-    const sent=await telegramSend(env,"<b>LIVE GOLD CHART · XAU/USD · 5 MIN</b>\\n\\n<a href=\\""+url+"\\">Open the live chart with UFD Sessions &amp; Liquidity</a>\\n\\nLive candles, Asia / London / New York session levels, liquidity sweeps, swing levels and 1H order blocks. Chart refreshes periodically; it is not tick-by-tick.");
+     const sent=await telegramSend(env,`<b>LIVE GOLD CHART · XAU/USD · 5 MIN</b>
+
+<a href="${url}">Open the live chart with UFD Sessions &amp; Liquidity</a>
+
+Live candles, Asia / London / New York session levels, liquidity sweeps, swing levels and 1H order blocks. Chart refreshes periodically; it is not tick-by-tick.`);
     pinState={message_id:sent.result.message_id,pinned:false};
     await cache.put(pinKey,new Response(JSON.stringify(pinState),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
    }
