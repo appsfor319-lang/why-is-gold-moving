@@ -8,8 +8,8 @@ const sessions=[
  {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
  {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
 ];
-let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[];
-const tfLabel={"1min":"1m","5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
+let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],fitOnNextLoad=true;
+const tfLabel={"5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
 function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
  const o={};p.forEach(x=>o[x.type]=x.value);return{date:o.year+"-"+o.month+"-"+o.day,minute:Number(o.hour)*60+Number(o.minute)};
@@ -93,8 +93,11 @@ function updateObZones(){
  obZoneLayer.innerHTML="";
  const width=$("xau-chart").clientWidth;
  activeZoneData.forEach(o=>{
-  const x=chart.timeScale().timeToCoordinate(o.time),y1=candleSeries.priceToCoordinate(o.top),y2=candleSeries.priceToCoordinate(o.bottom);
-  if(x==null||y1==null||y2==null)return;
+  const scale=chart.timeScale(),visible=scale.getVisibleRange(),rawX=scale.timeToCoordinate(o.time),y1=candleSeries.priceToCoordinate(o.top),y2=candleSeries.priceToCoordinate(o.bottom);
+  if(y1==null||y2==null)return;
+  let x=rawX;
+  if(x==null&&visible&&o.time<visible.from)x=0;
+  if(x==null)return;
   const left=Math.max(0,Math.floor(x)),right=Math.max(left,width-68),top=Math.max(0,Math.floor(Math.min(y1,y2))),height=Math.max(2,Math.abs(y2-y1));
   if(left>=width-68||top>$("xau-chart").clientHeight)return;
   const box=document.createElement("div");box.className="ob-zone "+(o.direction==="bullish"?"bull":"bear");
@@ -110,13 +113,19 @@ function removeOverlays(){
 }
 function drawIndicator(result,bars){
  removeOverlays();
- const ranges=result.ranges;
+ const ranges=result.ranges,latest=bars[bars.length-1];
  ranges.forEach(r=>{
-  const source=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,pointMarkersVisible:false});
-  source.setData([{time:r.start,value:r.high},{time:r.end,value:r.high}]);overlaySeries.push(source);
-  const low=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:2,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false});
-  low.setData([{time:r.start,value:r.low},{time:r.end,value:r.low}]);overlaySeries.push(low);
+  const end=Math.max(r.end,latest.time);
+  if(end>r.start){
+   const source=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:r.active?2:1,lineStyle:r.active?LightweightCharts.LineStyle.Solid:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,pointMarkersVisible:false});
+   source.setData([{time:r.start,value:r.high},{time:end,value:r.high}]);overlaySeries.push(source);
+   const low=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:r.active?2:1,lineStyle:r.active?LightweightCharts.LineStyle.Solid:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,pointMarkersVisible:false});
+   low.setData([{time:r.start,value:r.low},{time:end,value:r.low}]);overlaySeries.push(low);
+  }
  });
+ const swingHighs=result.summary.structure.recent_swing_highs||[],swingLows=result.summary.structure.recent_swing_lows||[];
+ swingHighs.forEach((p,i)=>{const line=candleSeries.createPriceLine({price:p,color:"rgba(239,83,80,.9)",lineWidth:i===swingHighs.length-1?2:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:"5M Swing High"});priceLines.push({series:candleSeries,line})});
+ swingLows.forEach((p,i)=>{const line=candleSeries.createPriceLine({price:p,color:"rgba(38,166,154,.9)",lineWidth:i===swingLows.length-1?2:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:"5M Swing Low"});priceLines.push({series:candleSeries,line})});
  result.liquidity.forEach(l=>{
   const line=candleSeries.createPriceLine({price:l.price,color:l.isHigh?"#ef5350":"#26a69a",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,axisLabelVisible:true,title:l.label});
   priceLines.push({series:candleSeries,line});
@@ -132,8 +141,8 @@ function drawIndicator(result,bars){
  result.sweeps.forEach(s=>marks.push({time:s.time,position:s.direction==="high"?"aboveBar":"belowBar",color:"#e4b85f",shape:s.direction==="high"?"arrowDown":"arrowUp",text:s.label}));
  marks.sort((a,b)=>a.time-b.time);
  activeZoneData=result.activeObs;updateObZones();
- const latest=bars[bars.length-1],recentSweep=result.sweeps.find(s=>s.time===latest.time);
- $("chart-indicator-status").textContent=recentSweep?"SWEEP ALERT · "+recentSweep.label+" · "+fmt(recentSweep.price):"UFD Sessions & Liquidity · Asia / London / New York · 1H OB";
+ const recentSweep=result.sweeps.find(s=>s.time===latest.time);
+ $("chart-indicator-status").textContent=(recentSweep?"SWEEP ALERT · "+recentSweep.label+" · "+fmt(recentSweep.price):"UFD S&L · "+ranges.length+" session ranges · "+result.liquidity.length+" liquidity levels · "+result.activeObs.length+" active OBs")+" · swing highs/lows";
  if(LightweightCharts.createSeriesMarkers){
   if(markersApi&&markersApi.setMarkers)markersApi.setMarkers(marks);
   else markersApi=LightweightCharts.createSeriesMarkers(candleSeries,marks);
@@ -154,7 +163,7 @@ function renderPrice(data){
  const bars=data.candles;
  candleSeries.setData(bars.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close})));
  volumeSeries.setData(bars.map(b=>({time:b.time,value:b.volume||0,color:b.close>=b.open?"rgba(85,200,155,.22)":"rgba(238,129,120,.22)"})));
- chart.timeScale().fitContent();
+ if(fitOnNextLoad){chart.timeScale().fitContent();fitOnNextLoad=false;}
  const last=bars[bars.length-1],first=bars[Math.max(0,bars.length-2)];
  $("chart-last-price").textContent="$"+fmt(last.close);
  const ch=first?((last.close/first.close)-1)*100:0;
@@ -194,7 +203,7 @@ async function loadChart(forceAnalysis){
  }catch(e){$("chart-feed-status").textContent="FEED ERROR · "+e.message}
 }
 function setIntervalChart(v){
- if(!tfLabel[v])return;interval=v;lastAnalysisCandle=null;
+ if(!tfLabel[v])return;interval=v;lastAnalysisCandle=null;fitOnNextLoad=true;
  document.querySelectorAll(".chart-tf").forEach(b=>b.classList.toggle("active",b.dataset.interval===v));
  loadChart(true);
 }
