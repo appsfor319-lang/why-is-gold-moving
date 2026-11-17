@@ -52,6 +52,11 @@ jobs:
                 throw new Error("A source entry is missing its name, status or freshness");
               }
               if (body.news.length === 0) throw new Error("No current publisher headlines were returned");
+              const chartResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/chart?interval=5min", { cache: "no-store", signal: AbortSignal.timeout(25000) });
+              const chart = await chartResponse.json();
+              if (!chartResponse.ok || !Array.isArray(chart.candles) || chart.candles.length < 20 || chart.refresh_seconds !== 300) {
+                throw new Error("Live five-minute chart data or its five-minute REST fallback metadata is invalid");
+              }
               const invalidNews = body.news.filter(item => {
                 if (!item.title || !item.source || !item.published_at || !item.url) return true;
                 try {
@@ -72,6 +77,9 @@ jobs:
                 publisher_count: publishers.length,
                 publishers,
                 calendar_count: body.calendar.length,
+                chart_source: chart.source,
+                chart_candles: chart.candles.length,
+                chart_fallback_refresh_seconds: chart.refresh_seconds,
                 stale_market_fields: stale,
                 source_statuses: body.sources.map(source => ({ name: source.name, status: source.status, freshness: source.freshness, timestamp: source.timestamp }))
               }, null, 2));
@@ -108,6 +116,12 @@ jobs:
               const [app, css, chart] = await Promise.all([appResponse.text(), cssResponse.text(), chartResponse.text()]);
               if (!app.includes("g.change_period||'today'") || !app.includes("dir==='up'")) {
                 throw new Error("Published app.js does not contain the latest gold-period and direction consistency fixes");
+              }
+              if (!app.includes("setInterval(refresh,900000)") || app.includes("setInterval(refresh,300000)")) {
+                throw new Error("The briefing polling interval does not match the stated 15-minute update cycle");
+              }
+              if (!chart.includes("setInterval(()=>{if(!streamConnected)loadChart(false);},300000)")) {
+                throw new Error("The chart fallback polling interval is not five minutes while live ticks are unavailable");
               }
               if (!chart.includes("connectLiveStream") || !chart.includes("applyLiveTick")) {
                 throw new Error("Published chart.js is missing live tick-stream handlers");

@@ -304,7 +304,7 @@ async function chartCandles(env,interval){
     const [intraday,hourly]=await Promise.all([yahooGoldCandles(interval),yahooGoldCandles("1h")]);
     candles=intraday.bars;htf=hourly.bars;source="Yahoo Finance · "+intraday.symbol+" (fallback; verify against OANDA XAUUSD)";
   }
-  const result={symbol:"XAU/USD",interval,source,updated_at:new Date().toISOString(),refresh_seconds:60,candles,order_block_candles:htf};
+  const result={symbol:"XAU/USD",interval,source,updated_at:new Date().toISOString(),refresh_seconds:300,candles,order_block_candles:htf};
   if(cache)await cache.put(key,new Response(JSON.stringify(result),{headers:{"content-type":"application/json","cache-control":"public, max-age=45"}}));
   return result;
 }
