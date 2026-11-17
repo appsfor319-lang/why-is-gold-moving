@@ -74,7 +74,7 @@ async function economicCalendar(env){
   return result;
 }
 async function historicalReactions(env){
-  const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v1");
+  const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v2");
   const cache=typeof caches!=="undefined"?caches.default:null;
   if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
   if(!env.FRED_API_KEY||!env.TWELVEDATA_API_KEY)throw Error("FRED_API_KEY and TWELVEDATA_API_KEY are required for historical event studies");
@@ -84,9 +84,11 @@ async function historicalReactions(env){
   const wanted=[
     {event_type:"CPI",match:/consumer price index/i},
     {event_type:"NFP",match:/employment situation/i},
-    {event_type:"PCE",match:/personal income and outlays/i},
-    {event_type:"FOMC",match:/federal open market committee|fomc/i}
+    {event_type:"PCE",match:/personal income and outlays/i}
   ];
+  // FRED's broad FOMC release-date feed produced dates that do not match the
+  // Federal Reserve's official FOMC press-release archive. Keep FOMC out of
+  // measured reactions until dates are sourced from that official archive.
   const selected=wanted.map(w=>({...w,release:releases.find(r=>w.match.test(r.name||""))})).filter(x=>x.release);
   if(!selected.length)throw Error("FRED did not return the expected CPI, employment, PCE or FOMC releases");
   const dateSets=await Promise.all(selected.map(async item=>{
