@@ -8,7 +8,7 @@ const sessions=[
  {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
  {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
 ];
-let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],fitOnNextLoad=true;
+let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false;
 const tfLabel={"5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
 function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
@@ -189,6 +189,32 @@ async function explain(summary,force){
   const data=await response.json();if(data.analysis)renderExplanation(data.analysis);
  }catch(e){renderExplanation({headline:"Chart is live; AI explanation unavailable",body:"The chart and indicator are still updating. The analysis service returned: "+e.message,confidence:"LOW",engine:"offline",updated_at:new Date().toISOString()})}
  finally{analysisBusy=false}
+}
+function applyLiveTick(tick){
+ if(!chartData||!Array.isArray(chartData.candles)||!tick||!Number.isFinite(Number(tick.price))||!Number.isFinite(Number(tick.timestamp)))return;
+ const price=Number(tick.price),step=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300,bucket=Math.floor(Number(tick.timestamp)/step)*step,bars=chartData.candles,last=bars[bars.length-1];
+ if(!last||bucket<last.time)return;
+ let next,closedBar=false;
+ if(bucket===last.time){next={...last,high:Math.max(last.high,price),low:Math.min(last.low,price),close:price};bars[bars.length-1]=next;}
+ else{next={time:bucket,open:price,high:price,low:price,close:price,volume:0};bars.push(next);if(bars.length>500)bars.shift();closedBar=true;}
+ candleSeries.update({time:next.time,open:next.open,high:next.high,low:next.low,close:next.close});
+ volumeSeries.update({time:next.time,value:next.volume||0,color:next.close>=next.open?"rgba(85,200,155,.22)":"rgba(238,129,120,.22)"});
+ $("chart-last-price").textContent="$"+fmt(price);
+ $("chart-last-change").textContent="LIVE TICK · "+new Date(Number(tick.timestamp)*1000).toLocaleTimeString("en-GB",{timeZone:"Africa/Algiers",hour12:false});
+ $("chart-last-change").style.color=price>=next.open?"#55c89b":"#ee8178";
+ $("chart-candle-time").textContent=tfLabel[interval]+" candles · live tick "+new Date(Number(tick.timestamp)*1000).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria";
+ if(closedBar){const ind=calculateIndicator(bars,chartData.order_block_candles||[]);drawIndicator(ind,bars);explain(ind.summary,false);}
+}
+function connectLiveStream(){
+ if(streamSocket&&(streamSocket.readyState===WebSocket.OPEN||streamSocket.readyState===WebSocket.CONNECTING))return;
+ try{
+  const base=new URL(apiBase());base.protocol=base.protocol==="https:"?"wss:":"ws:";base.pathname=base.pathname.replace(/\/$/,"")+"/api/stream";base.search="";
+  streamSocket=new WebSocket(base.toString());
+  streamSocket.addEventListener("open",()=>{streamConnected=true;$("chart-feed-status").textContent="LIVE TICK STREAM · TWELVE DATA";streamHeartbeat=setInterval(()=>{if(streamSocket?.readyState===WebSocket.OPEN)streamSocket.send(JSON.stringify({action:"heartbeat"}))},10000);});
+  streamSocket.addEventListener("message",event=>{try{const msg=JSON.parse(event.data);if(msg.event==="price"&&msg.symbol==="XAU/USD")applyLiveTick(msg);else if(msg.event==="subscribe-status"&&msg.status!=="ok")$("chart-feed-status").textContent="STREAM SUBSCRIPTION FAILED · "+(msg.message||"check Twelve Data plan");}catch{}});
+  streamSocket.addEventListener("error",()=>{$("chart-feed-status").textContent="LIVE STREAM ERROR · reconnecting";});
+  streamSocket.addEventListener("close",()=>{streamConnected=false;if(streamHeartbeat)clearInterval(streamHeartbeat);streamHeartbeat=null;if(streamRetry)clearTimeout(streamRetry);streamRetry=setTimeout(connectLiveStream,5000);});
+ }catch(e){$("chart-feed-status").textContent="LIVE STREAM UNAVAILABLE · "+e.message;}
 }
 async function loadChart(forceAnalysis){
  $("chart-feed-status").textContent="UPDATING · TWELVE DATA";
