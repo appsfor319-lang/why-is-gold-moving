@@ -599,27 +599,7 @@ async function scheduledGoldAlerts(env){
  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram credentials are not configured");
  const clock=algiersClock();
  if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
- const cache=typeof caches!=="undefined"?caches.default:null;
- if(cache){
-  const pinKey="https://gold-brief-cache.local/telegram-pinned-live-chart-v1";
-  let pinState=null;const saved=await cache.match(pinKey);if(saved){try{pinState=await saved.json()}catch{}}
-  try{
-   if(!pinState?.message_id){
-    const url="https://appsfor319-lang.github.io/why-is-gold-moving/";
-    const message="<b>LIVE GOLD CHART · XAU/USD · 5 MIN</b>\n\n<a href=\""+url+"\">Open the live chart with UFD Sessions &amp; Liquidity</a>\n\nLive candles, Asia / London / New York session levels, liquidity sweeps, swing levels and 1H order blocks. The chart stays pinned here; open it for the live website chart.";
-    const sent=await telegramSend(env,message);
-    pinState={message_id:sent.result.message_id,pinned:false};
-    await cache.put(pinKey,new Response(JSON.stringify(pinState),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
-   }
-   if(!pinState.pinned){
-    const pinResponse=await fetch(telegramApiUrl(env,"pinChatMessage"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:String(env.TELEGRAM_CHAT_ID).trim(),message_id:pinState.message_id,disable_notification:true}),signal:AbortSignal.timeout(15000)});
-    const pin=await pinResponse.json();if(!pinResponse.ok||!pin.ok)throw Error("Telegram pinChatMessage failed: "+(pin.description||pinResponse.status));
-    pinState.pinned=true;
-    await cache.put(pinKey,new Response(JSON.stringify(pinState),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
-    console.log("Live 5-minute gold chart message pinned in Telegram:",pinState.message_id);
-   }
-  }catch(e){console.error("Live gold chart Telegram pin failed:",e?.message||e)}
- }
+ // The live chart is a one-time pinned reference; never resend it from the recurring news poll.
  const [newsResult,goldResult,silverResult,dxyResult,yieldResult,oilResult]=await Promise.allSettled([
   headlines(),metal(env,"XAU"),metal(env,"XAG"),yahooDXY(),yield10(env),oilWTI(env)
  ]);
