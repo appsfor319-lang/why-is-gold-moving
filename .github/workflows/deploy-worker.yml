@@ -45,9 +45,50 @@ jobs:
               if (!body.market || !body.market.gold || !body.briefing || typeof body.briefing.headline !== "string" || typeof body.briefing.body !== "string") {
                 throw new Error("Required market or briefing fields are missing");
               }
-              if (!Array.isArray(body.news) || !Array.isArray(body.calendar) || !Array.isArray(body.sources)) {
-                throw new Error("News, calendar or source arrays are missing");
+              if (!Array.isArray(body.news) || !Array.isArray(body.calendar) || !Array.isArray(body.history) || !Array.isArray(body.intraday_history) || !Array.isArray(body.sources)) {
+                throw new Error("News, calendar, history, intraday_history or source arrays are missing");
               }
+              const validDate = value => {
+                if (typeof value !== "string" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+                const date = new Date(value + "T00:00:00Z");
+                return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+              };
+              const validUrl = value => { try { const u = new URL(value); return ["https:", "http:"].includes(u.protocol); } catch { return false; } };
+              const invalidHistory = body.history.filter(row =>
+                !validDate(row.date) ||
+                !Number.isFinite(row.gold_event_day_pct) ||
+                !Number.isFinite(row.gold_next_day_pct) ||
+                !row.source || !validUrl(row.source_url) ||
+                !row.event_source || !validUrl(row.event_source_url) || !row.method
+              );
+              if (invalidHistory.length) throw new Error("Historical event rows are missing valid dates, daily close returns or source/method metadata");
+              const invalidIntraday = body.intraday_history.filter(row =>
+                !row.release_at_utc || !Number.isFinite(Date.parse(row.release_at_utc)) ||
+                !Number.isFinite(row.gold_15m_pct) ||
+                !Number.isFinite(row.gold_1h_pct) ||
+                !Number.isFinite(row.gold_4h_pct) ||
+                !row.baseline_bar || !row.source || !validUrl(row.source_url) ||
+                !row.event_source || !validUrl(row.event_source_url) || !row.method ||
+                !Object.prototype.hasOwnProperty.call(row, "actual") ||
+                !Object.prototype.hasOwnProperty.call(row, "forecast") ||
+                !Object.prototype.hasOwnProperty.call(row, "previous")
+              );
+              if (invalidIntraday.length) throw new Error("Intraday event rows are missing release times, 15m/1h/4h returns or source/method metadata");
+              const invalidCalendar = body.calendar.filter(row => {
+                const date = String(row.datetime || "").slice(0, 10);
+                return !validDate(date) || !row.event || !row.source || !validUrl(row.source_url);
+              });
+              if (invalidCalendar.length) throw new Error("Calendar rows are missing a valid date, event or source attribution");
+              const intradaySource = body.sources.find(source => source.name === "Intraday event reactions");
+              const financeCalendarConfigured = intradaySource?.status !== "not_configured";
+              const calendarFieldCoverage = Object.fromEntries(["actual", "forecast", "previous"].map(field => [field, body.calendar.filter(row => row[field] !== null && row[field] !== undefined && row[field] !== "").length]));
+              const calendarTimedRows = body.calendar.filter(row => /T\\d{2}:\\d{2}/.test(String(row.datetime || ""))).length;
+              const expectedGoldDirection = body.market.gold.stale ? "unknown" : Number(body.market.gold.change_pct) > 0.05 ? "up" : Number(body.market.gold.change_pct) < -0.05 ? "down" : "flat";
+              const briefingText = (body.briefing.headline + " " + body.briefing.body).toLowerCase();
+              const directionConsistent = expectedGoldDirection === "unknown" ||
+                (expectedGoldDirection === "up" && /higher|rising|rose|up/.test(briefingText)) ||
+                (expectedGoldDirection === "down" && /lower|falling|fell|down/.test(briefingText)) ||
+                (expectedGoldDirection === "flat" && /little changed|flat|unchanged|mixed|unclear/.test(briefingText));
               if (!body.sources.every(source => source && typeof source.name === "string" && typeof source.status === "string" && typeof source.freshness === "string")) {
                 throw new Error("A source entry is missing its name, status or freshness");
               }
@@ -77,6 +118,18 @@ jobs:
                 publisher_count: publishers.length,
                 publishers,
                 calendar_count: body.calendar.length,
+                calendar_rows_with_release_time: calendarTimedRows,
+                calendar_actual_forecast_prior_counts: calendarFieldCoverage,
+                daily_history_count: body.history.length,
+                latest_daily_history_date: body.history[0]?.date || null,
+                latest_daily_history_sample: body.history.slice(0, 3),
+                intraday_history_count: body.intraday_history.length,
+                latest_intraday_history_sample: body.intraday_history.slice(0, 3),
+                finance_calendar_configured: financeCalendarConfigured,
+                ai: { engine: body.briefing.engine || null, model: body.briefing.model || null, status: body.briefing.ai_status || null, error: String(body.briefing.ai_error || "").slice(0, 180) || null },
+                gold_direction: expectedGoldDirection,
+                briefing_direction_consistent: directionConsistent,
+                headlines: body.news.slice(0, 8).map(item => ({ title: item.title, source: item.source, published_at: item.published_at, url: item.url })),
                 chart_source: chart.source,
                 chart_candles: chart.candles.length,
                 chart_fallback_refresh_seconds: chart.refresh_seconds,
