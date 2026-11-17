@@ -14,6 +14,17 @@ function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
  const o={};p.forEach(x=>o[x.type]=x.value);return{date:o.year+"-"+o.month+"-"+o.day,minute:Number(o.hour)*60+Number(o.minute)};
 }
+function sessionCloseTime(ts,s){
+ const lp=localParts(ts,s.timezone),h=Number(s.end.slice(0,2)),m=Number(s.end.slice(2)),[y,mo,d]=lp.date.split("-").map(Number);
+ let target=Date.UTC(y,mo-1,d,h,m,0),guess=target;
+ for(let i=0;i<3;i++){
+  const p=new Intl.DateTimeFormat("en-CA",{timeZone:s.timezone,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(guess));
+  const o={};p.forEach(x=>o[x.type]=x.value);
+  const seen=Date.UTC(Number(o.year),Number(o.month)-1,Number(o.day),Number(o.hour),Number(o.minute),0);
+  guess+=target-seen;
+ }
+ return Math.floor(guess/1000);
+}
 function inSession(minute,s){
  const a=Number(s.start.slice(0,2))*60+Number(s.start.slice(2)),b=Number(s.end.slice(0,2))*60+Number(s.end.slice(2));
  return a<=b?minute>=a&&minute<b:minute>=a||minute<b;
@@ -62,7 +73,7 @@ function calculateIndicator(bars,htf){
  }
  const activeObs=[];
  obs.forEach(o=>{
-  const broken=bars.concat(htf).some(b=>b.time>=o.activatedAt&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
+  const broken=bars.some(b=>b.time>=o.activatedAt&&(o.direction==="bullish"?b.close<o.bottom:b.close>o.top));
   if(!broken)activeObs.push(o);
  });
  const capped=[];
@@ -115,7 +126,7 @@ function drawIndicator(result,bars){
  removeOverlays();
  const ranges=result.ranges,latest=bars[bars.length-1];
  ranges.forEach(r=>{
-  const end=Math.max(r.end,latest.time);
+  const session=sessions.find(x=>x.key===r.session);\n  const tfSeconds=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300;\n  const end=r.active&&session?sessionCloseTime(latest.time,session):r.end+tfSeconds;
   if(end>r.start){
    const source=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:r.active?2:1,lineStyle:r.active?LightweightCharts.LineStyle.Solid:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,pointMarkersVisible:false});
    source.setData([{time:r.start,value:r.high},{time:end,value:r.high}]);overlaySeries.push(source);
