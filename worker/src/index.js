@@ -615,11 +615,12 @@ async function scheduledGoldAlerts(env){
  };
  const market=Object.fromEntries(Object.entries(marketRaw).map(([key,value])=>[key,value&&value.stale!==true&&value.freshness!=="stale"&&value.freshness!=="unknown"?value:null]));
  const independentBrief=fallback(marketRaw,news);
- // Alert on every fresh gold-relevant headline, not only a small urgent-keyword whitelist.
+ // Telegram is reserved for genuinely urgent / high-impact headlines only.
+ // Routine gold-market headlines must never generate Telegram notifications.
  const freshNews=news.filter(item=>{
   const age=Date.now()-Date.parse(item.published_at||"");
-  return Number.isFinite(age)&&age>=0&&age<=12*60*60*1000&&!!safeTelegramLink(item.url);
- }).slice(0,3);
+  return urgentGoldHeadline(item)&&Number.isFinite(age)&&age>=0&&age<=12*60*60*1000&&!!safeTelegramLink(item.url);
+ }).slice(0,1);
  for(const item of freshNews){
   const link=safeTelegramLink(item.url);
   if(!link)continue;
