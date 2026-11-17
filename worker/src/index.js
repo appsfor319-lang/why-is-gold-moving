@@ -284,7 +284,7 @@ async function goldInstitutionalFlows(){
   return result;
 }
 async function chartCandles(env,interval){
-  if(!["1min","5min","15min","30min","1h"].includes(interval))throw Error("Unsupported chart interval");
+  if(!["5min","15min","30min","1h"].includes(interval))throw Error("Unsupported chart interval");
   const cache=typeof caches!=="undefined"?caches.default:null,key=new Request("https://gold-brief-cache.local/xau-chart-v3/"+interval);
   if(cache){const hit=await cache.match(key);if(hit)return hit.json()}
   const fetchBars=async(tf,size)=>{
