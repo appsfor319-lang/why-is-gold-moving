@@ -49,7 +49,7 @@ jobs:
                 throw new Error("News, calendar, history, intraday_history or source arrays are missing");
               }
               const validDate = value => {
-                if (typeof value !== "string" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+                if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
                 const date = new Date(value + "T00:00:00Z");
                 return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
               };
@@ -82,7 +82,7 @@ jobs:
               const intradaySource = body.sources.find(source => source.name === "Intraday event reactions");
               const financeCalendarConfigured = intradaySource?.status !== "not_configured";
               const calendarFieldCoverage = Object.fromEntries(["actual", "forecast", "previous"].map(field => [field, body.calendar.filter(row => row[field] !== null && row[field] !== undefined && row[field] !== "").length]));
-              const calendarTimedRows = body.calendar.filter(row => /T\\d{2}:\\d{2}/.test(String(row.datetime || ""))).length;
+              const calendarTimedRows = body.calendar.filter(row => /T\d{2}:\d{2}/.test(String(row.datetime || ""))).length;
               const expectedGoldDirection = body.market.gold.stale ? "unknown" : Number(body.market.gold.change_pct) > 0.05 ? "up" : Number(body.market.gold.change_pct) < -0.05 ? "down" : "flat";
               const briefingText = (body.briefing.headline + " " + body.briefing.body).toLowerCase();
               const directionConsistent = expectedGoldDirection === "unknown" ||
