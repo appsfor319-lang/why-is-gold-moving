@@ -623,7 +623,7 @@ async function scheduledGoldAlerts(env){
  for(const item of freshNews){
   const link=safeTelegramLink(item.url);
   if(!link)continue;
-  const urgentKey="https://gold-brief-cache.local/all-relevant-independent-v4/"+encodeURIComponent(String(item.url||item.title).toLowerCase().slice(0,180));
+  const urgentKey="https://gold-brief-cache.local/urgent-independent-v3/"+encodeURIComponent(String(item.url||item.title).toLowerCase().slice(0,180));
   if(cache&&await cache.match(urgentKey))continue;
   let explanation;
   try{explanation=await generateUrgentGoldAlert(env,item,market,independentBrief.body)}catch(e){
