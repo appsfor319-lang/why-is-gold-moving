@@ -601,7 +601,28 @@ async function scheduledGoldSquawk(env){
  const clock=algiersClock();
  // No Telegram posts of any kind on Saturday or Sunday in Algeria.
  if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
- const cache=typeof caches!=="undefined"?caches.default:null,page=await goldSquawkPage();
+ const cache=typeof caches!=="undefined"?caches.default:null;
+ // Publish the live five-minute chart once, then keep that Telegram message pinned.
+ if(cache){
+  const pinKey="https://gold-brief-cache.local/telegram-pinned-live-chart-v1";
+  let pinState=null;const saved=await cache.match(pinKey);if(saved){try{pinState=await saved.json()}catch{}}
+  try{
+   if(!pinState?.message_id){
+    const url="https://appsfor319-lang.github.io/why-is-gold-moving/";
+    const sent=await telegramSend(env,"<b>LIVE GOLD CHART · XAU/USD · 5 MIN</b>\\n\\n<a href=\\""+url+"\\">Open the live chart with UFD Sessions &amp; Liquidity</a>\\n\\nLive candles, Asia / London / New York session levels, liquidity sweeps, swing levels and 1H order blocks. Chart refreshes periodically; it is not tick-by-tick.");
+    pinState={message_id:sent.result.message_id,pinned:false};
+    await cache.put(pinKey,new Response(JSON.stringify(pinState),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
+   }
+   if(!pinState.pinned){
+    const pinResponse=await fetch(telegramApiUrl(env,"pinChatMessage"),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chat_id:String(env.TELEGRAM_CHAT_ID).trim(),message_id:pinState.message_id,disable_notification:true}),signal:AbortSignal.timeout(15000)});
+    const pin=await pinResponse.json();if(!pinResponse.ok||!pin.ok)throw Error("Telegram pinChatMessage failed: "+(pin.description||pinResponse.status));
+    pinState.pinned=true;
+    await cache.put(pinKey,new Response(JSON.stringify(pinState),{headers:{"content-type":"application/json","cache-control":"public, max-age=31536000"}}));
+    console.log("Live 5-minute gold chart message pinned in Telegram:",pinState.message_id);
+   }
+  }catch(e){console.error("Live gold chart Telegram pin failed:",e?.message||e)}
+ }
+ const page=await goldSquawkPage();
  const market=await Promise.allSettled([metal(env,"XAU"),yahooDXY(),yield10(env)]);
  page.market={};
  if(market[0].status==="fulfilled")page.market.gold={value:market[0].value.value,change_pct:market[0].value.change_pct,timestamp:market[0].value.timestamp};
