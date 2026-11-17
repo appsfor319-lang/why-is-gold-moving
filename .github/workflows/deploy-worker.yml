@@ -30,35 +30,58 @@ jobs:
 
 
 
-      - name: Verify live GoldSquawk feed extraction
+      - name: Smoke test live Worker API and data quality
         shell: bash
         run: |
           node --input-type=module <<'NODE'
-          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/goldsquawk-preview";
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
           let lastError = "No response";
-          for (let attempt = 0; attempt < 6; attempt++) {
+          for (let attempt = 0; attempt < 5; attempt++) {
             try {
-              const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(20000) });
+              const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(25000) });
               const body = await response.json();
-              if (!response.ok) throw new Error("Preview HTTP " + response.status + ": " + (body.error || "unknown"));
-              if (typeof body.why !== "string" || body.why.trim().length < 50) throw new Error("GoldSquawk explanation missing or too short");
-              if (!Array.isArray(body.urgent)) throw new Error("Urgent-news extraction did not return an array");
-              if (!body.checked_at) throw new Error("Feed check timestamp missing");
-              console.log("GOLDSQUAWK_FEED=PASS");
+              if (!response.ok) throw new Error("API HTTP " + response.status + ": " + (body.error || "unknown"));
+              if (!["ok", "partial"].includes(body.status)) throw new Error("Unexpected API status");
+              if (!body.market || !body.market.gold || !body.briefing || typeof body.briefing.headline !== "string" || typeof body.briefing.body !== "string") {
+                throw new Error("Required market or briefing fields are missing");
+              }
+              if (!Array.isArray(body.news) || !Array.isArray(body.calendar) || !Array.isArray(body.sources)) {
+                throw new Error("News, calendar or source arrays are missing");
+              }
+              if (!body.sources.every(source => source && typeof source.name === "string" && typeof source.status === "string" && typeof source.freshness === "string")) {
+                throw new Error("A source entry is missing its name, status or freshness");
+              }
+              if (body.news.length === 0) throw new Error("No current publisher headlines were returned");
+              const invalidNews = body.news.filter(item => {
+                if (!item.title || !item.source || !item.published_at || !item.url) return true;
+                try {
+                  const u = new URL(item.url);
+                  return !["https:", "http:"].includes(u.protocol) || ["news.google.com", "goldsquawk.com", "www.goldsquawk.com"].includes(u.hostname);
+                } catch { return true; }
+              });
+              if (invalidNews.length) throw new Error("A headline lacks an original-publisher link, source or publication timestamp");
+              const stale = Object.entries(body.market).filter(([, value]) => value && (value.stale === true || value.freshness === "stale")).map(([name]) => name);
+              if (stale.length && !/stale|excluded/i.test(body.briefing.body)) throw new Error("Stale market readings are not clearly excluded from the briefing");
+              const publishers = [...new Set(body.news.map(item => item.source))];
+              console.log("WORKER_API_SMOKE_RESULT=PASS");
               console.log(JSON.stringify({
-                checked_at: body.checked_at,
-                explanation_chars: body.why.length,
-                explanation_preview: body.why.slice(0, 900),
-                urgent_headlines_found: body.urgent.length,
-                urgent_headlines: body.urgent
+                status: body.status,
+                gold_change_pct: body.market.gold.change_pct,
+                briefing_headline: body.briefing.headline,
+                news_count: body.news.length,
+                publisher_count: publishers.length,
+                publishers,
+                calendar_count: body.calendar.length,
+                stale_market_fields: stale,
+                source_statuses: body.sources.map(source => ({ name: source.name, status: source.status, freshness: source.freshness, timestamp: source.timestamp }))
               }, null, 2));
               process.exit(0);
             } catch (error) {
               lastError = error?.message || String(error);
-              if (attempt < 5) await new Promise(resolve => setTimeout(resolve, 5000));
+              if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 5000));
             }
           }
-          throw new Error("GoldSquawk live feed verification failed: " + lastError);
+          throw new Error("Live Worker API verification failed: " + lastError);
           NODE
 
       - name: Smoke test live GitHub Pages site
