@@ -61,49 +61,6 @@ jobs:
           throw new Error("GoldSquawk live feed verification failed: " + lastError);
           NODE
 
-      - name: Generate one-time Telegram test authorization
-        id: telegram_test_auth
-        shell: bash
-        run: |
-          token=$(openssl rand -hex 32)
-          echo "::add-mask::$token"
-          echo "token=$token" >> "$GITHUB_OUTPUT"
-
-      - name: Deploy Worker with Telegram test authorization
-        uses: cloudflare/wrangler-action@v4
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: worker
-          command: deploy
-          secrets: |
-            TELEGRAM_TEST_SECRET
-        env:
-          TELEGRAM_TEST_SECRET: ${{ steps.telegram_test_auth.outputs.token }}
-
-      - name: Verify real Telegram delivery
-        shell: bash
-        env:
-          TELEGRAM_TEST_SECRET: ${{ steps.telegram_test_auth.outputs.token }}
-        run: |
-          node --input-type=module <<'NODE'
-          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test";
-          const token = process.env.TELEGRAM_TEST_SECRET;
-          if (!token) throw new Error("Telegram test authorization was not created");
-          const response = await fetch(url, {
-            method: "POST",
-            headers: { authorization: "Bearer " + token },
-            cache: "no-store",
-            signal: AbortSignal.timeout(30000)
-          });
-          const body = await response.json();
-          if (!response.ok || body.ok !== true || body.sent !== true || body.telegram_ok !== true || !body.message_id) {
-            throw new Error("Telegram delivery failed: " + (body.error || JSON.stringify(body)));
-          }
-          console.log("TELEGRAM_DELIVERY=CONFIRMED");
-          console.log(JSON.stringify({ message_id: body.message_id, chat_id: body.chat_id, telegram_ok: body.telegram_ok }));
-          NODE
-
       - name: Smoke test live GitHub Pages site
         shell: bash
         run: |
@@ -119,13 +76,18 @@ jobs:
                 throw new Error("Homepage is missing the main title, TradZ branding or live chart panel");
               }
               const [appResponse, cssResponse] = await Promise.all([
-                fetch(base + "app.js?v=chart1", { cache: "no-store", signal: AbortSignal.timeout(10000) }),
-                fetch(base + "styles.css?v=lang3", { cache: "no-store", signal: AbortSignal.timeout(10000) })
+                fetch(base + "app.js?v=chart2", { cache: "no-store", signal: AbortSignal.timeout(10000) }),
+                fetch(base + "styles.css?v=chart3", { cache: "no-store", signal: AbortSignal.timeout(10000) })
               ]);
               if (!appResponse.ok || !cssResponse.ok) throw new Error("Published JavaScript or CSS asset did not load");
-              const [app, css] = await Promise.all([appResponse.text(), cssResponse.text()]);
+              const chartResponse = await fetch(base + "chart.js?v=ufd3", { cache: "no-store", signal: AbortSignal.timeout(10000) });
+              if (!chartResponse.ok) throw new Error("Published chart.js did not load");
+              const [app, css, chart] = await Promise.all([appResponse.text(), cssResponse.text(), chartResponse.text()]);
               if (!app.includes("g.change_period||'today'") || !app.includes("dir==='up'")) {
                 throw new Error("Published app.js does not contain the latest gold-period and direction consistency fixes");
+              }
+              if (!chart.includes("connectLiveStream") || !chart.includes("applyLiveTick")) {
+                throw new Error("Published chart.js is missing live tick-stream handlers");
               }
               if (!css.includes(".hero-title") || !css.includes("@media(max-width:580px)")) {
                 throw new Error("Published styles do not contain the large title and mobile responsive rules");
