@@ -138,7 +138,7 @@ jobs:
                 chart_candles: chart.candles.length,
                 chart_fallback_refresh_seconds: chart.refresh_seconds,
                 stale_market_fields: stale,
-                source_statuses: body.sources.map(source => ({ name: source.name, status: source.status, freshness: source.freshness, timestamp: source.timestamp }))
+                source_statuses: body.sources.map(source => ({ name: source.name, status: source.status, freshness: source.freshness, timestamp: source.timestamp, error: String(source.error || "").slice(0, 160) || null }))
               }, null, 2));
               process.exit(0);
             } catch (error) {
