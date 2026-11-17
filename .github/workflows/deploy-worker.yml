@@ -56,6 +56,7 @@ jobs:
               const validUrl = value => { try { const u = new URL(value); return ["https:", "http:"].includes(u.protocol); } catch { return false; } };
               const invalidHistory = body.history.filter(row =>
                 !validDate(row.date) ||
+                !row.event_type || row.event_type === "FOMC" || !row.event ||
                 !Number.isFinite(row.gold_event_day_pct) ||
                 !Number.isFinite(row.gold_next_day_pct) ||
                 !row.source || !validUrl(row.source_url) ||
@@ -122,7 +123,10 @@ jobs:
                 calendar_actual_forecast_prior_counts: calendarFieldCoverage,
                 daily_history_count: body.history.length,
                 latest_daily_history_date: body.history[0]?.date || null,
+                history_event_type_counts: Object.fromEntries([...new Set(body.history.map(row => row.event_type))].map(type => [type, body.history.filter(row => row.event_type === type).length])),
+                history_weekend_dates: body.history.filter(row => [0, 6].includes(new Date(row.date + "T00:00:00Z").getUTCDay())).map(row => row.date).slice(0, 20),
                 latest_daily_history_sample: body.history.slice(0, 3),
+                calendar_sample: body.calendar.slice(0, 12).map(row => ({ datetime: row.datetime, event: row.event, source: row.source, source_url: row.source_url, actual: row.actual ?? null, forecast: row.forecast ?? null, previous: row.previous ?? null })),
                 intraday_history_count: body.intraday_history.length,
                 latest_intraday_history_sample: body.intraday_history.slice(0, 3),
                 finance_calendar_configured: financeCalendarConfigured,
