@@ -596,58 +596,9 @@ async function generateUrgentGoldAlert(env,item,market,briefing){
  return textBody||fallback;
 }
 async function scheduledGoldAlerts(env){
- if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram credentials are not configured");
- const testCache=typeof caches!=="undefined"?caches.default:null;
- // New one-time delivery check. The marker is written only after Telegram confirms delivery.
- const testKey="https://gold-brief-cache.local/telegram-one-time-test-20261118-retry1";
- if(!testCache||!await testCache.match(testKey)){
-  try{
-   const test=await telegramSend(env,"<b>TradZ Academy | Telegram connection test</b>\\n\\nإذا وصلتك هذي الرسالة، الإرسال إلى المجموعة خدام. من الآن غير تنبيهات الذهب العاجلة، بلا تحديثات شارت متكررة.");
-   if(testCache)await testCache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
-   console.log("TELEGRAM_ONE_TIME_TEST_CONFIRMED",JSON.stringify({message_id:test.result?.message_id,chat_id:test.result?.chat?.id}));
-  }catch(error){
-   console.error("TELEGRAM_ONE_TIME_TEST_FAILED",error?.stack||error?.message||error);
-   throw error;
-  }
- }
- const clock=algiersClock();
- if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
- const cache=typeof caches!=="undefined"?caches.default:null;
- // The live chart is a one-time pinned reference; never resend it from the recurring news poll.
- const [newsResult,goldResult,silverResult,dxyResult,yieldResult,oilResult]=await Promise.allSettled([
-  headlines(),metal(env,"XAU"),metal(env,"XAG"),yahooDXY(),yield10(env),oilWTI(env)
- ]);
- const news=newsResult.status==="fulfilled"?newsResult.value:[];
- if(newsResult.status==="rejected")console.error("Independent gold RSS news check failed:",newsResult.reason?.message||newsResult.reason);
- const marketRaw={
-  gold:markFreshness(goldResult.status==="fulfilled"?goldResult.value:null,6,true),
-  silver:markFreshness(silverResult.status==="fulfilled"?silverResult.value:null,6,true),
-  dxy:markFreshness(dxyResult.status==="fulfilled"?dxyResult.value:null,48),
-  yield:markFreshness(yieldResult.status==="fulfilled"?yieldResult.value:null,48),
-  oil:markFreshness(oilResult.status==="fulfilled"?oilResult.value:null,48)
- };
- const market=Object.fromEntries(Object.entries(marketRaw).map(([key,value])=>[key,value&&value.stale!==true&&value.freshness!=="stale"&&value.freshness!=="unknown"?value:null]));
- const independentBrief=fallback(marketRaw,news);
- // Telegram is reserved for genuinely urgent / high-impact headlines only.
- // Routine gold-market headlines must never generate Telegram notifications.
- const freshNews=news.filter(item=>{
-  const age=Date.now()-Date.parse(item.published_at||"");
-  return urgentGoldHeadline(item)&&Number.isFinite(age)&&age>=0&&age<=12*60*60*1000&&!!safeTelegramLink(item.url);
- }).slice(0,1);
- for(const item of freshNews){
-  const link=safeTelegramLink(item.url);
-  if(!link)continue;
-  const urgentKey="https://gold-brief-cache.local/urgent-independent-v3/"+encodeURIComponent(String(item.url||item.title).toLowerCase().slice(0,180));
-  if(cache&&await cache.match(urgentKey))continue;
-  let explanation;
-  try{explanation=await generateUrgentGoldAlert(env,item,market,independentBrief.body)}catch(e){
-   console.error("Independent urgent gold analysis failed:",e.message);
-   explanation="الخبر يستحق المتابعة، لكن التأثير على الذهب مازال غير مؤكد من رد فعل السوق. نراقبو السعر والدولار والعوائد قبل ما نربطو الخبر بالحركة.";
-  }
-  const message="<b>WHY IS GOLD MOVING? | خبر جديد وتأثيره على الذهب</b>\n"+tgEscape(item.title)+"\n\n"+tgEscape(explanation)+"\n\n<a href=\""+link+"\">المصدر الأصلي: "+tgEscape(item.source||"Publisher")+"</a>";
-  await telegramSend(env,message);
-  if(cache)await cache.put(urgentKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
- }
+ // GoldSquawk content must not be relayed into this separate bot without a written licence.
+ // Keep the website and pinned chart online; do not send alerts from substitute publishers.
+ console.log("TELEGRAM_NEWS_ALERTS_PAUSED: awaiting an authorised GoldSquawk delivery method");
  return;
 }
 export default{
