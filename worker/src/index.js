@@ -597,6 +597,13 @@ async function generateUrgentGoldAlert(env,item,market,briefing){
 }
 async function scheduledGoldAlerts(env){
  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram credentials are not configured");
+ const testCache=typeof caches!=="undefined"?caches.default:null;
+ const testKey="https://gold-brief-cache.local/telegram-one-time-test-20261118";
+ if(testCache&&!await testCache.match(testKey)){
+  const test=await telegramSend(env,"<b>TradZ Academy | Telegram test</b>\n\nالتجربة وصلت. تنبيهات الذهب العاجلة فقط، بلا تحديثات شارت متكررة.");
+  await testCache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
+  console.log("TELEGRAM_ONE_TIME_TEST_SENT",test.result?.message_id||"unknown");
+ }
  const clock=algiersClock();
  if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
  const cache=typeof caches!=="undefined"?caches.default:null;
