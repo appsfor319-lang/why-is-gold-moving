@@ -104,7 +104,7 @@ async function historicalReactions(env){
   const candles=priceData.values.map(v=>({date:String(v.datetime||"").slice(0,10),close:Number(v.close)})).filter(v=>{
     if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!Number.isFinite(v.close)||v.close<=0)return false;
     const weekday=new Date(v.date+"T12:00:00Z").getUTCDay();
-    return weekday!==0&&weekday!==6;
+    return weekday!==6;
   }).sort((a,b)=>a.date.localeCompare(b.date));
   const index=new Map(candles.map((c,i)=>[c.date,i]));
   const cutoff=new Date();cutoff.setUTCFullYear(cutoff.getUTCFullYear()-5);const cutoffDate=cutoff.toISOString().slice(0,10);
