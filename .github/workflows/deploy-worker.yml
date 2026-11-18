@@ -56,6 +56,12 @@ jobs:
               const validUrl = value => { try { const u = new URL(value); return ["https:", "http:"].includes(u.protocol); } catch { return false; } };
               const invalidHistory = body.history.filter(row =>
                 !validDate(row.date) ||
+                !validDate(row.prior_session) ||
+                !validDate(row.next_session) ||
+                [0, 6].includes(new Date(row.prior_session + "T00:00:00Z").getUTCDay()) ||
+                [0, 6].includes(new Date(row.next_session + "T00:00:00Z").getUTCDay()) ||
+                row.prior_session >= row.date ||
+                row.next_session <= row.date ||
                 !row.event_type || row.event_type === "FOMC" || !row.event ||
                 !Number.isFinite(row.gold_event_day_pct) ||
                 !Number.isFinite(row.gold_next_day_pct) ||
