@@ -125,11 +125,25 @@ jobs:
               const missingSourceTimestamps = body.sources.filter(source => ["ok", "stale"].includes(source.status) && !source.timestamp).map(source => source.name);
               if (missingSourceTimestamps.length) throw new Error("Source status is missing a timestamp: " + missingSourceTimestamps.join(", "));
               const publishers = [...new Set(body.news.map(item => item.source))];
+              const staleLabel = value => "STALE · " + (value?.timestamp ? String(value.timestamp).slice(0, 10) : "timestamp unavailable");
+              const missingChange = value => value?.value != null ? "CHANGE MISSING" : "—";
+              const expectedFactors = {
+                yield: body.market.yield?.stale ? staleLabel(body.market.yield) : body.market.yield?.change_bp == null ? missingChange(body.market.yield) : (body.market.yield.change_bp > 0 ? "▲ rising" : "▼ falling") + " (" + (body.market.yield.change_bp > 0 ? "+" : "") + body.market.yield.change_bp + "bp)",
+                dxy: body.market.dxy?.stale ? staleLabel(body.market.dxy) : body.market.dxy?.change_pct == null ? missingChange(body.market.dxy) : (body.market.dxy.change_pct > 0 ? "▲ rising " : "▼ falling ") + (body.market.dxy.change_pct > 0 ? "+" : "") + body.market.dxy.change_pct.toFixed(2) + "%",
+                silver: body.market.silver?.stale ? staleLabel(body.market.silver) : body.market.silver?.change_pct == null ? missingChange(body.market.silver) : (body.market.silver.change_pct > 0 ? "▲ " : "▼ ") + body.market.silver.change_pct.toFixed(2) + "%",
+                oil: body.market.oil?.stale ? staleLabel(body.market.oil) : body.market.oil?.change_pct == null ? missingChange(body.market.oil) : (body.market.oil.change_pct > 0 ? "▲ " : "▼ ") + body.market.oil.change_pct.toFixed(2) + "%"
+              };
+              const factorLabelsConsistent = Object.entries(expectedFactors).every(([key, value]) => body.briefing.factors?.[key] === value);
+              if (!factorLabelsConsistent) throw new Error("Briefing factor labels do not match the current market readings");
               console.log("WORKER_API_SMOKE_RESULT=PASS");
               const audit = {
                 status: body.status,
+                market_snapshot: Object.fromEntries(Object.entries(body.market).map(([name, value]) => [name, value ? { value: value.value, change_pct: value.change_pct, change_bp: value.change_bp, timestamp: value.timestamp, stale: value.stale, freshness: value.freshness, source: value.source } : null])),
                 gold_change_pct: body.market.gold.change_pct,
                 briefing_headline: body.briefing.headline,
+                briefing_body: body.briefing.body,
+                briefing_factors: body.briefing.factors,
+                factor_labels_consistent: factorLabelsConsistent,
                 news_count: body.news.length,
                 publisher_count: publishers.length,
                 publishers,
@@ -162,7 +176,8 @@ jobs:
                 "",
                 `- API status: **${audit.status}**`,
                 `- Gold change: ${audit.gold_change_pct ?? "unavailable"}%`,
-                `- Briefing direction consistent: ${audit.briefing_direction_consistent}`,
+                `- Briefing direction consistent: ${audit.briefing_direction_consistent}; factor labels consistent: ${audit.factor_labels_consistent}`,
+                `- Briefing: ${audit.briefing_headline} — ${audit.briefing_body}`,
                 `- News: ${audit.news_count} headlines from ${audit.publisher_count} publishers (${audit.publishers.join(", ")})`,
                 `- Calendar: ${audit.calendar_count} rows; ${audit.calendar_rows_with_release_time} timed; actual/forecast/prior: ${JSON.stringify(audit.calendar_actual_forecast_prior_counts)}`,
                 `- Daily history: ${audit.daily_history_count} rows; latest ${audit.latest_daily_history_date || "unavailable"}; Saturday event dates: ${audit.history_saturday_dates.length}`,
