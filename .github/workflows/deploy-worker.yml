@@ -202,6 +202,27 @@ jobs:
           throw new Error("Live Worker API verification failed: " + lastError);
           NODE
 
+      - name: Send and verify one-time Telegram test message
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/telegram-test-once";
+          let lastError = "No response";
+          for (let attempt = 0; attempt < 5; attempt++) {
+            try {
+              const response = await fetch(url, { method: "POST", cache: "no-store", signal: AbortSignal.timeout(15000) });
+              const body = await response.json();
+              if (!response.ok || body.ok !== true || body.sent !== true) throw new Error("Telegram test failed: HTTP " + response.status + " " + JSON.stringify(body));
+              console.log("TELEGRAM_TEST_DELIVERY=CONFIRMED " + JSON.stringify(body));
+              process.exit(0);
+            } catch (error) {
+              lastError = error?.message || String(error);
+              if (attempt < 4) await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+          }
+          throw new Error("Telegram delivery was not confirmed: " + lastError);
+          NODE
+
       - name: Smoke test live GitHub Pages site
         shell: bash
         run: |
