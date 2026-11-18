@@ -675,7 +675,8 @@ async function scheduledGoldAlerts(env){
   await cache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
   console.log("TELEGRAM_ALERT_SYSTEM_TEST_SENT",test.result?.message_id||null);
  }
- const data=await terminalData(env);\n await scheduledGoldSquawkAlert(env,data);
+ const data=await terminalData(env);
+ await scheduledGoldSquawkAlert(env,data);
  const now=Date.now();
  const urgentPattern=/\b(?:fed decision|fomc|powell|cpi|core pce|pce inflation|nonfarm payroll|nfp|jobs report|emergency rate|rate decision|interest rate decision|surprise rate|tariff|sanction|invasion|missile|military strike|ceasefire|war escalat|geopolitical escalation|central bank surprise|gold price surges?|gold plunges?|gold rallies|gold tumbles|bullion jumps?)\b/i;
  const recent=(data.news||[]).filter(item=>{
