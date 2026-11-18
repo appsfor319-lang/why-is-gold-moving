@@ -126,7 +126,9 @@ function drawIndicator(result,bars){
  removeOverlays();
  const ranges=result.ranges,latest=bars[bars.length-1];
  ranges.forEach(r=>{
-  const session=sessions.find(x=>x.key===r.session);\n  const tfSeconds=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300;\n  const end=r.active&&session?sessionCloseTime(latest.time,session):r.end+tfSeconds;
+  const session=sessions.find(x=>x.key===r.session);
+  const tfSeconds=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300;
+  const endr.active&&session?sessionCloseTime(latest.time,session):r.end+tfSeconds;
   if(end>r.start){
    const source=chart.addSeries(LightweightCharts.LineSeries,{color:r.color,lineWidth:r.active?2:1,lineStyle:r.active?LightweightCharts.LineStyle.Solid:LightweightCharts.LineStyle.Dashed,priceLineVisible:false,lastValueVisible:false,crosshairMarkerVisible:false,pointMarkersVisible:false});
    source.setData([{time:r.start,value:r.high},{time:end,value:r.high}]);overlaySeries.push(source);
