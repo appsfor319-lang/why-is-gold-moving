@@ -670,55 +670,13 @@ async function scheduledGoldAlerts(env){
   console.error("TELEGRAM_NEWS_ALERTS_NOT_CONFIGURED: missing bot token or chat id");
   return;
  }
- const cache=typeof caches!=="undefined"?caches.default:null;
- const testKey=new Request("https://gold-brief-cache.local/telegram-alert-system-test-v1");
- if(cache&&!await cache.match(testKey)){
-  const test=await telegramSend(env,"<b>TradZ Academy | Telegram test</b>\n\nتم تفعيل فحص تنبيهات الذهب. الرسائل القادمة ستكون للأخبار العاجلة ذات الصلة فقط، مع شرح تأثيرها المحتمل وتحديث سبب حركة الذهب. لن يتم إرسال تحديثات الشارت.");
-  await cache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
-  console.log("TELEGRAM_ALERT_SYSTEM_TEST_SENT",test.result?.message_id||null);
+ // The publisher-authorized public-page check is the sole scheduled Telegram news path.
+ // Do not send activation confirmations, tests, live-chart updates or duplicate RSS alerts.
+ let data={market:{},briefing:{body:""}};
+ try{data=await terminalData(env)}catch(error){
+  console.error("INDEPENDENT_MARKET_CONTEXT_UNAVAILABLE:",error?.message||error);
  }
- const data=await terminalData(env);
  await scheduledGoldSquawkAlert(env,data);
- const now=Date.now();
- const urgentPattern=/\b(?:fed decision|fomc|powell|cpi|core pce|pce inflation|nonfarm payroll|nfp|jobs report|emergency rate|rate decision|interest rate decision|surprise rate|tariff|sanction|invasion|missile|military strike|ceasefire|war escalat|geopolitical escalation|central bank surprise|gold price surges?|gold plunges?|gold rallies|gold tumbles|bullion jumps?)\b/i;
- const recent=(data.news||[]).filter(item=>{
-  const published=Date.parse(item.published_at||"");
-  return Number.isFinite(published)&&published<=now+60000&&now-published<=45*60000&&urgentPattern.test(String(item.title||""));
- }).sort((a,b)=>Date.parse(a.published_at)-Date.parse(b.published_at)).slice(0,4);
- if(!recent.length){console.log("TELEGRAM_NO_NEW_URGENT_GOLD_HEADLINES");return;}
-
- for(const item of recent){
-  const identity=String(item.url||item.title);
-  const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(identity));
-  const hash=[...new Uint8Array(digest)].map(x=>x.toString(16).padStart(2,"0")).join("");
-  const dedupeKey=new Request("https://gold-brief-cache.local/telegram-urgent-news-"+hash);
-  if(cache&&await cache.match(dedupeKey))continue;
-  let explanation;
-  try{explanation=await generateUrgentGoldAlert(env,item,data.market,data.briefing?.body||"")}
-  catch(error){
-   console.error("URGENT_GOLD_ALERT_AI_FALLBACK:",error?.message||error);
-   explanation="هذا الخبر مهم للمتابعة، لكن ما عندناش دليل كافي أنه هو سبب حركة الذهب. نراقبو الدولار وعوائد السندات ورد فعل الذهب قبل ما نحكمو على التأثير.";
-  }
-  const publisherLink=safeTelegramLink(item.url);
-  const linkedTitle=publisherLink?"<a href=\""+publisherLink+"\">"+tgEscape(item.title)+"</a>":tgEscape(item.title);
-  const briefing=String(data.briefing?.body||"").slice(0,900);
-  const message=[
-   "<b>تنبيه عاجل على الذهب</b>",
-   linkedTitle,
-   "<i>"+tgEscape(item.source||"مصدر إخباري")+" · "+tgEscape(algiersClock(new Date(item.published_at)))+" الجزائر</i>",
-   "",
-   "<b>شرح الخبر وتأثيره المحتمل:</b>",
-   tgEscape(explanation),
-   "",
-   "<b>علاش الذهب يتحرك؟</b>",
-   tgEscape(briefing||"التحليل العام غير متاح حالياً؛ ما نأكدوش سبب الحركة بلا بيانات كافية."),
-   "",
-   "<i>مصادر مستقلة مفتوحة؛ التأثير المحتمل وليس إثباتاً للسبب. لا توجد توصية تداول.</i>"
-  ].join("\n");
-  await telegramSend(env,message.slice(0,3900));
-  if(cache)await cache.put(dedupeKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
-  console.log("TELEGRAM_URGENT_GOLD_ALERT_SENT",hash.slice(0,12),item.source,item.published_at);
- }
 }
 export default{
 async scheduled(controller,env,ctx){
