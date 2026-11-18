@@ -615,7 +615,7 @@ async function scheduledGoldAlerts(env){
   return Number.isFinite(published)&&published<=now+60000&&now-published<=45*60000&&urgentPattern.test(String(item.title||""));
  }).sort((a,b)=>Date.parse(a.published_at)-Date.parse(b.published_at)).slice(0,4);
  if(!recent.length){console.log("TELEGRAM_NO_NEW_URGENT_GOLD_HEADLINES");return;}
- const cache=typeof caches!=="undefined"?caches.default:null;
+
  for(const item of recent){
   const identity=String(item.url||item.title);
   const digest=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(identity));
