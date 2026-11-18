@@ -7,7 +7,3 @@ compatibility_date = "2026-11-14"
 
 # Optional: Finance Calendar API key enables actual/consensus figures and timed intraday release studies.
 # Configure with: wrangler secret put FINANCE_CALENDAR_API_KEY
-
-# Poll every minute for new gold-moving headlines and high-impact news from independent publisher RSS feeds. No routine chart or price updates.
-[triggers]
-crons = ["* * * * *"]
