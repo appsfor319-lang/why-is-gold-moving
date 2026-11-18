@@ -600,6 +600,13 @@ async function scheduledGoldAlerts(env){
   console.error("TELEGRAM_NEWS_ALERTS_NOT_CONFIGURED: missing bot token or chat id");
   return;
  }
+ const cache=typeof caches!=="undefined"?caches.default:null;
+ const testKey=new Request("https://gold-brief-cache.local/telegram-alert-system-test-v1");
+ if(cache&&!await cache.match(testKey)){
+  const test=await telegramSend(env,"<b>TradZ Academy | Telegram test</b>\\n\\nتم تفعيل فحص تنبيهات الذهب. الرسائل القادمة ستكون للأخبار العاجلة ذات الصلة فقط، مع شرح تأثيرها المحتمل وتحديث سبب حركة الذهب. لن يتم إرسال تحديثات الشارت.");
+  await cache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
+  console.log("TELEGRAM_ALERT_SYSTEM_TEST_SENT",test.result?.message_id||null);
+ }
  const data=await terminalData(env);
  const now=Date.now();
  const urgentPattern=/\b(?:fed decision|fomc|powell|cpi|core pce|pce inflation|nonfarm payroll|nfp|jobs report|emergency rate|rate decision|interest rate decision|surprise rate|tariff|sanction|invasion|missile|military strike|ceasefire|war escalat|geopolitical escalation|central bank surprise|gold price surges?|gold plunges?|gold rallies|gold tumbles|bullion jumps?)\b/i;
