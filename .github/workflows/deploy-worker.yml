@@ -112,7 +112,7 @@ jobs:
               const invalidNews = body.news.filter(item => {
                 if (!item.title || !item.source || !item.published_at || !item.url) return true;
                 const published = Date.parse(item.published_at);
-                const titleRelevant = /\\bgold(?:'s)?\\b|bullion|precious metals|\\bXAU\\b|federal reserve|\\bfed\\b|powell|treasury yields?|interest rates?|inflation|\\bCPI\\b|\\bPCE\\b|payrolls|jobs report|dollar index|\\bDXY\\b|central bank|sanctions?|geopolitical|ceasefire|war in/i.test(item.title);
+                const titleRelevant = /\bgold(?:'s)?\b|bullion|precious metals|\bXAU\b|federal reserve|\bfed\b|powell|treasury yields?|interest rates?|inflation|\bCPI\b|\bPCE\b|payrolls|jobs report|dollar index|\bDXY\b|central bank|sanctions?|geopolitical|ceasefire|war in/i.test(item.title);
                 if (!Number.isFinite(published) || Date.now() - published > 72 * 60 * 60 * 1000 || published > Date.now() + 60 * 60 * 1000 || !titleRelevant) return true;
                 try {
                   const u = new URL(item.url);
@@ -176,8 +176,8 @@ jobs:
                 sourceRows,
                 "",
                 "Headline URLs, publication timestamps and relevance; calendar dates/source attribution; daily/intraday row metadata and candle-derived fields passed the workflow validations. Semantic news impact and original-source calendar accuracy still require human review."
-              ].join("\\n");
-              appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + "\\n");
+              ].join("\n");
+              appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + "\n");
               process.exit(0);
             } catch (error) {
               lastError = error?.message || String(error);
