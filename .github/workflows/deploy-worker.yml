@@ -58,8 +58,8 @@ jobs:
                 !validDate(row.date) ||
                 !validDate(row.prior_session) ||
                 !validDate(row.next_session) ||
-                [0, 6].includes(new Date(row.prior_session + "T00:00:00Z").getUTCDay()) ||
-                [0, 6].includes(new Date(row.next_session + "T00:00:00Z").getUTCDay()) ||
+                new Date(row.prior_session + "T00:00:00Z").getUTCDay() === 6 ||
+                new Date(row.next_session + "T00:00:00Z").getUTCDay() === 6 ||
                 row.prior_session >= row.date ||
                 row.next_session <= row.date ||
                 !row.event_type || row.event_type === "FOMC" || !row.event ||
