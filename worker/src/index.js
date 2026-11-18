@@ -603,7 +603,7 @@ async function scheduledGoldAlerts(env){
  const cache=typeof caches!=="undefined"?caches.default:null;
  const testKey=new Request("https://gold-brief-cache.local/telegram-alert-system-test-v1");
  if(cache&&!await cache.match(testKey)){
-  const test=await telegramSend(env,"<b>TradZ Academy | Telegram test</b>\\n\\nتم تفعيل فحص تنبيهات الذهب. الرسائل القادمة ستكون للأخبار العاجلة ذات الصلة فقط، مع شرح تأثيرها المحتمل وتحديث سبب حركة الذهب. لن يتم إرسال تحديثات الشارت.");
+  const test=await telegramSend(env,"<b>TradZ Academy | Telegram test</b>\n\nتم تفعيل فحص تنبيهات الذهب. الرسائل القادمة ستكون للأخبار العاجلة ذات الصلة فقط، مع شرح تأثيرها المحتمل وتحديث سبب حركة الذهب. لن يتم إرسال تحديثات الشارت.");
   await cache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
   console.log("TELEGRAM_ALERT_SYSTEM_TEST_SENT",test.result?.message_id||null);
  }
