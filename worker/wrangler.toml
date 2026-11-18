@@ -9,4 +9,4 @@ compatibility_date = "2026-11-14"
 # Configure with: wrangler secret put FINANCE_CALENDAR_API_KEY
 
 [triggers]
-crons = ["*/5 * * * *"]
+crons = ["*/15 * * * *"]
