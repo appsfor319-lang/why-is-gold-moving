@@ -75,7 +75,7 @@ async function economicCalendar(env){
 }
 async function historicalReactions(env){
   const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v3");
-  const cache=typeof caches!=="undefined"?caches.default:null;
+ 
   if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
   if(!env.FRED_API_KEY||!env.TWELVEDATA_API_KEY)throw Error("FRED_API_KEY and TWELVEDATA_API_KEY are required for historical event studies");
   const fredBase="https://api.stlouisfed.org/fred/";
