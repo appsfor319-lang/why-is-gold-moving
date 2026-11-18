@@ -74,7 +74,7 @@ async function economicCalendar(env){
   return result;
 }
 async function historicalReactions(env){
-  const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v2");
+  const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v3");
   const cache=typeof caches!=="undefined"?caches.default:null;
   if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
   if(!env.FRED_API_KEY||!env.TWELVEDATA_API_KEY)throw Error("FRED_API_KEY and TWELVEDATA_API_KEY are required for historical event studies");
@@ -101,7 +101,11 @@ async function historicalReactions(env){
   Object.entries({symbol:"XAU/USD",interval:"1day",outputsize:"1600",timezone:"America/New_York",apikey:env.TWELVEDATA_API_KEY}).forEach(([k,v])=>priceUrl.searchParams.set(k,v));
   const priceData=await get(priceUrl);
   if(priceData.status==="error"||!Array.isArray(priceData.values)||!priceData.values.length)throw Error(priceData.message||"Twelve Data returned no historical XAU/USD daily candles");
-  const candles=priceData.values.map(v=>({date:String(v.datetime||"").slice(0,10),close:Number(v.close)})).filter(v=>/^\d{4}-\d{2}-\d{2}$/.test(v.date)&&Number.isFinite(v.close)&&v.close>0).sort((a,b)=>a.date.localeCompare(b.date));
+  const candles=priceData.values.map(v=>({date:String(v.datetime||"").slice(0,10),close:Number(v.close)})).filter(v=>{
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(v.date)||!Number.isFinite(v.close)||v.close<=0)return false;
+    const weekday=new Date(v.date+"T12:00:00Z").getUTCDay();
+    return weekday!==0&&weekday!==6;
+  }).sort((a,b)=>a.date.localeCompare(b.date));
   const index=new Map(candles.map((c,i)=>[c.date,i]));
   const cutoff=new Date();cutoff.setUTCFullYear(cutoff.getUTCFullYear()-5);const cutoffDate=cutoff.toISOString().slice(0,10);
   const rows=[];
