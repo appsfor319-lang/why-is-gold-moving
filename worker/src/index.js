@@ -571,7 +571,7 @@ function algiersClock(date=new Date()){
 }
 function urgentGoldHeadline(item){
  const title=String(item?.title||"");
- return /\bbreaking\b|\burgent\b|fed decision|fomc|powell|rate decision|consumer price|core pce|\bcpi\b|\bpce\b|nonfarm|payroll|jobs report|emergency|invasion|missile|military strike|ceasefire|sanction|tariff|central bank surprise|geopolitical escalation/i.test(title);
+ return /\bbreaking\b|\burgent\b|fed decision|fomc|powell|rate decision|consumer price|core pce|\bcpi\b|\bpce\b|nonfarm|payroll|jobs report|emergency|invasion|missile|military strike|ceasefire|sanction|tariff|central bank surprise|geopolitical escalation|\bwhy is gold moving\b|\bwhat is moving gold\b|\b(?:gold|bullion)\s+(?:rises?|falls?|slips?|climbs?|jumps?|drops?|sinks?|rallies|gains?|steadies|retreats|surges?|slides?|soars?|tumbles?)\b|\bgold\s+(?:under pressure|pressured|supported|weighed down|boosted|lifts?|drags?)\b/i.test(title);
 }
 function safeTelegramLink(value){
  try{const u=new URL(String(value||""));if(!["https:","http:"].includes(u.protocol)||u.hostname==="news.google.com"||u.hostname==="www.goldsquawk.com"||u.hostname==="goldsquawk.com")return null;return u.href.replace(/&/g,"&amp;").replace(/"/g,"%22")}catch{return null}
