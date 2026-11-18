@@ -34,6 +34,7 @@ jobs:
         shell: bash
         run: |
           node --input-type=module <<'NODE'
+          import { appendFileSync } from "node:fs";
           const url = "https://why-is-gold-movingm.appsfor319.workers.dev/api/terminal";
           let lastError = "No response";
           for (let attempt = 0; attempt < 5; attempt++) {
@@ -58,6 +59,7 @@ jobs:
                 !validDate(row.date) ||
                 !validDate(row.prior_session) ||
                 !validDate(row.next_session) ||
+                new Date(row.date + "T00:00:00Z").getUTCDay() === 6 ||
                 new Date(row.prior_session + "T00:00:00Z").getUTCDay() === 6 ||
                 new Date(row.next_session + "T00:00:00Z").getUTCDay() === 6 ||
                 row.prior_session >= row.date ||
@@ -87,7 +89,8 @@ jobs:
               });
               if (invalidCalendar.length) throw new Error("Calendar rows are missing a valid date, event or source attribution");
               const intradaySource = body.sources.find(source => source.name === "Intraday event reactions");
-              const financeCalendarConfigured = intradaySource?.status !== "not_configured";
+              if (!intradaySource) throw new Error("Intraday event reaction source status is missing");
+              const financeCalendarConfigured = intradaySource.status !== "not_configured";
               const calendarFieldCoverage = Object.fromEntries(["actual", "forecast", "previous"].map(field => [field, body.calendar.filter(row => row[field] !== null && row[field] !== undefined && row[field] !== "").length]));
               const calendarTimedRows = body.calendar.filter(row => /T\d{2}:\d{2}/.test(String(row.datetime || ""))).length;
               const expectedGoldDirection = body.market.gold.stale ? "unknown" : Number(body.market.gold.change_pct) > 0.05 ? "up" : Number(body.market.gold.change_pct) < -0.05 ? "down" : "flat";
@@ -96,6 +99,7 @@ jobs:
                 (expectedGoldDirection === "up" && /higher|rising|rose|up/.test(briefingText)) ||
                 (expectedGoldDirection === "down" && /lower|falling|fell|down/.test(briefingText)) ||
                 (expectedGoldDirection === "flat" && /little changed|flat|unchanged|mixed|unclear/.test(briefingText));
+              if (!directionConsistent) throw new Error("Gold move and briefing direction are inconsistent");
               if (!body.sources.every(source => source && typeof source.name === "string" && typeof source.status === "string" && typeof source.freshness === "string")) {
                 throw new Error("A source entry is missing its name, status or freshness");
               }
@@ -107,6 +111,9 @@ jobs:
               }
               const invalidNews = body.news.filter(item => {
                 if (!item.title || !item.source || !item.published_at || !item.url) return true;
+                const published = Date.parse(item.published_at);
+                const titleRelevant = /\\bgold(?:'s)?\\b|bullion|precious metals|\\bXAU\\b|federal reserve|\\bfed\\b|powell|treasury yields?|interest rates?|inflation|\\bCPI\\b|\\bPCE\\b|payrolls|jobs report|dollar index|\\bDXY\\b|central bank|sanctions?|geopolitical|ceasefire|war in/i.test(item.title);
+                if (!Number.isFinite(published) || Date.now() - published > 72 * 60 * 60 * 1000 || published > Date.now() + 60 * 60 * 1000 || !titleRelevant) return true;
                 try {
                   const u = new URL(item.url);
                   return !["https:", "http:"].includes(u.protocol) || ["news.google.com", "goldsquawk.com", "www.goldsquawk.com"].includes(u.hostname);
@@ -114,10 +121,12 @@ jobs:
               });
               if (invalidNews.length) throw new Error("A headline lacks an original-publisher link, source or publication timestamp");
               const stale = Object.entries(body.market).filter(([, value]) => value && (value.stale === true || value.freshness === "stale")).map(([name]) => name);
-              if (stale.length && !/stale|excluded/i.test(body.briefing.body)) throw new Error("Stale market readings are not clearly excluded from the briefing");
+              if (stale.length && !/stale|excluded/i.test(briefingText)) throw new Error("Stale market readings are not clearly excluded from the briefing");
+              const missingSourceTimestamps = body.sources.filter(source => ["ok", "stale"].includes(source.status) && !source.timestamp).map(source => source.name);
+              if (missingSourceTimestamps.length) throw new Error("Source status is missing a timestamp: " + missingSourceTimestamps.join(", "));
               const publishers = [...new Set(body.news.map(item => item.source))];
               console.log("WORKER_API_SMOKE_RESULT=PASS");
-              console.log(JSON.stringify({
+              const audit = {
                 status: body.status,
                 gold_change_pct: body.market.gold.change_pct,
                 briefing_headline: body.briefing.headline,
@@ -130,7 +139,7 @@ jobs:
                 daily_history_count: body.history.length,
                 latest_daily_history_date: body.history[0]?.date || null,
                 history_event_type_counts: Object.fromEntries([...new Set(body.history.map(row => row.event_type))].map(type => [type, body.history.filter(row => row.event_type === type).length])),
-                history_weekend_dates: body.history.filter(row => [0, 6].includes(new Date(row.date + "T00:00:00Z").getUTCDay())).map(row => row.date).slice(0, 20),
+                history_saturday_dates: body.history.filter(row => new Date(row.date + "T00:00:00Z").getUTCDay() === 6).map(row => row.date).slice(0, 20),
                 latest_daily_history_sample: body.history.slice(0, 3),
                 calendar_sample: body.calendar.slice(0, 12).map(row => ({ datetime: row.datetime, event: row.event, source: row.source, source_url: row.source_url, actual: row.actual ?? null, forecast: row.forecast ?? null, previous: row.previous ?? null })),
                 intraday_history_count: body.intraday_history.length,
@@ -145,7 +154,30 @@ jobs:
                 chart_fallback_refresh_seconds: chart.refresh_seconds,
                 stale_market_fields: stale,
                 source_statuses: body.sources.map(source => ({ name: source.name, status: source.status, freshness: source.freshness, timestamp: source.timestamp, error: String(source.error || "").slice(0, 160) || null }))
-              }, null, 2));
+              };
+              console.log(JSON.stringify(audit, null, 2));
+              const sourceRows = audit.source_statuses.map(source => `| ${source.name} | ${source.status} | ${source.freshness} | ${source.timestamp || "—"} |`).join("\\n");
+              const summary = [
+                "## Live Why Is Gold Moving API audit",
+                "",
+                `- API status: **${audit.status}**`,
+                `- Gold change: ${audit.gold_change_pct ?? "unavailable"}%`,
+                `- Briefing direction consistent: ${audit.briefing_direction_consistent}`,
+                `- News: ${audit.news_count} headlines from ${audit.publisher_count} publishers (${audit.publishers.join(", ")})`,
+                `- Calendar: ${audit.calendar_count} rows; ${audit.calendar_rows_with_release_time} timed; actual/forecast/prior: ${JSON.stringify(audit.calendar_actual_forecast_prior_counts)}`,
+                `- Daily history: ${audit.daily_history_count} rows; latest ${audit.latest_daily_history_date || "unavailable"}; Saturday event dates: ${audit.history_saturday_dates.length}`,
+                `- Intraday history: ${audit.intraday_history_count} rows; Finance Calendar configured: ${audit.finance_calendar_configured}`,
+                `- AI: ${audit.ai.engine || "unknown"} / ${audit.ai.model || "unknown"} (${audit.ai.status || "unknown"})`,
+                `- Stale market fields: ${audit.stale_market_fields.join(", ") || "none"}`,
+                `- Chart: ${audit.chart_source}; ${audit.chart_candles} candles; REST fallback ${audit.chart_fallback_refresh_seconds}s`,
+                "",
+                "| Source | Status | Freshness | Timestamp |",
+                "|---|---|---|---|",
+                sourceRows,
+                "",
+                "Headline URLs, publication timestamps and relevance; calendar dates/source attribution; daily/intraday row metadata and candle-derived fields passed the workflow validations. Semantic news impact and original-source calendar accuracy still require human review."
+              ].join("\\n");
+              appendFileSync(process.env.GITHUB_STEP_SUMMARY, summary + "\\n");
               process.exit(0);
             } catch (error) {
               lastError = error?.message || String(error);
@@ -200,6 +232,6 @@ jobs:
               if (attempt < 23) await new Promise(resolve => setTimeout(resolve, 5000));
             }
           }
-          console.warn("SITE_SMOKE_RESULT=UNVERIFIED");
-          console.warn("Live GitHub Pages check could not verify the current published assets: " + lastError);
+          console.error("SITE_SMOKE_RESULT=FAIL");
+          throw new Error("Live GitHub Pages verification failed: " + lastError);
           NODE
