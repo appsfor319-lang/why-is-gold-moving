@@ -602,7 +602,7 @@ async function scheduledGoldAlerts(env){
  }
  const data=await terminalData(env);
  const now=Date.now();
- const urgentPattern=/\\b(?:fed decision|fomc|powell|cpi|core pce|pce inflation|nonfarm payroll|nfp|jobs report|emergency rate|rate decision|interest rate decision|surprise rate|tariff|sanction|invasion|missile|military strike|ceasefire|war escalat|geopolitical escalation|central bank surprise|gold price surges?|gold plunges?|gold rallies|gold tumbles|bullion jumps?)\\b/i;
+ const urgentPattern=/\b(?:fed decision|fomc|powell|cpi|core pce|pce inflation|nonfarm payroll|nfp|jobs report|emergency rate|rate decision|interest rate decision|surprise rate|tariff|sanction|invasion|missile|military strike|ceasefire|war escalat|geopolitical escalation|central bank surprise|gold price surges?|gold plunges?|gold rallies|gold tumbles|bullion jumps?)\b/i;
  const recent=(data.news||[]).filter(item=>{
   const published=Date.parse(item.published_at||"");
   return Number.isFinite(published)&&published<=now+60000&&now-published<=45*60000&&urgentPattern.test(String(item.title||""));
@@ -636,7 +636,7 @@ async function scheduledGoldAlerts(env){
    tgEscape(briefing||"التحليل العام غير متاح حالياً؛ ما نأكدوش سبب الحركة بلا بيانات كافية."),
    "",
    "<i>مصادر مستقلة مفتوحة؛ التأثير المحتمل وليس إثباتاً للسبب. لا توجد توصية تداول.</i>"
-  ].join("\\n");
+  ].join("\n");
   await telegramSend(env,message.slice(0,3900));
   if(cache)await cache.put(dedupeKey,new Response("sent",{headers:{"cache-control":"public, max-age=604800"}}));
   console.log("TELEGRAM_URGENT_GOLD_ALERT_SENT",hash.slice(0,12),item.source,item.published_at);
