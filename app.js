@@ -12,7 +12,7 @@ const $=id=>document.getElementById(id);let news=[],calendar=[],history=[],intra
  $('story-status').textContent='';
  $('story-headline').textContent=d.briefing?.headline||d.briefing?.title||'Gold move is being assessed';
  $('story-copy').textContent=d.briefing?.body||'Waiting for the market and gold-related headlines to build the briefing.';
- $('story-time').textContent='Updated '+time(d.updated_at)+' · refreshes every 15 min';
+ $('story-time').textContent='Updated '+time(d.updated_at)+' · refreshes every 5 min';
  $('story-updated').textContent='LIVE MARKET BRIEFING · UPDATED '+time(d.updated_at);
  $('gold-card-price').textContent=$('gold-price').textContent;
  $('gold-card-change').textContent=(stale?'STALE · ':'')+pct(g.change_pct);
@@ -74,4 +74,4 @@ try{
  const saved=JSON.parse(localStorage.getItem('why-gold-last-data')||'null');
  if(saved&&saved.market&&saved.market.gold)applyData(saved,'cache');
 }catch(error){console.warn('Saved market cache could not be rendered',error)}
-refresh();setInterval(refresh,900000);
+refresh();setInterval(refresh,300000);
