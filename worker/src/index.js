@@ -205,7 +205,8 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
       "Write clear concise English for a retail gold trader. Explain the main driver, opposing forces, and what evidence could change the picture. Do not mention a confidence rating in the body; confidence is reported separately.",
       "Return ONLY valid JSON with this shape:",
       '{"headline":"short conclusion","body":"3 to 6 concise sentences","confidence":"HIGH|MEDIUM|LOW|MIXED","factors":{"yield":"reading","dxy":"reading","silver":"reading","oil":"reading","risk":"reading"},"drivers":[{"name":"driver","role":"primary|counterforce|secondary","evidence":"evidence"}],"headline_refs":[0],"what_to_watch":["item"],"limitations":["item"]}',
-      "headline_refs must contain only integer IDs of supplied headlines actually used. Maximum 4 drivers, 3 watch items and 3 limitations. If evidence is weak, say the driver is unclear and set confidence LOW."
+      "headline_refs must contain only integer IDs of supplied headlines actually used. Maximum 4 drivers, 3 watch items and 3 limitations. If evidence is weak, say the driver is unclear and set confidence LOW.",
+      "CRITICAL when market.gold is stale or null: the current spot-gold direction is unknown. The headline must not claim gold is currently rising or falling. You may describe a move only as a dated headline report, explicitly attributed to that headline, and must say the stale spot feed prevents confirming its timing or connection to current DXY/yield readings."
     ].join("\n");
     let lastError=null;
     for(const activeModel of models){
@@ -228,6 +229,15 @@ function factorSignals(m){const staleLabel=x=>'STALE · '+(x?.timestamp?String(x
         let parsed;
         try{parsed=JSON.parse(generated)}catch(e){lastError="Gemini "+activeModel+" returned invalid JSON";continue}
         if(typeof parsed.headline!=="string"||typeof parsed.body!=="string"){lastError="Gemini "+activeModel+" response missing headline/body";continue}
+        if(m.gold?.stale){
+          const headlineDirectional=/\b(?:gold|spot gold)\b.{0,80}\b(?:rises?|falls?|drops?|declines?|slides?|climbs?|jumps?|surges?|higher|lower|downward|upward|rally|rallies|move|movement)\b/i.test(parsed.headline)&&!/\b(headline|reported|reports|according to)\b/i.test(parsed.headline);
+          const unsafeBodySentence=parsed.body.split(/(?<=[.!?])\s+/).some(sentence=>
+            /\b(?:gold|spot gold|the metal)\b/i.test(sentence)&&
+            /\b(?:is|was|has|had|fell|falls|dropped|drops|slid|slides|declined|declines|rose|rises|rallied|rallies|downward|upward|decline|rally|move|movement|lower|higher)\b/i.test(sentence)&&
+            !/\b(headline|reported|reports|according to|news report|kitco)\b/i.test(sentence)
+          );
+          if(headlineDirectional||unsafeBodySentence)throw Error("Gemini implied a current gold direction despite a stale spot quote");
+        }
         let confidence=["HIGH","MEDIUM","LOW","MIXED"].includes(parsed.confidence)?parsed.confidence:"LOW";
         const currentCross=[m.dxy,m.yield,m.silver,m.oil].filter(x=>x&&x.stale!==true&&(x.change_pct!=null||x.change_bp!=null)).length;
         if(m.gold?.stale||m.gold?.change_pct==null||currentCross<2)confidence="LOW";
