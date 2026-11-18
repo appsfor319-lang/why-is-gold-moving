@@ -631,12 +631,12 @@ async function scheduledGoldSquawkAlert(env,data){
  if(!env.GEMINI_API_KEY){console.error("GOLDSQUAWK_ALERT_SKIPPED: GEMINI_API_KEY missing");return;}
  const model=(env.GEMINI_MODEL||"gemini-3.5-flash-lite").trim();
  const prompt=[
-  "Analyze this newly updated public gold-news page for a private community translation permitted by the publisher.",
-  "Write in natural Algerian Darija using Arabic script. Do not name GoldSquawk as the original source. A separate link to its public page will be included.",
-  "Identify only genuinely gold-relevant medium- or high-impact developments: Fed/rates, US inflation/jobs/data, USD, Treasury yields, central-bank gold demand, major geopolitical risk, oil/inflation, or direct gold/silver flows.",
-  "Explain what happened and the plausible transmission to gold. Use the supplied independent market readings only as context, and distinguish confirmed price reaction from a possible effect.",
-  "If there is no new meaningful gold-relevant development, output exactly NO_UPDATE.",
-  "Do not repeat old headlines, invent facts, claim causation without evidence, or give buy/sell advice. Keep it to 3-5 short sentences.",
+  "Translate the newly updated GoldSquawk public-page content faithfully for the community; GoldSquawk is the source, not you.",
+  "Write in natural Algerian Darija using Arabic script. Preserve the actual published facts, headline meaning, names, figures, timestamps and uncertainty. Do not add your own market analysis or unsupported explanations.",
+  "Select the new gold-related items from the page's WHY IS GOLD MOVING and TOP NEWS sections. Translate the publisher's explanation and relevant new headlines, keeping each item clearly separate.",
+  "Do not invent, embellish, predict, or turn a reported possibility into a confirmed cause. Do not add independent market readings as your own conclusion.",
+  "If the page contains no new gold-relevant information compared with the last checked page, output exactly NO_UPDATE.",
+  "Keep the translation concise but complete enough to preserve the source meaning. Do not name the publisher in the message body; the original page link is included separately.",
   "INDEPENDENT MARKET SNAPSHOT: "+JSON.stringify(data.market||{}),
   "INDEPENDENT BRIEFING: "+String(data.briefing?.body||"").slice(0,1200),
   "NEW PAGE CONTENT: "+sourceText
