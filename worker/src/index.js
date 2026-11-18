@@ -598,11 +598,17 @@ async function generateUrgentGoldAlert(env,item,market,briefing){
 async function scheduledGoldAlerts(env){
  if(!env.TELEGRAM_BOT_TOKEN||!env.TELEGRAM_CHAT_ID)throw Error("Telegram credentials are not configured");
  const testCache=typeof caches!=="undefined"?caches.default:null;
- const testKey="https://gold-brief-cache.local/telegram-one-time-test-20261118";
- if(testCache&&!await testCache.match(testKey)){
-  const test=await telegramSend(env,"<b>TradZ Academy | Telegram test</b>\n\nالتجربة وصلت. تنبيهات الذهب العاجلة فقط، بلا تحديثات شارت متكررة.");
-  await testCache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
-  console.log("TELEGRAM_ONE_TIME_TEST_SENT",test.result?.message_id||"unknown");
+ // New one-time delivery check. The marker is written only after Telegram confirms delivery.
+ const testKey="https://gold-brief-cache.local/telegram-one-time-test-20261118-retry1";
+ if(!testCache||!await testCache.match(testKey)){
+  try{
+   const test=await telegramSend(env,"<b>TradZ Academy | Telegram connection test</b>\\n\\nإذا وصلتك هذي الرسالة، الإرسال إلى المجموعة خدام. من الآن غير تنبيهات الذهب العاجلة، بلا تحديثات شارت متكررة.");
+   if(testCache)await testCache.put(testKey,new Response("sent",{headers:{"cache-control":"public, max-age=31536000"}}));
+   console.log("TELEGRAM_ONE_TIME_TEST_CONFIRMED",JSON.stringify({message_id:test.result?.message_id,chat_id:test.result?.chat?.id}));
+  }catch(error){
+   console.error("TELEGRAM_ONE_TIME_TEST_FAILED",error?.stack||error?.message||error);
+   throw error;
+  }
  }
  const clock=algiersClock();
  if(clock.weekday==="Sat"||clock.weekday==="Sun")return;
