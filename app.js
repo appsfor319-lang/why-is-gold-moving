@@ -1,20 +1,22 @@
-const $=id=>document.getElementById(id);let news=[],calendar=[],history=[],intradayHistory=[],positioning=null,sources=[];window.goldTerminalData=null;const key='why-gold-api-base',defaultApi='https://why-is-gold-movingm.appsfor319.workers.dev',base=()=>localStorage.getItem(key)||defaultApi;const fmt=(n,d=2)=>n==null||!Number.isFinite(Number(n))?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});const time=x=>{if(!x)return'timestamp unavailable';const s=String(x);if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'Africa/Algiers',day:'2-digit',month:'short',year:'numeric'})+' · time not supplied';return new Date(x).toLocaleString('en-GB',{timeZone:'Africa/Algiers',hour12:false})+' Algeria time'};const calendarWhen=x=>String(x||'').length===10&&String(x)[4]==='-'&&String(x)[7]==='-'?new Date(x+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'Africa/Algiers',day:'2-digit',month:'short',year:'numeric'})+' · time not supplied':time(x);const safe=x=>{try{let u=new URL(x);return /^https?:$/.test(u.protocol)?u.href:'#'}catch{return'#'}};const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));function pct(n,d=2){return n==null||!Number.isFinite(Number(n))?'—':(n>0?'+':'')+fmt(n,d)+'%'}function factor(id,label,unit='%'){let el=$(id);if(!el)return;el.textContent=label??'—';el.className=Number(label)>0?'up':Number(label)<0?'down':''}function instrument(k,v){$(k+'-price').textContent=v?.value==null?'—':fmt(v.value,k==='yield'?3:k==='dxy'?3:2)+(k==='yield'?'%':'');let n=k==='yield'?v?.change_bp:v?.change_pct,stale=!!v?.stale,reading=k==='yield'&&n!=null?(n>0?'▲ +':'▼ ')+fmt(Math.abs(n),0)+'bp':pct(n);$(k+'-change').textContent=(stale?'STALE · ':'')+reading;$(k+'-change').className='change '+(n>0?'up':n<0?'down':'')+(stale?' stale':'');$(k+'-time').textContent=time(v?.timestamp);$(k+'-time').className=stale?'stale':''}function renderDrivers(drivers){const list=Array.isArray(drivers)?drivers:[];$('driver-list').innerHTML=list.map(x=>'<span class="driver-chip '+(x.role==='primary'?'primary':x.role==='counterforce'?'counterforce':'')+'"><b>'+(x.role==='primary'?'Main factor':x.role==='counterforce'?'Opposing force':'Other factor')+'</b>'+esc(x.name||'')+(x.evidence?' · '+esc(x.evidence):'')+'</span>').join('')}async function refreshGoldSquawkUpdate(){
- const headline=$('goldsquawk-headline'),copy=$('goldsquawk-copy'),stamp=$('goldsquawk-time');
+const $=id=>document.getElementById(id);let news=[],calendar=[],history=[],intradayHistory=[],positioning=null,sources=[];window.goldTerminalData=null;const key='why-gold-api-base',defaultApi='https://why-is-gold-movingm.appsfor319.workers.dev',base=()=>localStorage.getItem(key)||defaultApi;const fmt=(n,d=2)=>n==null||!Number.isFinite(Number(n))?'—':Number(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});const time=x=>{if(!x)return'timestamp unavailable';const s=String(x);if(/^\d{4}-\d{2}-\d{2}$/.test(s))return new Date(s+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'Africa/Algiers',day:'2-digit',month:'short',year:'numeric'})+' · time not supplied';return new Date(x).toLocaleString('en-GB',{timeZone:'Africa/Algiers',hour12:false})+' Algeria time'};const calendarWhen=x=>String(x||'').length===10&&String(x)[4]==='-'&&String(x)[7]==='-'?new Date(x+'T12:00:00Z').toLocaleDateString('en-GB',{timeZone:'Africa/Algiers',day:'2-digit',month:'short',year:'numeric'})+' · time not supplied':time(x);const safe=x=>{try{let u=new URL(x);return /^https?:$/.test(u.protocol)?u.href:'#'}catch{return'#'}};const esc=x=>String(x??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));function pct(n,d=2){return n==null||!Number.isFinite(Number(n))?'—':(n>0?'+':'')+fmt(n,d)+'%'}function factor(id,label,unit='%'){let el=$(id);if(!el)return;el.textContent=label??'—';el.className=Number(label)>0?'up':Number(label)<0?'down':''}function instrument(k,v){$(k+'-price').textContent=v?.value==null?'—':fmt(v.value,k==='yield'?3:k==='dxy'?3:2)+(k==='yield'?'%':'');let n=k==='yield'?v?.change_bp:v?.change_pct,stale=!!v?.stale,reading=k==='yield'&&n!=null?(n>0?'▲ +':'▼ ')+fmt(Math.abs(n),0)+'bp':pct(n);$(k+'-change').textContent=(stale?'STALE · ':'')+reading;$(k+'-change').className='change '+(n>0?'up':n<0?'down':'')+(stale?' stale':'');$(k+'-time').textContent=time(v?.timestamp);$(k+'-time').className=stale?'stale':''}function renderDrivers(drivers){const list=Array.isArray(drivers)?drivers:[];$('driver-list').innerHTML=list.map(x=>'<span class="driver-chip '+(x.role==='primary'?'primary':x.role==='counterforce'?'counterforce':'')+'"><b>'+(x.role==='primary'?'Main factor':x.role==='counterforce'?'Opposing force':'Other factor')+'</b>'+esc(x.name||'')+(x.evidence?' · '+esc(x.evidence):'')+'</span>').join('')}async function refreshIndependentAlert(){
+ const headline=$('independent-update-headline'),copy=$('independent-update-copy'),stamp=$('independent-update-time'),sourceLink=$('independent-update-source');
  if(!headline||!copy||!stamp)return;
  try{
-  const response=await fetch((base().endsWith('/')?base().slice(0,-1):base())+'/api/goldsquawk',{cache:'no-store',signal:AbortSignal.timeout(10000)});
-  if(!response.ok)throw Error('GoldSquawk update HTTP '+response.status);
+  const response=await fetch((base().endsWith('/')?base().slice(0,-1):base())+'/api/latest-independent-alert',{cache:'no-store',signal:AbortSignal.timeout(10000)});
+  if(!response.ok)throw Error('Independent update HTTP '+response.status);
   const update=await response.json();
   if(update.available&&update.explanation){
-   headline.textContent='علاش الذهب يتحرك؟';
+   headline.textContent='Independent gold-moving update';
    copy.textContent=update.explanation;
-   stamp.textContent='Updated '+time(update.updated_at)+' · Darija translation';
+   stamp.textContent='Updated '+time(update.updated_at)+' · independent Darija summary';
+   if(sourceLink&&update.source_url){sourceLink.href=safe(update.source_url);sourceLink.textContent='Original publisher · '+(update.source||'Source');sourceLink.hidden=sourceLink.href==='#'}
   }else{
-   headline.textContent='No new gold-moving development yet';
-   copy.textContent='The monitor checks every 15 minutes and publishes only when a meaningful development appears.';
+   headline.textContent='No urgent independent update yet';
+   copy.textContent='Only a new, urgent development from independent publisher feeds appears here. Headlines are summarized independently.';
    stamp.textContent='Waiting for a relevant update';
+   if(sourceLink)sourceLink.hidden=true;
   }
- }catch(error){stamp.textContent='Latest Darija update temporarily unavailable';console.warn('GoldSquawk website update unavailable:',error.message)}
+ }catch(error){stamp.textContent='Latest independent update temporarily unavailable';if(sourceLink)sourceLink.hidden=true;console.warn('Independent update unavailable:',error.message)}
 }
 function renderStory(d){
  const m=d.market||{},g=m.gold||{},stale=!!g.stale||g.freshness==='stale';
@@ -68,7 +70,7 @@ async function refresh(){
   if(!data||typeof data!=='object'||!data.market||!data.market.gold)throw Error('API returned incomplete market data');
   try{localStorage.setItem('why-gold-last-data',JSON.stringify(data))}catch{}
   applyData(data,'live');
-  await refreshGoldSquawkUpdate();
+  await refreshIndependentAlert();
   $('connection').textContent=data.status==='ok'?'LIVE':'PARTIAL';
   $('source-status').textContent=(data.sources||[]).map(s=>s.name+': '+s.status).join(' · ')||'Provider status unavailable';
  }catch(error){
