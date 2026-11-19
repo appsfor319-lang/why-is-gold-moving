@@ -135,6 +135,10 @@ jobs:
               };
               const factorLabelsConsistent = Object.entries(expectedFactors).every(([key, value]) => body.briefing.factors?.[key] === value);
               if (!factorLabelsConsistent) throw new Error("Briefing factor labels do not match the current market readings");
+              const independentAlertResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/latest-independent-alert", { cache: "no-store", signal: AbortSignal.timeout(10000) });
+              const independentAlert = await independentAlertResponse.json();
+              if (!independentAlertResponse.ok || typeof independentAlert.available !== "boolean") throw new Error("Independent alert endpoint returned an invalid response");
+              if (independentAlert.available && (!independentAlert.explanation || !independentAlert.source || !validUrl(independentAlert.source_url) || new URL(independentAlert.source_url).hostname.toLowerCase().includes("goldsquawk"))) throw new Error("Independent alert lacks a summary or original non-GoldSquawk publisher link");
               console.log("WORKER_API_SMOKE_RESULT=PASS");
               const audit = {
                 status: body.status,
@@ -213,11 +217,11 @@ jobs:
               const page = await fetch(base, { cache: "no-store", signal: AbortSignal.timeout(10000) });
               if (!page.ok) throw new Error("Homepage HTTP " + page.status);
               const html = await page.text();
-              if (!html.includes("WHY IS GOLD MOVING?") || !html.includes("TradZ") || !html.includes("live-chart-panel")) {
+              if (!html.includes("WHY IS GOLD MOVING?") || !html.includes("TradZ") || !html.includes("live-chart-panel") || !html.includes("independent-update")) {
                 throw new Error("Homepage is missing the main title, TradZ branding or live chart panel");
               }
               const [appResponse, cssResponse] = await Promise.all([
-                fetch(base + "app.js?v=chart2", { cache: "no-store", signal: AbortSignal.timeout(10000) }),
+                fetch(base + "app.js?v=chart3", { cache: "no-store", signal: AbortSignal.timeout(10000) }),
                 fetch(base + "styles.css?v=chart3", { cache: "no-store", signal: AbortSignal.timeout(10000) })
               ]);
               if (!appResponse.ok || !cssResponse.ok) throw new Error("Published JavaScript or CSS asset did not load");
