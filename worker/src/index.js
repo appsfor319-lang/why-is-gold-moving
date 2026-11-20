@@ -74,6 +74,7 @@ async function economicCalendar(env){
   return result;
 }
 async function historicalReactions(env){
+  const cache=typeof caches!=="undefined"?caches.default:null;
   const cacheKey=new Request("https://gold-brief-cache.local/historical-event-reactions-v3");
  
   if(cache){const hit=await cache.match(cacheKey);if(hit)return hit.json()}
