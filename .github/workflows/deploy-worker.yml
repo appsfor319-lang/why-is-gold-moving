@@ -127,11 +127,12 @@ jobs:
               const publishers = [...new Set(body.news.map(item => item.source))];
               const staleLabel = value => "STALE · " + (value?.timestamp ? String(value.timestamp).slice(0, 10) : "timestamp unavailable");
               const missingChange = value => value?.value != null ? "CHANGE MISSING" : "—";
+              const neutralPct = value => value != null && Math.abs(Number(value)) < 0.005;
               const expectedFactors = {
-                yield: body.market.yield?.stale ? staleLabel(body.market.yield) : body.market.yield?.change_bp == null ? missingChange(body.market.yield) : (body.market.yield.change_bp > 0 ? "▲ rising" : "▼ falling") + " (" + (body.market.yield.change_bp > 0 ? "+" : "") + body.market.yield.change_bp + "bp)",
-                dxy: body.market.dxy?.stale ? staleLabel(body.market.dxy) : body.market.dxy?.change_pct == null ? missingChange(body.market.dxy) : (body.market.dxy.change_pct > 0 ? "▲ rising " : "▼ falling ") + (body.market.dxy.change_pct > 0 ? "+" : "") + body.market.dxy.change_pct.toFixed(2) + "%",
-                silver: body.market.silver?.stale ? staleLabel(body.market.silver) : body.market.silver?.change_pct == null ? missingChange(body.market.silver) : (body.market.silver.change_pct > 0 ? "▲ " : "▼ ") + body.market.silver.change_pct.toFixed(2) + "%",
-                oil: body.market.oil?.stale ? staleLabel(body.market.oil) : body.market.oil?.change_pct == null ? missingChange(body.market.oil) : (body.market.oil.change_pct > 0 ? "▲ " : "▼ ") + body.market.oil.change_pct.toFixed(2) + "%"
+                yield: body.market.yield?.stale ? staleLabel(body.market.yield) : body.market.yield?.change_bp == null ? missingChange(body.market.yield) : Number(body.market.yield.change_bp) === 0 ? "→ unchanged (0bp)" : (body.market.yield.change_bp > 0 ? "▲ rising" : "▼ falling") + " (" + (body.market.yield.change_bp > 0 ? "+" : "") + body.market.yield.change_bp + "bp)",
+                dxy: body.market.dxy?.stale ? staleLabel(body.market.dxy) : body.market.dxy?.change_pct == null ? missingChange(body.market.dxy) : neutralPct(body.market.dxy.change_pct) ? "→ unchanged 0.00%" : (body.market.dxy.change_pct > 0 ? "▲ rising " : "▼ falling ") + (body.market.dxy.change_pct > 0 ? "+" : "") + body.market.dxy.change_pct.toFixed(2) + "%",
+                silver: body.market.silver?.stale ? staleLabel(body.market.silver) : body.market.silver?.change_pct == null ? missingChange(body.market.silver) : neutralPct(body.market.silver.change_pct) ? "→ unchanged 0.00%" : (body.market.silver.change_pct > 0 ? "▲ " : "▼ ") + body.market.silver.change_pct.toFixed(2) + "%",
+                oil: body.market.oil?.stale ? staleLabel(body.market.oil) : body.market.oil?.change_pct == null ? missingChange(body.market.oil) : neutralPct(body.market.oil.change_pct) ? "→ unchanged 0.00%" : (body.market.oil.change_pct > 0 ? "▲ " : "▼ ") + body.market.oil.change_pct.toFixed(2) + "%"
               };
               const factorLabelsConsistent = Object.entries(expectedFactors).every(([key, value]) => body.briefing.factors?.[key] === value);
               if (!factorLabelsConsistent) throw new Error("Briefing factor labels do not match the current market readings");
