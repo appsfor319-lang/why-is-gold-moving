@@ -218,7 +218,7 @@ jobs:
               const page = await fetch(base, { cache: "no-store", signal: AbortSignal.timeout(10000) });
               if (!page.ok) throw new Error("Homepage HTTP " + page.status);
               const html = await page.text();
-              if (!html.includes("WHY IS GOLD MOVING?") || !html.includes("TradZ") || !html.includes("live-chart-panel") || !html.includes("independent-update")) {
+              if (!html.includes("WHY IS GOLD MOVING?") || !html.includes("TradZ") || !html.includes("live-chart-panel") || !html.includes("independent-update") || !html.includes("LIVE MARKET BRIEFING · REFRESHES EVERY 5 MINUTES")) {
                 throw new Error("Homepage is missing the main title, TradZ branding or live chart panel");
               }
               const [appResponse, cssResponse] = await Promise.all([
