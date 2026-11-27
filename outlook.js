@@ -28,6 +28,32 @@ const verified=Array.isArray(o.verified_analysts)?o.verified_analysts:(Array.isA
  const src=Array.isArray(o.sources)?o.sources:[];$("outlook-sources").innerHTML=src.length?src.map(sourceCard).join(""):'<div class="empty">No source list returned.</div>';
  $("outlook-status").textContent="Outlook updated "+stamp(o.updated_at||d?.updated_at)+" · "+(o.engine||"analysis engine")+" · "+(o.data_freshness||"freshness not specified");
 }
+function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+let researchSnapshot=null;
+function renderResearchSnapshot(s){
+ if(!s)return;const pane=$("pane-outlook");if(!pane)return;
+ let section=$("claude-research-snapshot");if(!section){section=node("section","outlook-section");section.id="claude-research-snapshot";pane.insertBefore(section,pane.querySelector(".outlook-foot"))}
+ section.textContent="";
+ const head=node("div","outlook-section-head");head.append(node("p","eyebrow","IMPORTED RESEARCH · NOT LIVE"));head.append(node("h3",null,"Claude research snapshot · "+s.snapshot_date));section.append(head);
+ const warning=node("div","outlook-snapshot-warning",s.caveat||"Imported snapshot; not independently verified.");section.append(warning);
+ const overview=node("div","outlook-snapshot-grid");section.append(overview);
+ const overviewCards=[["Short-term",s.short_term_direction,s.short_term_confidence],["6–12 months",s.long_term_direction,"Long-horizon view"],["Snapshot price",s.price_range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","USD range at time of research"],["Likely range",s.range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","Snapshot scenario range"]];
+ overviewCards.forEach(([a,b,c])=>{const card=node("article","outlook-card");card.append(node("span","outlook-label",a.toUpperCase()),node("h3",null,b||"Not stated"),node("p",null,c||""));overview.append(card)});
+ const sum=node("p","outlook-snapshot-summary",s.summary||"");section.append(sum);
+ const levels=node("div","outlook-snapshot-grid");section.append(node("h4",null,"Snapshot levels (not refreshed)"),levels);
+ [["Near resistance",s.near_resistance],["Support",s.support],["Major resistance",[s.major_resistance]],["Upside targets",s.upside_targets],["Downside targets",s.downside_targets]].forEach(([label,vals])=>{if(!Array.isArray(vals)||!vals.length)return;const card=node("article","outlook-level");card.append(node("span","level-kind",label),node("strong",null,vals.map(v=>money(v)).join(" · ")));levels.append(card)});
+ const scenarios=node("div","outlook-scenarios");section.append(node("h4",null,"Conditional paths"),scenarios);
+ (s.scenarios||[]).forEach(x=>{const card=node("article","outlook-scenario");card.append(node("h4",null,x.name),node("p",null,"Trigger: "+x.trigger),node("p",null,"Path: "+x.path),node("p",null,"Why: "+x.reason),node("p",null,"Invalidation: "+x.invalidation));scenarios.append(card)});
+ const drivers=node("div","outlook-snapshot-grid");section.append(node("h4",null,"Drivers cited in the snapshot"),drivers);
+ (s.drivers||[]).forEach(x=>{const card=node("article","outlook-card");card.append(node("span","outlook-label",x.bias||"MIXED"),node("h3",null,x.title),node("p",null,x.detail));drivers.append(card)});
+ const consensus=node("div","outlook-snapshot-grid");section.append(node("h4",null,"Analyst views · all unverified in this snapshot"),consensus);
+ const cc=s.analyst_consensus||{};const c1=node("article","outlook-card");c1.append(node("span","outlook-label","SHORT TERM"),node("p",null,cc.short_term||"No verified consensus."));consensus.append(c1);
+ const c2=node("article","outlook-card");c2.append(node("span","outlook-label","LONG TERM"),node("p",null,cc.long_term||"No verified consensus."));consensus.append(c2);
+ (cc.unverified_opinions||[]).forEach(x=>{const card=node("article","outlook-source");card.append(node("div","outlook-source-meta",x.status),node("h4",null,x.source),node("p",null,x.view),node("p",null,x.levels));consensus.append(card)});
+ const src=node("div","outlook-sources");section.append(node("h4",null,"Sources attached to the imported research"),src);
+ (s.sources||[]).forEach(x=>{const card=node("article","outlook-source");card.append(node("div","outlook-source-meta",x.source),node("h4",null,x.title));const a=node("a",null,"Open source ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);src.append(card)});
+}
+fetch("./research/claude-market-snapshot-2026-11-27.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(s=>{researchSnapshot=s;renderResearchSnapshot(s)}).catch(()=>{});
 function renderFallback(d){
  const ctx=marketContext(d),g=ctx.price,change=ctx.change_pct,brief=ctx.briefing||{};
  $("outlook-direction").textContent=change==null?"UNASSESSED":Number(change)>0?"GOLD UP TODAY":Number(change)<0?"GOLD DOWN TODAY":"FLAT TODAY";
