@@ -24,11 +24,11 @@ function check(name, pass, detail) {
 (async () => {
   // The Pages deployment and this audit are triggered by the same push.
   // Wait until the public CDN is serving the exact fixed renderer before testing.
-  const expectedRendererMarker = 'const pane=$d("pane-outlook")';
+  const expectedRendererMarker = 'function renderLongHorizon(d)';
   let deploymentReady = false;
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
-      const asset = new URL("outlook.js?v=7&deploy_audit=" + Date.now(), base);
+      const asset = new URL("outlook.js?v=8&deploy_audit=" + Date.now(), base);
       const response = await fetch(asset, { cache: "no-store" });
       const source = response.ok ? await response.text() : "";
       if (response.ok && source.includes(expectedRendererMarker)) {
