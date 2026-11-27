@@ -506,3 +506,25 @@ body{top:0!important;position:static!important;}
 .cot-stat.direction-bearish{border-left:3px solid #ef514d;padding-left:10px}
 .ob-zone.bull{background:rgba(54,196,123,.12);border-color:rgba(54,196,123,.72)}
 .ob-zone.bear{background:rgba(239,81,77,.12);border-color:rgba(239,81,77,.72)}
+
+/* Short-term / long-term forecast tabs */
+.horizon-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:18px 0 0}
+.horizon-tab{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:14px 16px;background:#111923;border:1px solid #344451;color:#aebbc6;font:700 12px 'DM Mono';cursor:pointer}
+.horizon-tab small{font:10px 'DM Sans';font-weight:400;color:#91a0ad}
+.horizon-tab.active{background:#17232e;border-color:var(--gold);color:var(--gold);box-shadow:inset 0 -2px var(--gold)}
+.horizon-panel{padding-top:14px}
+.horizon-panel[hidden]{display:none!important}
+.horizon-long-intro{border:1px solid #344451;border-left:3px solid var(--gold);background:#111923;padding:18px;margin-bottom:14px}
+.horizon-long-intro h3{margin:4px 0 8px;font-size:19px}
+.horizon-long-intro p{margin:5px 0;color:#b8c4ce;font-size:13px}
+.horizon-long-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.horizon-long-card{background:#111923;border:1px solid var(--line);padding:14px;min-width:0}
+.horizon-long-card h4{margin:4px 0 8px;font-size:14px}
+.horizon-long-card p{margin:6px 0;color:#b7c3cc;font-size:12px;line-height:1.6}
+.horizon-long-card a{color:var(--gold);font-size:11px}
+.horizon-long-section{margin:20px 0}
+.horizon-long-section>h3{font-size:15px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.horizon-long-sources{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.horizon-long-card.direction-bullish{border-left:3px solid #36c47b}
+.horizon-long-card.direction-bearish{border-left:3px solid #ef514d}
+@media(max-width:650px){.horizon-tabs{gap:6px}.horizon-tab{padding:11px 10px;font-size:11px}.horizon-long-grid,.horizon-long-sources{grid-template-columns:1fr}}
