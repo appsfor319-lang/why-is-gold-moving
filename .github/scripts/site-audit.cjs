@@ -30,15 +30,18 @@ function check(name, pass, detail) {
     try {
       const asset = new URL("outlook.js?v=live14&deploy_audit=" + Date.now(), base);
       const chartAsset = new URL("chart.js?v=shock10&deploy_audit=" + Date.now(), base);
-      const [response, chartResponse] = await Promise.all([
+      const [homeResponse, response, chartResponse] = await Promise.all([
+        fetch(base + "?deploy_audit=" + Date.now(), { cache: "no-store" }),
         fetch(asset, { cache: "no-store" }),
         fetch(chartAsset, { cache: "no-store" })
       ]);
-      const [source, chartSource] = await Promise.all([
+      const [home, source, chartSource] = await Promise.all([
+        homeResponse.ok ? homeResponse.text() : Promise.resolve(""),
         response.ok ? response.text() : Promise.resolve(""),
         chartResponse.ok ? chartResponse.text() : Promise.resolve("")
       ]);
-      if (response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt")) {
+      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=shock10") && home.includes("app.js?v=chart6");
+      if (homeResponse.ok && htmlReady && response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt")) {
         deploymentReady = true;
         console.log("PASS Public Pages is serving the fixed outlook renderer");
         break;
