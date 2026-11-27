@@ -8,7 +8,7 @@ const sessions=[
  {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
  {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
 ];
-let interval="5min",lastStreamTick=0,chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false,streamUnavailable=false;
+let interval="5min",lastStreamTick=0,chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],activeFvgData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false,streamUnavailable=false,latestResearchLevels=[],latestResearchUpdated=null;
 const tfLabel={"5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
 function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
@@ -102,19 +102,45 @@ function calculateIndicator(bars,htf){
 function updateObZones(){
  if(!obZoneLayer||!chart||!candleSeries)return;
  obZoneLayer.innerHTML="";
- const width=$("xau-chart").clientWidth;
- activeZoneData.forEach(o=>{
-  const scale=chart.timeScale(),visible=scale.getVisibleRange(),rawX=scale.timeToCoordinate(o.time),y1=candleSeries.priceToCoordinate(o.top),y2=candleSeries.priceToCoordinate(o.bottom);
+ const width=$("xau-chart").clientWidth,scale=chart.timeScale(),visible=scale.getVisibleRange();
+ function drawZone(o,type){
+  const rawX=scale.timeToCoordinate(o.time),y1=candleSeries.priceToCoordinate(o.top),y2=candleSeries.priceToCoordinate(o.bottom);
   if(y1==null||y2==null)return;
-  let x=rawX;
-  if(x==null&&visible&&o.time<visible.from)x=0;
-  if(x==null)return;
+  let x=rawX;if(x==null&&visible&&o.time<visible.from)x=0;if(x==null)return;
   const left=Math.max(0,Math.floor(x)),right=Math.max(left,width-68),top=Math.max(0,Math.floor(Math.min(y1,y2))),height=Math.max(2,Math.abs(y2-y1));
   if(left>=width-68||top>$("xau-chart").clientHeight)return;
-  const box=document.createElement("div");box.className="ob-zone "+(o.direction==="bullish"?"bull":"bear");
+  const box=document.createElement("div");box.className="ob-zone "+(o.direction==="bullish"?"bull":"bear")+(type==="fvg"?" fvg-zone":"");
   box.style.left=left+"px";box.style.top=top+"px";box.style.width=(right-left)+"px";box.style.height=height+"px";
-  const label=document.createElement("span");label.textContent=(o.direction==="bullish"?"Bullish":"Bearish")+" Order Block · 1H";box.appendChild(label);obZoneLayer.appendChild(box);
- });
+  const label=document.createElement("span");label.textContent=type==="fvg"?(o.direction==="bullish"?"Bullish FVG":"Bearish FVG"):(o.direction==="bullish"?"Bullish":"Bearish")+" Order Block · "+(o.timeframe||"1H");box.appendChild(label);obZoneLayer.appendChild(box);
+ }
+ activeZoneData.forEach(o=>drawZone(o,"ob"));activeFvgData.forEach(o=>drawZone(o,"fvg"));
+}
+function detectFvgs(bars){
+ const found=[];const from=Math.max(2,bars.length-180);
+ for(let i=from;i<bars.length;i++){
+  const a=bars[i-2],b=bars[i];
+  if(b.low>a.high)found.push({direction:"bullish",top:b.low,bottom:a.high,time:a.time});
+  if(b.high<a.low)found.push({direction:"bearish",top:a.low,bottom:b.high,time:a.time});
+ }
+ return found.filter(z=>!bars.slice(-Math.min(80,bars.length)).some(b=>b.time>z.time&&(z.direction==="bullish"?b.low<=z.bottom:b.high>=z.top))).slice(-5);
+}
+function renderWhereTable(summary,bars){
+ const root=$("where-chart-rows");if(!root)return;
+ const price=Number(summary.last?.close);if(!Number.isFinite(price)){root.innerHTML='<tr><td colspan="3">No valid live quote.</td></tr>';return}
+ const recent=bars.slice(-Math.min(180,bars.length)),highs=[],lows=[];
+ for(let i=2;i<recent.length-2;i++){const b=recent[i];if(b.high>recent[i-1].high&&b.high>recent[i-2].high&&b.high>=recent[i+1].high&&b.high>=recent[i+2].high)highs.push(b.high);if(b.low<recent[i-1].low&&b.low<recent[i-2].low&&b.low<=recent[i+1].low&&b.low<=recent[i+2].low)lows.push(b.low);}
+ const nearest=(a,above)=>a.filter(x=>above?x>price:x<price).sort((x,y)=>Math.abs(x-price)-Math.abs(y-price)).slice(0,2);
+ const levels=[...latestResearchLevels.map(x=>({label:x.label,price:Number(x.price),note:x.note,source:true})).filter(x=>Number.isFinite(x.price)),...nearest(highs,true).map((x,i)=>({label:i?"Next swing resistance":"Nearest swing resistance",price:x,note:"Recent confirmed pivot high on "+tfLabel[interval]+" chart."})),...nearest(lows,false).map((x,i)=>({label:i?"Next swing support":"Nearest swing support",price:x,note:"Recent confirmed pivot low on "+tfLabel[interval]+" chart."}))];
+ const seen=new Set(),unique=levels.sort((a,b)=>Math.abs(a.price-price)-Math.abs(b.price-price)).filter(x=>{const k=x.price.toFixed(2);if(seen.has(k))return false;seen.add(k);return true}).slice(0,8).sort((a,b)=>b.price-a.price);
+ root.innerHTML=unique.length?unique.map(x=>'<tr class="'+(x.price>=price?"resistance-row":"support-row")+'"><td>'+escapeHtml(x.label)+'</td><td><b>'+fmt(x.price)+'</b></td><td>'+escapeHtml(x.note||"Published reference level.")+'</td></tr>').join(""):'<tr><td colspan="3">No confirmed nearby levels yet. Waiting for more candles.</td></tr>';
+ const above=unique.filter(x=>x.price>price).sort((a,b)=>a.price-b.price),below=unique.filter(x=>x.price<price).sort((a,b)=>b.price-a.price);
+ const r=above[0],sup=below[0],bull=$("where-bull-case"),bear=$("where-bear-case");
+ if(bull)bull.textContent=r?"A 5m/15m close above "+fmt(r.price)+" and a successful retest would strengthen the bullish case; next upside liquidity/resistance becomes the target.":"No confirmed resistance above current price yet; wait for fresh structure.";
+ if(bear)bear.textContent=sup?"A close below "+fmt(sup.price)+" followed by a failed reclaim would strengthen the bearish case; next downside liquidity/support becomes the target.":"No confirmed support below current price yet; wait for fresh structure.";
+ const status=$("where-chart-status");if(status)status.textContent="Live chart: "+fmt(price)+" · "+tfLabel[interval]+" structure · "+(latestResearchUpdated?"Research levels dated "+new Date(latestResearchUpdated).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" ALG":"chart-derived levels only");
+}
+async function loadResearchLevels(){
+ try{const r=await fetch("./research/where-gold-going-latest.json?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const d=await r.json();const age=Date.now()-new Date(d.updated_at).getTime();if(!Number.isFinite(age)||age>12*3600000)return;latestResearchLevels=d.levels||[];latestResearchUpdated=d.updated_at;if(chartData)renderWhereTable(calculateIndicator(chartData.candles,chartData.order_block_candles||[]).summary,chartData.candles);}catch{}
 }
 function removeOverlays(){
  overlaySeries.forEach(s=>{try{chart.removeSeries(s)}catch{}});
@@ -153,9 +179,9 @@ function drawIndicator(result,bars){
  result.ranges.forEach(r=>{const mid=r.start+Math.floor((r.end-r.start)/2),bar=bars.reduce((best,x)=>Math.abs(x.time-mid)<Math.abs(best.time-mid)?x:best,bars[0]);if(bar)marks.push({time:bar.time,position:"aboveBar",color:r.color,shape:"circle",text:r.name})});
  result.sweeps.forEach(s=>marks.push({time:s.time,position:s.direction==="high"?"aboveBar":"belowBar",color:"#e4b85f",shape:s.direction==="high"?"arrowDown":"arrowUp",text:s.label}));
  marks.sort((a,b)=>a.time-b.time);
- activeZoneData=result.activeObs;updateObZones();
+ activeZoneData=result.activeObs;activeFvgData=detectFvgs(bars);updateObZones();renderWhereTable(result.summary,bars);
  const recentSweep=result.sweeps.find(s=>s.time===latest.time);
- $("chart-indicator-status").textContent=(recentSweep?"SWEEP ALERT · "+recentSweep.label+" · "+fmt(recentSweep.price):"UFD S&L · "+ranges.length+" session ranges · "+result.liquidity.length+" liquidity levels · "+result.activeObs.length+" active OBs")+" · swing highs/lows";
+ $("chart-indicator-status").textContent=(recentSweep?"SWEEP ALERT · "+recentSweep.label+" · "+fmt(recentSweep.price):"XAUUSD structure · "+result.activeObs.length+" active order blocks · "+activeFvgData.length+" unfilled FVGs · "+result.liquidity.length+" session liquidity levels")+" · swing highs/lows";
  if(LightweightCharts.createSeriesMarkers){
   if(markersApi&&markersApi.setMarkers)markersApi.setMarkers(marks);
   else markersApi=LightweightCharts.createSeriesMarkers(candleSeries,marks);
@@ -184,7 +210,7 @@ function renderPrice(data){
  $("chart-last-change").style.color=ch>=0?"#36c47b":"#ef514d";
  $("chart-feed-status").textContent="DATA CONNECTED · "+data.source+" · refresh "+data.refresh_seconds+"s";
  $("chart-candle-time").textContent=tfLabel[interval]+" candles · last bar "+new Date(last.time*1000).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria";
- $("chart-indicator-status").textContent="UFD Sessions & Liquidity · Asia / London / New York · 1H OB";
+ $("chart-indicator-status").textContent="XAUUSD market structure · swing support/resistance · order blocks · FVGs · session liquidity";
 }
 function renderExplanation(a){
  const html='<div class="chart-ai-label">CHART + MACRO EXPLANATION · '+(a.engine==="gemini-chart"?"AI":"RULES FALLBACK")+'</div><h3>'+escapeHtml(a.headline||"Chart analysis")+'</h3><p>'+escapeHtml(a.body||"Waiting for chart analysis.")+'</p><div class="chart-ai-meta">Confidence: '+escapeHtml(a.confidence||"LOW")+' · '+new Date(a.updated_at||Date.now()).toLocaleTimeString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+' Algeria time</div>';
@@ -266,6 +292,6 @@ document.addEventListener("DOMContentLoaded",()=>{
  if(!window.LightweightCharts){$("chart-feed-status").textContent="Chart library failed to load";return}
  initChart();
  document.querySelectorAll(".chart-tf").forEach(b=>b.addEventListener("click",()=>setIntervalChart(b.dataset.interval)));
- loadChart(true);connectLiveStream();setInterval(()=>{if(!streamConnected||!lastStreamTick||Date.now()-lastStreamTick>90000)loadChart(false);},60000);
+ loadResearchLevels();loadChart(true);connectLiveStream();setInterval(()=>{if(!streamConnected||!lastStreamTick||Date.now()-lastStreamTick>90000)loadChart(false);},60000);
 });
 })();
