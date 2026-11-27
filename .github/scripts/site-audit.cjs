@@ -29,7 +29,7 @@ function check(name, pass, detail) {
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
       const asset = new URL("outlook.js?v=live14&deploy_audit=" + Date.now(), base);
-      const chartAsset = new URL("chart.js?v=shock10&deploy_audit=" + Date.now(), base);
+      const chartAsset = new URL("chart.js?v=analysis-overlay1&deploy_audit=" + Date.now(), base);
       const [homeResponse, response, chartResponse] = await Promise.all([
         fetch(base + "?deploy_audit=" + Date.now(), { cache: "no-store" }),
         fetch(asset, { cache: "no-store" }),
@@ -40,8 +40,8 @@ function check(name, pass, detail) {
         response.ok ? response.text() : Promise.resolve(""),
         chartResponse.ok ? chartResponse.text() : Promise.resolve("")
       ]);
-      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=shock10") && home.includes("app.js?v=chart6");
-      if (homeResponse.ok && htmlReady && response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt")) {
+      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=analysis-overlay1") && home.includes("app.js?v=chart6");
+      if (homeResponse.ok && htmlReady && response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt") && chartSource.includes("drawAnalysisOverlay") && chartSource.includes("CONSENSUS CHECK")) {
         deploymentReady = true;
         console.log("PASS Public Pages is serving the fixed outlook renderer");
         break;
@@ -104,7 +104,7 @@ function check(name, pass, detail) {
           sources: research.sources?.length || 0
         } : null,
         panels: Object.fromEntries(ids.map(id => [id, text(id)])),
-        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },
+        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length, analysisOverlay: !!document.querySelector("#xau-chart .analysis-overlay-layer svg"), consensusOverlay: document.querySelector("#xau-chart .chart-consensus-overlay")?.innerText || "" },
         liveCounts: { ideas: document.querySelectorAll("#live-tradingview-ideas .live-idea-card").length, news: document.querySelectorAll("#live-gold-news .live-news-card").length },
         tabCount: document.querySelectorAll(".horizon-tab").length,
         longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
@@ -128,7 +128,7 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live15/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=shock10/.test(s)), snapshot.script.join(", "));
+    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live15/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=analysis-overlay1/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
     check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
@@ -156,6 +156,8 @@ function check(name, pass, detail) {
     ), "Checks the four research panels");
     check("Chart canvas renders", snapshot.chart.canvases >= 1, snapshot.chart.canvases + " canvas elements");
     check("Chart receives candle data", snapshot.chart.price !== "—" && !/FEED ERROR|Connecting/i.test(snapshot.chart.status), snapshot.chart.status + " · " + snapshot.chart.price);
+    check("Chart draws the new live analysis overlay", snapshot.chart.analysisOverlay, snapshot.chart.consensusOverlay);
+    check("Old session timeline lines are removed", !/source\.setData\(\[\{time:r\.start,value:r\.high\}/.test(chartSource) && !/result\.ranges\.forEach\(r=>\{const mid=/.test(chartSource), "Session timeline drawings removed; session sweeps remain");
     check("No uncaught browser JavaScript errors", evidence.page_errors.length === 0, evidence.page_errors.slice(0, 3).join(" | ") || "None");
 
     await page.screenshot({ path: path.join(out, "desktop-full.png"), fullPage: true });
