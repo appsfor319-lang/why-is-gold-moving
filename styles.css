@@ -528,3 +528,12 @@ body{top:0!important;position:static!important;}
 .horizon-long-card.direction-bullish{border-left:3px solid #36c47b}
 .horizon-long-card.direction-bearish{border-left:3px solid #ef514d}
 @media(max-width:650px){.horizon-tabs{gap:6px}.horizon-tab{padding:11px 10px;font-size:11px}.horizon-long-grid,.horizon-long-sources{grid-template-columns:1fr}}
+
+.short-term-synthesis{margin:12px 0 18px}
+.short-term-call{padding:16px 18px;background:#111923;border:1px solid #344451;border-left:3px solid var(--gold)}
+.short-term-call.direction-bullish{border-left-color:#36c47b}
+.short-term-call.direction-bearish{border-left-color:#ef514d}
+.short-term-call h3{font-size:18px;margin:5px 0 8px}
+.short-term-call p{font-size:13px;color:#b9c5cf;margin:6px 0;line-height:1.6}
+.short-term-call .short-target{font-weight:700;color:var(--text)}
+.short-term-call small{font-size:10px;color:var(--muted)}
