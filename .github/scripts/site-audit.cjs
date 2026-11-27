@@ -91,7 +91,9 @@ function check(name, pass, detail) {
           sources: research.sources?.length || 0
         } : null,
         panels: Object.fromEntries(ids.map(id => [id, text(id)])),
-        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },\n        tabCount: document.querySelectorAll(".horizon-tab").length,\n        longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
+        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },
+        tabCount: document.querySelectorAll(".horizon-tab").length,
+        longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
         counts: {
           levels: document.querySelectorAll("#outlook-levels .outlook-level").length,
           scenarios: document.querySelectorAll("#outlook-scenarios .outlook-scenario").length,
