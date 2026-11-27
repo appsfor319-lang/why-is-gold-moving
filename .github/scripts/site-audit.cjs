@@ -78,6 +78,13 @@ function check(name, pass, detail) {
     await page.waitForFunction(() => !!window.goldTerminalData?.market, null, { timeout: 30000 }).catch(() => {});
     await page.waitForFunction(() => document.querySelectorAll("#live-gold-news .live-news-card").length > 0, null, { timeout: 30000 }).catch(() => {});
     await page.waitForTimeout(1500);
+    // Activate the Outlook top-level pane before testing its nested horizon tabs.
+    const outlookNav = page.locator('.research-tabs button[data-tab="outlook"]');
+    if (await outlookNav.count()) await outlookNav.click();
+    await page.waitForFunction(() => {
+      const pane = document.getElementById("pane-outlook");
+      return pane?.classList.contains("active") && getComputedStyle(pane).display !== "none";
+    }, null, { timeout: 10000 });
 
     const snapshot = await page.evaluate(async () => {
       const ids = ["outlook-status","destination-updated","destination-bias","destination-bottomline",
@@ -109,6 +116,7 @@ function check(name, pass, detail) {
         liveCounts: { ideas: document.querySelectorAll("#live-tradingview-ideas .live-idea-card").length, news: document.querySelectorAll("#live-gold-news .live-news-card").length },
         tabCount: document.querySelectorAll(".horizon-tab").length,
         longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
+        horizonButtonMetrics: [...document.querySelectorAll(".horizon-tab")].map(b => ({ id: b.id, visible: b.offsetParent !== null, height: Math.round(b.getBoundingClientRect().height), display: getComputedStyle(b).display, visibility: getComputedStyle(b).visibility, parentClass: b.parentElement?.className, paneClass: document.getElementById("pane-outlook")?.className })),
         horizonButtonsVisible: [...document.querySelectorAll(".horizon-tab")].every(b => getComputedStyle(b).display !== "none" && b.getBoundingClientRect().height > 30),
         livePanelVisible: !!document.getElementById("live-intelligence") && getComputedStyle(document.getElementById("live-intelligence")).display !== "none",
         staticShortSnapshotHidden: getComputedStyle(document.getElementById("gold-destination")).display === "none",
@@ -134,13 +142,15 @@ function check(name, pass, detail) {
     check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
     check("Both horizon tabs are present", snapshot.tabCount === 2 && snapshot.longHidden === true, "Short and long term tabs");
-    check("Both horizon controls are visibly rendered", snapshot.horizonButtonsVisible, "Visible two-button horizon switcher");
+    check("Outlook pane is active and visible", snapshot.visible.outlook, snapshot.visible.outlook ? "Active top-level research pane" : "Pane is not visible");
+    check("Both horizon controls are visibly rendered", snapshot.horizonButtonsVisible, JSON.stringify(snapshot.horizonButtonMetrics));
     check("TradingView gold idea cards render", snapshot.liveCounts.ideas > 0, snapshot.liveCounts.ideas + " current community ideas");
     check("Fresh gold/news cards render", snapshot.liveCounts.news > 0, snapshot.liveCounts.news + " timestamped reports");
 
     check("Live intelligence panel is visible", snapshot.livePanelVisible, snapshot.panels["live-intelligence"].slice(0, 180));
     check("Dated short-term snapshot is hidden from live view", snapshot.staticShortSnapshotHidden, "Old snapshot price map is not presented as current");
-    await page.locator("#tab-long-term").click();
+    await page.locator("#tab-long-term").scrollIntoViewIfNeeded();
+    await page.locator("#tab-long-term").click({ timeout: 10000 });
     const longTabWorks = await page.locator("#horizon-long-panel").evaluate(el => !el.hidden && getComputedStyle(el).display !== "none");
     await page.screenshot({ path: path.join(out, "long-term-tab.png"), fullPage: true });
     await page.locator("#tab-short-term").click();
