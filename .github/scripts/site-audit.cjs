@@ -91,7 +91,7 @@ function check(name, pass, detail) {
           sources: research.sources?.length || 0
         } : null,
         panels: Object.fromEntries(ids.map(id => [id, text(id)])),
-        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },
+        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },\n        tabCount: document.querySelectorAll(".horizon-tab").length,\n        longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
         counts: {
           levels: document.querySelectorAll("#outlook-levels .outlook-level").length,
           scenarios: document.querySelectorAll("#outlook-scenarios .outlook-scenario").length,
@@ -111,9 +111,9 @@ function check(name, pass, detail) {
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
     check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=9/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart5/.test(s)) && snapshot.script.some(s => /chart\.js\?v=ufd7/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
-    check("Short-term conclusion and conditional target render", /\\$3,500/.test(snapshot.panels["short-term-synthesis"]) && /\\$3,426\\.80/.test(snapshot.panels["short-term-synthesis"]), snapshot.panels["short-term-synthesis"]);
+    check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
-    check("Both horizon tabs are present", !!document.querySelector("#tab-short-term") && !!document.querySelector("#tab-long-term"), "Short and long term tabs");
+    check("Both horizon tabs are present", snapshot.tabCount === 2 && snapshot.longHidden === true, "Short and long term tabs");
 
     check("Price levels render", snapshot.counts.levels >= 1 && snapshot.counts.levels === snapshot.research?.levels, snapshot.counts.levels + " rendered / " + snapshot.research?.levels + " in JSON");
     check("Scenarios render", snapshot.counts.scenarios >= 1 && snapshot.counts.scenarios === snapshot.research?.paths, snapshot.counts.scenarios + " rendered / " + snapshot.research?.paths + " in JSON");
