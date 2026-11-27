@@ -29,7 +29,7 @@ function check(name, pass, detail) {
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
       const asset = new URL("outlook.js?v=live15&deploy_audit=" + Date.now(), base);
-      const chartAsset = new URL("chart.js?v=analysis-overlay1&deploy_audit=" + Date.now(), base);
+      const chartAsset = new URL("chart.js?v=analysis-overlay2&deploy_audit=" + Date.now(), base);
       const [homeResponse, response, chartResponse] = await Promise.all([
         fetch(base + "?deploy_audit=" + Date.now(), { cache: "no-store" }),
         fetch(asset, { cache: "no-store" }),
@@ -41,7 +41,7 @@ function check(name, pass, detail) {
         chartResponse.ok ? chartResponse.text() : Promise.resolve("")
       ]);
       deployedChartSource = chartSource;
-      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=analysis-overlay1") && home.includes("app.js?v=chart6");
+      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=analysis-overlay2") && home.includes("app.js?v=chart6");
       if (homeResponse.ok && htmlReady && response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt") && chartSource.includes("drawAnalysisOverlay") && chartSource.includes("CONSENSUS CHECK")) {
         deploymentReady = true;
         console.log("PASS Public Pages is serving the fixed outlook renderer");
