@@ -8,7 +8,7 @@ const sessions=[
  {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
  {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
 ];
-let interval="5min",lastStreamTick=0,chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,analysisLayer=null,latestIndicatorResult=null,activeZoneData=[],activeFvgData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false,streamUnavailable=false,latestResearchLevels=[],latestResearchUpdated=null;
+let interval="5min",lastStreamTick=0,chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,analysisLayer=null,latestIndicatorResult=null,activeZoneData=[],activeFvgData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false,streamUnavailable=false,latestResearchLevels=[],latestResearchUpdated=null,latestConsensusText="CONSENSUS CHECK · NO UNANIMOUS DIRECTION · WAIT FOR CONFIRMED CLOSE + RETEST";
 const tfLabel={"5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
 function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
@@ -140,8 +140,29 @@ function renderWhereTable(summary,bars){
  if(bear)bear.textContent=sup?"SELLERS: wait for a 5m/15m close below "+fmt(sup.price)+" and a failed reclaim. Next downside target: "+(nextS?fmt(nextS.price):"next confirmed liquidity below")+". No entry on a wick alone.":"No confirmed support below price; wait for fresh structure and do not guess a breakdown.";
  const status=$("where-chart-status");if(status)status.textContent="Live chart: "+fmt(price)+" · "+tfLabel[interval]+" structure · "+(latestResearchUpdated?"Research levels dated "+new Date(latestResearchUpdated).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" ALG":"chart-derived levels only");
 }
+function updateConsensusLabel(d){
+ const views=[...(d.professional_views||[]).filter(v=>/intraday|short|swing|near.term/i.test(String(v.horizon||""))),...(d.community_views||[]).filter(v=>v.url&&!/x \/ twitter/i.test(String(v.source||"")))];
+ const tally={bull:0,bear:0,mixed:0};
+ views.forEach(v=>{
+  const t=String(v.short_term_bias||v.label||"")+" "+String(v.view||"");
+  const bull=/bullish|positive|upside|recovery|rebound|buyers/i.test(t),bear=/bearish|negative|downside|sell|cautious|pressure/i.test(t);
+  if(bull&&bear)tally.mixed++;else if(bull)tally.bull++;else if(bear)tally.bear++;else tally.mixed++;
+ });
+ const n=views.length;
+ if(n&&tally.bull===n)latestConsensusText="CONSENSUS CHECK · TRACKED SHORT-TERM VIEWS UNANIMOUSLY BULLISH · WAIT FOR CLOSE + RETEST";
+ else if(n&&tally.bear===n)latestConsensusText="CONSENSUS CHECK · TRACKED SHORT-TERM VIEWS UNANIMOUSLY BEARISH · WAIT FOR CLOSE + RETEST";
+ else if(n)latestConsensusText="CONSENSUS CHECK · MIXED: "+tally.bull+" BULL / "+tally.bear+" BEAR / "+tally.mixed+" MIXED · WAIT FOR PRICE CONFIRMATION";
+ else latestConsensusText="CONSENSUS CHECK · NO VERIFIED DIRECTIONAL CONSENSUS · WAIT FOR CLOSE + RETEST";
+}
 async function loadResearchLevels(){
- try{const r=await fetch("./research/where-gold-going-latest.json?v="+Date.now(),{cache:"no-store"});if(!r.ok)return;const d=await r.json();const age=Date.now()-new Date(d.updated_at).getTime();if(!Number.isFinite(age)||age>12*3600000)return;latestResearchLevels=d.levels||[];latestResearchUpdated=d.updated_at;if(chartData)renderWhereTable(calculateIndicator(chartData.candles,chartData.order_block_candles||[]).summary,chartData.candles);}catch{}
+ try{
+  const r=await fetch("./research/where-gold-going-latest.json?v="+Date.now(),{cache:"no-store"});
+  if(!r.ok)return;
+  const d=await r.json(),age=Date.now()-new Date(d.updated_at).getTime();
+  if(!Number.isFinite(age)||age>12*3600000)return;
+  latestResearchLevels=d.levels||[];latestResearchUpdated=d.updated_at;updateConsensusLabel(d);
+  if(chartData){const ind=calculateIndicator(chartData.candles,chartData.order_block_candles||[]);renderWhereTable(ind.summary,chartData.candles);drawAnalysisOverlay(latestIndicatorResult||ind,chartData.candles);}
+ }catch{}
 }
 function removeOverlays(){
  overlaySeries.forEach(s=>{try{chart.removeSeries(s)}catch{}});
@@ -195,7 +216,7 @@ function drawAnalysisOverlay(result,bars){
  drawProjection(bearPoint,levels.nextBear,"#ef7772","NEXT DOWNSIDE LIQUIDITY");
  analysisLayer.appendChild(svg);
  const banner=document.createElement("div");banner.className="chart-consensus-overlay";
- banner.textContent="CONSENSUS CHECK · NO UNANIMOUS DIRECTION · WAIT FOR CONFIRMED CLOSE + RETEST";
+ banner.textContent=latestConsensusText;
  analysisLayer.appendChild(banner);
 }
 function drawIndicator(result,bars){
