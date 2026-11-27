@@ -615,3 +615,8 @@ body{top:0!important;position:static!important;}
 .where-chart-foot{font-size:9px;line-height:1.55;color:#8293a1;margin:10px 0 0}
 .ob-zone.fvg-zone{border-style:dashed;opacity:.12}
 @media(max-width:520px){.where-chart-table{padding:10px}.where-chart-head{display:block}.where-chart-tag{display:inline-block;margin-top:7px}.where-chart-table th{font-size:8px}.where-chart-table td{font-size:10px;padding:8px 4px}.where-chart-scenarios{grid-template-columns:1fr}}
+
+/* Keep the existing Gold Outlook tab directly below the chart and keep the sourced destination visible on mobile. */
+.research-tabs{margin:14px 0 0;position:relative;z-index:1}
+#gold-destination{margin:12px 0 22px;scroll-margin-top:12px}
+@media(max-width:720px){.research-tabs{display:flex;overflow-x:auto;gap:6px;white-space:nowrap}.research-tabs .tab{flex:0 0 auto;padding:10px 12px;font-size:11px}#gold-destination{padding:14px 12px;margin:10px 0 18px}.destination-heading{display:block}.destination-bias{margin-top:8px;max-width:none}.destination-bottomline{font-size:13px;line-height:1.55;padding:12px}.destination-levels{grid-template-columns:repeat(2,minmax(0,1fr))}.destination-columns{grid-template-columns:1fr}.destination-paths{grid-template-columns:1fr}.destination-sources{overflow-wrap:anywhere}}
