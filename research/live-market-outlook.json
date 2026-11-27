@@ -1,0 +1,126 @@
+{
+  "source": "Manually refreshed research snapshot from web search",
+  "snapshot_type": "manual_current_research",
+  "snapshot_date": "2026-11-27",
+  "updated_at": "2026-11-27T09:30:00Z",
+  "live": false,
+  "caveat": "Research checked now, but the latest verified price references are dated Nov 26 due the US Thanksgiving holiday. This is not a streaming quote. Automatic 15-minute updater has not yet been confirmed successful.",
+  "price": 3567.26,
+  "price_range_usd": [
+    3566.44,
+    3567.26
+  ],
+  "short_term_direction": "Neutral-to-bearish / volatile",
+  "short_term_confidence": "Low; conditional only",
+  "long_term_direction": "Bullish bias into 2027, but not a near-term entry signal",
+  "summary": "Gold is near $3,567 after a sharp selloff and rebound attempt. Rate-hike expectations, sticky inflation, a stronger dollar and elevated yields are pressuring it; central-bank demand and risk-off uncertainty are longer-term supports. Holiday-thin trading means price confirmation is essential.",
+  "range_usd": [
+    3500,
+    3607.24
+  ],
+  "near_resistance": [
+    3595,
+    3607.24,
+    3635.31
+  ],
+  "support": [
+    3551.25,
+    3500,
+    3472.15,
+    3400
+  ],
+  "major_resistance": 3635.31,
+  "upside_targets": [
+    3607.24,
+    3635.31,
+    3700
+  ],
+  "downside_targets": [
+    3551.25,
+    3500,
+    3472.15,
+    3400
+  ],
+  "scenarios": [
+    {
+      "name": "Recovery continuation",
+      "trigger": "Reclaim and hold $3,595–$3,607",
+      "path": "$3,635 then $3,700 if momentum confirms",
+      "reason": "Recent rebound levels and resistance references",
+      "invalidation": "Rejection and return below $3,550"
+    },
+    {
+      "name": "Range / chop",
+      "trigger": "Price stays between $3,550 and $3,607",
+      "path": "Rotations inside the range; avoid middle",
+      "reason": "Holiday liquidity and conflicting macro drivers",
+      "invalidation": "Strong acceptance beyond range"
+    },
+    {
+      "name": "Bearish continuation",
+      "trigger": "Break and hold below $3,550; stronger confirmation below $3,500",
+      "path": "$3,472 then $3,400",
+      "reason": "Rates and dollar pressure, vulnerable rebound",
+      "invalidation": "Reclaim above $3,607"
+    }
+  ],
+  "drivers": [
+    {
+      "bias": "negative",
+      "title": "Fed expectations / inflation",
+      "detail": "Hot inflation and market pricing of possible further hikes is weighing on gold."
+    },
+    {
+      "bias": "negative",
+      "title": "Dollar and yields",
+      "detail": "Stronger USD and elevated US yields cited as pressure; verify their live direction before intraday trades."
+    },
+    {
+      "bias": "positive",
+      "title": "Central-bank demand / risk-off",
+      "detail": "Longer-term support remains, but it does not negate short-term bearish pressure."
+    },
+    {
+      "bias": "mixed",
+      "title": "Holiday liquidity",
+      "detail": "US Thanksgiving trading conditions can reduce reliability and increase sudden moves."
+    }
+  ],
+  "analyst_consensus": {
+    "short_term": "No verified broad consensus. Reuters reports analysts warning rebound may be difficult while rate-hike risk persists; HSBC sees downside risk below $3,400. TD Securities has a longer-term bullish view, potentially near $5,000 later in 2027.",
+    "long_term": "Bullish outlook from TD Securities is reported, but forecast horizons and assumptions vary.",
+    "unverified_opinions": []
+  },
+  "sources": [
+    {
+      "source": "Reuters",
+      "title": "Gold drifts lower as Fed rate-hike fears loom — Nov 26",
+      "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/"
+    },
+    {
+      "source": "FXEmpire",
+      "title": "Gold retreats as traders rush to take profits — Nov 26",
+      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-platinum-forecasts-gold-retreats-as-traders-rush-to-take-profits-after-rebound-1647576"
+    },
+    {
+      "source": "FXEmpire",
+      "title": "Hot PCE keeps Fed hikes in play; $3,595 level — Nov 26",
+      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429"
+    },
+    {
+      "source": "FXStreet / ING",
+      "title": "Stronger dollar and elevated US yields weigh on gold — Nov 26",
+      "url": "https://www.fxstreet.com/news/gold-stronger-dollar-and-elevated-us-yields-weigh-on-prices-ing-202611261136"
+    },
+    {
+      "source": "Gold Corgano",
+      "title": "Daily gold drivers and snapshot — Nov 27",
+      "url": "https://goldprice.corgano.com/why-is-gold-up-or-down-today"
+    },
+    {
+      "source": "SilverTrade",
+      "title": "Gold reference price $3,567.26 — Nov 26",
+      "url": "https://www.silvertrade.com/prices/gold/?mode=compare-assets&overlays=dxy%2Cwti&range=All"
+    }
+  ]
+}
