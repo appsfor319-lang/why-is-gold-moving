@@ -178,7 +178,7 @@ function drawAnalysisOverlay(result,bars){
   const y=candleSeries.priceToCoordinate(item.price);if(y==null||y<8||y>height-18)return null;
   const bullish=side==="bull",color=bullish?"#36c47b":"#ef7772";
   addLine(x1,y,width-76,y,color,"6 4",.95);
-  addText(Math.max(8,width-250),Math.max(13,Math.min(height-5,y-7)),(bull?"BUYERS":"SELLERS")+" · "+fmt(item.price),color);
+  addText(Math.max(8,width-250),Math.max(13,Math.min(height-5,y-7)),(bullish?"BUYERS":"SELLERS")+" · "+fmt(item.price),color);
   return {x:width-78,y};
  };
  const bullPoint=drawLevel(levels.bull,"bull"),bearPoint=drawLevel(levels.bear,"bear");
