@@ -137,15 +137,15 @@ function drawIndicator(result,bars){
   }
  });
  const swingHighs=result.summary.structure.recent_swing_highs||[],swingLows=result.summary.structure.recent_swing_lows||[];
- swingHighs.forEach((p,i)=>{const line=candleSeries.createPriceLine({price:p,color:"rgba(239,83,80,.9)",lineWidth:i===swingHighs.length-1?2:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:"5M Swing High"});priceLines.push({series:candleSeries,line})});
- swingLows.forEach((p,i)=>{const line=candleSeries.createPriceLine({price:p,color:"rgba(38,166,154,.9)",lineWidth:i===swingLows.length-1?2:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:"5M Swing Low"});priceLines.push({series:candleSeries,line})});
+ swingHighs.forEach((p,i)=>{const line=candleSeries.createPriceLine({price:p,color:"rgba(239,81,77,.9)",lineWidth:i===swingHighs.length-1?2:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:"5M Swing High"});priceLines.push({series:candleSeries,line})});
+ swingLows.forEach((p,i)=>{const line=candleSeries.createPriceLine({price:p,color:"rgba(54,196,123,.9)",lineWidth:i===swingLows.length-1?2:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:"5M Swing Low"});priceLines.push({series:candleSeries,line})});
  result.liquidity.forEach(l=>{
-  const line=candleSeries.createPriceLine({price:l.price,color:l.isHigh?"#ef5350":"#26a69a",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,axisLabelVisible:true,title:l.label});
+  const line=candleSeries.createPriceLine({price:l.price,color:l.isHigh?"#ef514d":"#36c47b",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dashed,axisLabelVisible:true,title:l.label});
   priceLines.push({series:candleSeries,line});
  });
  result.activeObs.forEach(o=>{
   [o.top,o.bottom].forEach((p,i)=>{
-   const line=candleSeries.createPriceLine({price:p,color:o.direction==="bullish"?"rgba(38,166,154,.9)":"rgba(239,83,80,.9)",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:(o.direction==="bullish"?"Bull OB ":"Bear OB ")+(i?"low":"high")});
+   const line=candleSeries.createPriceLine({price:p,color:o.direction==="bullish"?"rgba(54,196,123,.9)":"rgba(239,81,77,.9)",lineWidth:1,lineStyle:LightweightCharts.LineStyle.Dotted,axisLabelVisible:true,title:(o.direction==="bullish"?"Bull OB ":"Bear OB ")+(i?"low":"high")});
    priceLines.push({series:candleSeries,line});
   });
  });
@@ -164,7 +164,7 @@ function drawIndicator(result,bars){
 function initChart(){
  const el=$("xau-chart");if(!el||!window.LightweightCharts)return;
  chart=LightweightCharts.createChart(el,{width:el.clientWidth,height:el.clientHeight,layout:{background:{type:LightweightCharts.ColorType.Solid,color:"#101820"},textColor:"#a9b6c2",fontFamily:"DM Mono, monospace"},grid:{vertLines:{color:"#1e2b35"},horzLines:{color:"#1e2b35"}},rightPriceScale:{borderColor:"#34424e"},timeScale:{borderColor:"#34424e",timeVisible:true,secondsVisible:false},crosshair:{mode:LightweightCharts.CrosshairMode.Normal},localization:{priceFormatter:fmt}});
- candleSeries=chart.addSeries(LightweightCharts.CandlestickSeries,{upColor:"#55c89b",downColor:"#ee8178",borderUpColor:"#55c89b",borderDownColor:"#ee8178",wickUpColor:"#55c89b",wickDownColor:"#ee8178"});
+ candleSeries=chart.addSeries(LightweightCharts.CandlestickSeries,{upColor:"#36c47b",downColor:"#ef514d",borderUpColor:"#36c47b",borderDownColor:"#ef514d",wickUpColor:"#36c47b",wickDownColor:"#ef514d"});
  volumeSeries=chart.addSeries(LightweightCharts.HistogramSeries,{priceFormat:{type:"volume"},priceScaleId:"volume",lastValueVisible:false,priceLineVisible:false});
  chart.priceScale("volume").applyOptions({scaleMargins:{top:.82,bottom:0},visible:false});
  obZoneLayer=document.createElement("div");obZoneLayer.className="ob-zones";el.appendChild(obZoneLayer);
@@ -175,13 +175,13 @@ function initChart(){
 function renderPrice(data){
  const bars=data.candles;
  candleSeries.setData(bars.map(b=>({time:b.time,open:b.open,high:b.high,low:b.low,close:b.close})));
- volumeSeries.setData(bars.map(b=>({time:b.time,value:b.volume||0,color:b.close>=b.open?"rgba(85,200,155,.22)":"rgba(238,129,120,.22)"})));
+ volumeSeries.setData(bars.map(b=>({time:b.time,value:b.volume||0,color:b.close>=b.open?"rgba(54,196,123,.22)":"rgba(239,81,77,.22)"})));
  if(fitOnNextLoad){chart.timeScale().fitContent();fitOnNextLoad=false;}
  const last=bars[bars.length-1],first=bars[Math.max(0,bars.length-2)];
  $("chart-last-price").textContent="$"+fmt(last.close);
- const ch=first?((last.close/first.close)-1)*100:0;
+ const ch=last.open?((last.close/last.open)-1)*100:0;
  $("chart-last-change").textContent=(ch>=0?"+":"")+ch.toFixed(2)+"% · latest candle";
- $("chart-last-change").style.color=ch>=0?"#55c89b":"#ee8178";
+ $("chart-last-change").style.color=ch>=0?"#36c47b":"#ef514d";
  $("chart-feed-status").textContent="DATA CONNECTED · "+data.source+" · refresh "+data.refresh_seconds+"s";
  $("chart-candle-time").textContent=tfLabel[interval]+" candles · last bar "+new Date(last.time*1000).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria";
  $("chart-indicator-status").textContent="UFD Sessions & Liquidity · Asia / London / New York · 1H OB";
@@ -211,10 +211,10 @@ function applyLiveTick(tick){
  if(bucket===last.time){next={...last,high:Math.max(last.high,price),low:Math.min(last.low,price),close:price};bars[bars.length-1]=next;}
  else{next={time:bucket,open:price,high:price,low:price,close:price,volume:0};bars.push(next);if(bars.length>500)bars.shift();closedBar=true;}
  candleSeries.update({time:next.time,open:next.open,high:next.high,low:next.low,close:next.close});
- volumeSeries.update({time:next.time,value:next.volume||0,color:next.close>=next.open?"rgba(85,200,155,.22)":"rgba(238,129,120,.22)"});
+ volumeSeries.update({time:next.time,value:next.volume||0,color:next.close>=next.open?"rgba(54,196,123,.22)":"rgba(239,81,77,.22)"});
  $("chart-last-price").textContent="$"+fmt(price);
  $("chart-last-change").textContent="LIVE TICK · "+new Date(Number(tick.timestamp)*1000).toLocaleTimeString("en-GB",{timeZone:"Africa/Algiers",hour12:false});
- $("chart-last-change").style.color=price>=next.open?"#55c89b":"#ee8178";
+ $("chart-last-change").style.color=next.close>=next.open?"#36c47b":"#ef514d";
  $("chart-candle-time").textContent=tfLabel[interval]+" candles · live tick "+new Date(Number(tick.timestamp)*1000).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria";
  if(closedBar){const ind=calculateIndicator(bars,chartData.order_block_candles||[]);drawIndicator(ind,bars);explain(ind.summary,false);}
 }
