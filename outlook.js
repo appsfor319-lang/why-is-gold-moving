@@ -140,7 +140,7 @@ function renderLongHorizon(d){
  const long=horizons.find(h=>/long/i.test(h.horizon||""))||horizons[horizons.length-1];
  const medium=horizons.find(h=>/medium/i.test(h.horizon||""));
  const intro=node("section","horizon-long-intro");
- intro.append(node("span","outlook-label","LONG-HORIZON SYNTHESIS"),node("h3",null,d.long_term_bias||long?.bias||"Long-term view not supplied"),node("p",null,d.long_term_summary||long?.view||"No long-term synthesis supplied."),node("p",null,"Confidence: "+(d.long_term_confidence||"Not independently calibrated")+" · Targets are sourced analyst scenarios, not guarantees."));
+ intro.append(node("span","outlook-label","LONG-HORIZON SYNTHESIS"),node("h3",null,d.long_term_bias||long?.bias||"Long-term view not supplied"),node("p",null,d.long_term_summary||long?.view||"No long-term synthesis supplied."),node("p",null,"Confidence: "+(d.long_term_confidence||"Not independently calibrated")+" · Targets are sourced analyst scenarios, not guarantees."),node("p","fine","Research snapshot: "+(d.snapshot_label||stamp(d.updated_at))+" · Analyst publication dates are shown on each source."));
  root.append(intro);
  const hs=node("div","horizon-long-grid");root.append(hs);
  [medium,long].filter(Boolean).forEach(h=>{const c=node("article","horizon-long-card "+directionClass(h.bias));c.append(node("span","outlook-label",h.horizon||"Long horizon"),node("h4",null,h.bias||"Mixed"),node("p",null,h.view||""),node("p",null,"Trigger: "+(h.trigger||"Not supplied")),node("p",null,"Analyst target zone: "+(h.target||"Not supplied")),node("p",null,"Invalidation: "+(h.invalidation||"Not supplied")));hs.append(c)});
@@ -184,14 +184,9 @@ function renderPublishedResearch(d){
 async function refreshPublishedResearch(){
  const stamp=Date.now();
  const latest=await fetch("./research/where-gold-going-latest.json?v="+stamp,{cache:"no-store"});
- if(!latest.ok)throw Error("published outlook HTTP "+latest.status);
- const research=await latest.json();renderPublishedResearch(research);
- const [live,legacy]=await Promise.all([
-  fetch("./research/live-market-outlook.json?v="+stamp,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
-  fetch("./research/claude-market-snapshot-2026-11-27.json?v="+stamp,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null)
- ]);
- if(live)renderResearchSnapshot(live,"live-research-snapshot");
- if(legacy)renderResearchSnapshot(legacy,"claude-research-snapshot");
+ if(!latest.ok)throw Error("published long-term research HTTP "+latest.status);
+ const research=await latest.json();
+ renderPublishedResearch(research);
 }
 refreshPublishedResearch().catch(e=>{const el=document.getElementById("destination-bottomline");if(el)el.textContent="Published outlook unavailable: "+e.message});
 setInterval(()=>refreshPublishedResearch().catch(e=>console.warn("Published research refresh failed:",e)),5*60*1000);
