@@ -217,7 +217,7 @@ window.addEventListener("gold-tradingview-ideas-updated",()=>{if(window.goldChar
 function applyLiveTick(tick){
  lastStreamTick=Date.now();
  if(!chartData||!Array.isArray(chartData.candles)||!tick||!Number.isFinite(Number(tick.price))||!Number.isFinite(Number(tick.timestamp)))return;
- const price=Number(tick.price),step=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300,bucket=Math.floor(Number(tick.timestamp)/step)*step,bars=chartData.candles,last=bars[bars.length-1];
+ const price=Number(tick.price);window.goldLastTickPrice=price;window.goldLastTickAt=Number(tick.timestamp);const step=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300,bucket=Math.floor(Number(tick.timestamp)/step)*step,bars=chartData.candles,last=bars[bars.length-1];
  if(!last||bucket<last.time)return;
  let next,closedBar=false;
  if(bucket===last.time){next={...last,high:Math.max(last.high,price),low:Math.min(last.low,price),close:price};bars[bars.length-1]=next;}
