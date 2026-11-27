@@ -78,6 +78,53 @@ function renderDestination(d){
  $d("destination-limitations").textContent=d.limitations||"Views are source summaries, not recommendations. Quote may be delayed.";
  const ask=$d("ask-claude-research");if(ask&&!ask.dataset.bound){ask.dataset.bound="1";ask.addEventListener("click",async()=>{const brief=["Refresh and critically verify this gold outlook using current primary and trusted sources. Do not blindly agree.","Current desk view: "+d.bias,"Price reference: "+d.price_reference.low+"–"+d.price_reference.high,"Summary: "+d.bottom_line,"Scenarios:",...(d.paths||[]).flatMap(p=>[p.name+" | trigger: "+p.trigger+" | target path: "+p.target+" | invalidation: "+p.invalidation]),"Professional opinions:",...(d.professional_views||[]).flatMap(p=>[p.source+" ("+p.horizon+"): "+p.view+" Source: "+p.url]),"Community opinions (not vetted):",...(d.community_views||[]).flatMap(p=>[p.source+": "+p.view+" Source: "+p.url]),"Sources to verify:",...(d.sources||[]).map(s=>s.name+" "+s.url),"Please give an evidence-weighted view, conflicting evidence, key price levels, what whales/positioning can actually be verified, and what would invalidate each path. Do not fabricate live prices, X posts, forecasts, win rates, or sources. Separate intraday, swing, and long-term."].join(String.fromCharCode(10));try{await navigator.clipboard.writeText(brief);ask.textContent="Brief copied — paste it in Claude";}catch{ask.textContent="Clipboard blocked — brief not copied";}window.open("https://claude.ai/new","_blank","noopener");});}
 }
+
+let liveDeskBusy=false,liveIdeasLast=0;
+const liveApiBase=()=>{try{return (localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev").replace(/\\/+$/,"")}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
+const liveTime=x=>{if(!x)return"Timestamp unavailable";const d=new Date(x);return Number.isFinite(d.getTime())?d.toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria time":"Timestamp unavailable"};
+function renderLiveIdeas(data){
+ const root=$("live-tradingview-ideas"),status=$("tradingview-feed-status");if(!root||!status)return;
+ const ideas=Array.isArray(data?.ideas)?data.ideas:[];
+ status.textContent=data?.status==="ok"?"Feed checked "+liveTime(data.updated_at):data?.status==="stale"?"Feed stale · "+liveTime(data.updated_at):"Feed unavailable";
+ if(!ideas.length){root.innerHTML='<div class="empty">'+esc(data?.error||"No recent gold/XAUUSD ideas were returned by the public feed.")+'</div>';return;}
+ root.innerHTML=ideas.slice(0,10).map(x=>'<article class="live-idea-card '+directionClass(x.bias)+'"><div class="live-idea-meta">'+esc(x.author||"TradingView author")+' · '+esc(liveTime(x.published_at))+' · '+esc(x.classification||"Community idea")+'</div><h4>'+esc(x.title)+'</h4><p>'+esc(x.description||"No preview supplied by the RSS feed.")+'</p><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Open original TradingView idea ↗</a></article>').join("");
+}
+function renderLiveNews(data){
+ const root=$("live-gold-news"),status=$("live-news-status");if(!root||!status)return;
+ const rows=(data?.news||[]).filter(x=>x.published_at&&Date.now()-Date.parse(x.published_at)<48*3600000).slice(0,8);
+ status.textContent=rows.length?rows.length+" recent reports · "+liveTime(data.updated_at):"No fresh reports";
+ if(!rows.length){root.innerHTML='<div class="empty">No timestamped gold/macro reports in the current feed. Nothing old is substituted.</div>';return;}
+ root.innerHTML=rows.map(x=>{const b=String(x.gold_bias||"").toLowerCase(),dir=/bull|positive|support/.test(b)?"direction-bullish":/bear|negative|pressure/.test(b)?"direction-bearish":"direction-neutral";return'<article class="live-news-card '+dir+'"><div class="live-idea-meta">'+esc(x.source||"Publisher")+' · '+esc(liveTime(x.published_at))+'</div><h4>'+esc(x.title)+'</h4><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Open report ↗</a></article>'}).join("");
+}
+async function refreshLiveIntelligence(force=false){
+ if(liveDeskBusy)return;liveDeskBusy=true;
+ const status=$("live-intelligence-status"),price=$("live-intelligence-price"),priceTime=$("live-intelligence-price-time"),change=$("live-intelligence-change"),changeTime=$("live-intelligence-change-time");
+ try{
+  const api=liveApiBase(),terminal=window.goldTerminalData||{};
+  const quote=terminal.market?.gold||{},chart=window.goldChartSummary||null;
+  const shown=chart?.last?.close??Number(String($("chart-last-price")?.textContent||"").replace(/[^0-9.]/g,""))||quote.value;
+  const quoteDate=quote.timestamp||terminal.updated_at;
+  if(price)price.textContent=quote.stale||quote.freshness==="stale"?"STALE QUOTE":shown?money(shown):"QUOTE UNAVAILABLE";
+  if(priceTime)priceTime.textContent=(quote.source||"XAU/USD reference")+" · "+liveTime(quoteDate)+(quote.stale||quote.freshness==="stale"?" · excluded from analysis":"");
+  const pct=chart?.last?.change_pct;
+  if(change){change.textContent=pct==null?"Waiting for 5m candle":(pct>0?"+":"")+Number(pct).toFixed(2)+"%";change.className=pct>0?"direction-bullish":pct<0?"direction-bearish":"direction-neutral"}
+  if(changeTime)changeTime.textContent=chart?.timeframe?chart.timeframe+" candle · chart feed":"Latest available chart move";
+  renderLiveNews(terminal);
+  const [ideasResponse]=await Promise.all([fetch(api+"/api/tradingview-gold-ideas",{cache:"no-store",signal:AbortSignal.timeout(12000)})]);
+  const ideas=ideasResponse.ok?await ideasResponse.json():{status:"unavailable",ideas:[],error:"TradingView feed HTTP "+ideasResponse.status};
+  renderLiveIdeas(ideas);
+  if(status)status.textContent="Live quote and chart context · news "+(terminal.updated_at?liveTime(terminal.updated_at):"not refreshed")+" · ideas "+(ideas.updated_at?liveTime(ideas.updated_at):"not available");
+  const analysisText=$("chart-ai-context")?.innerText||"";
+  if(!chart&&$("live-move-headline")&&analysisText){$("live-move-headline").textContent="Chart context";$("live-move-explainer").textContent=analysisText;$("live-move-time").textContent="Mirrored from the live chart analysis"}
+ }catch(error){if(status)status.textContent="Live intelligence update failed: "+error.message}
+ finally{liveDeskBusy=false}
+}
+$("live-intelligence-refresh")?.addEventListener("click",()=>refreshLiveIntelligence(true));
+window.addEventListener("gold-terminal-updated",()=>refreshLiveIntelligence(false));
+window.addEventListener("gold-chart-analysis-updated",()=>refreshLiveIntelligence(false));
+refreshLiveIntelligence(true);
+setInterval(()=>refreshLiveIntelligence(false),60000);
+
 let publishedResearch=null;
 
 function isLongHorizon(p){return /long|medium|3.?6 months|12\+|late 2027|months/i.test(String(p.horizon||""))}
@@ -134,7 +181,7 @@ async function refreshPublishedResearch(){
  const stamp=Date.now();
  const latest=await fetch("./research/where-gold-going-latest.json?v="+stamp,{cache:"no-store"});
  if(!latest.ok)throw Error("published outlook HTTP "+latest.status);
- const research=await latest.json();renderDestination(research);renderPublishedResearch(research);
+ const research=await latest.json();renderPublishedResearch(research);
  const [live,legacy]=await Promise.all([
   fetch("./research/live-market-outlook.json?v="+stamp,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch("./research/claude-market-snapshot-2026-11-27.json?v="+stamp,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null)
@@ -170,7 +217,7 @@ async function load(force=false){
   const r=await fetch("./research/where-gold-going-latest.json?refresh="+Date.now(),{cache:"no-store"});
   if(!r.ok)throw Error("Research file HTTP "+r.status);
   const d=await r.json();
-  renderDestination(d);renderPublishedResearch(d);
+  renderPublishedResearch(d);
   $("outlook-status").textContent="Published research loaded · "+stamp(d.updated_at)+" · automated review runs daily; live quotes refresh separately";
   last=Date.now();
  }catch(e){
