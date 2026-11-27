@@ -29,7 +29,7 @@ function check(name, pass, detail) {
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
       const asset = new URL("outlook.js?v=live15&deploy_audit=" + Date.now(), base);
-      const chartAsset = new URL("chart.js?v=analysis-overlay2&deploy_audit=" + Date.now(), base);
+      const chartAsset = new URL("chart.js?v=analysis-overlay3&deploy_audit=" + Date.now(), base);
       const [homeResponse, response, chartResponse] = await Promise.all([
         fetch(base + "?deploy_audit=" + Date.now(), { cache: "no-store" }),
         fetch(asset, { cache: "no-store" }),
@@ -41,7 +41,7 @@ function check(name, pass, detail) {
         chartResponse.ok ? chartResponse.text() : Promise.resolve("")
       ]);
       deployedChartSource = chartSource;
-      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=analysis-overlay2") && home.includes("app.js?v=chart6");
+      const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=analysis-overlay3") && home.includes("app.js?v=chart6");
       if (homeResponse.ok && htmlReady && response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt") && chartSource.includes("drawAnalysisOverlay") && chartSource.includes("CONSENSUS CHECK")) {
         deploymentReady = true;
         console.log("PASS Public Pages is serving the fixed outlook renderer");
@@ -129,7 +129,7 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live15/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=analysis-overlay1/.test(s)), snapshot.script.join(", "));
+    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live15/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=analysis-overlay3/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
     check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
