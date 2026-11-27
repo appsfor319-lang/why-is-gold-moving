@@ -241,8 +241,8 @@ jobs:
               if (!app.includes("setInterval(refresh,300000)") || app.includes("setInterval(refresh,900000)")) {
                 throw new Error("The briefing polling interval does not match the stated 5-minute update cycle");
               }
-              if (!chart.includes("setInterval(()=>{if(!streamConnected)loadChart(false);},300000)")) {
-                throw new Error("The chart fallback polling interval is not five minutes while live ticks are unavailable");
+              if (!chart.includes("setInterval(()=>{if(!streamConnected||!lastStreamTick||Date.now()-lastStreamTick>90000)loadChart(false);},60000)")) {
+                throw new Error("The chart must refresh its REST fallback every minute when the live tick stream is unavailable or stale");
               }
               if (!chart.includes("connectLiveStream") || !chart.includes("applyLiveTick")) {
                 throw new Error("Published chart.js is missing live tick-stream handlers");
