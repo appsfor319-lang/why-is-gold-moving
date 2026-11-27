@@ -56,7 +56,7 @@ function renderResearchSnapshot(s,id){
  (s.sources||[]).forEach(x=>{const card=node("article","outlook-source");card.append(node("div","outlook-source-meta",x.source),node("h4",null,x.title));const a=node("a",null,"Open source ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);src.append(card)});
 }
 function renderDestination(d){
- if(!d)return;const $d=id=>document.getElementById(id);const fmt=n=>"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:2});
+ if(!d)return;const $d=id=>document.getElementById(id);const pane=$d("pane-outlook");const fmt=n=>"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:2});
  $d("destination-updated").textContent=d.snapshot_label+" · Ref quote "+fmt(d.price_reference.low)+"–"+fmt(d.price_reference.high);
  $d("destination-bias").textContent=d.bias;
  $d("destination-bottomline").textContent=d.bottom_line;
