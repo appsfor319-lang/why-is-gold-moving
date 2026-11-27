@@ -79,7 +79,7 @@ function renderDestination(d){
  const ask=$d("ask-claude-research");if(ask&&!ask.dataset.bound){ask.dataset.bound="1";ask.addEventListener("click",async()=>{const brief=["Refresh and critically verify this gold outlook using current primary and trusted sources. Do not blindly agree.","Current desk view: "+d.bias,"Price reference: "+d.price_reference.low+"–"+d.price_reference.high,"Summary: "+d.bottom_line,"Scenarios:",...(d.paths||[]).flatMap(p=>[p.name+" | trigger: "+p.trigger+" | target path: "+p.target+" | invalidation: "+p.invalidation]),"Professional opinions:",...(d.professional_views||[]).flatMap(p=>[p.source+" ("+p.horizon+"): "+p.view+" Source: "+p.url]),"Community opinions (not vetted):",...(d.community_views||[]).flatMap(p=>[p.source+": "+p.view+" Source: "+p.url]),"Sources to verify:",...(d.sources||[]).map(s=>s.name+" "+s.url),"Please give an evidence-weighted view, conflicting evidence, key price levels, what whales/positioning can actually be verified, and what would invalidate each path. Do not fabricate live prices, X posts, forecasts, win rates, or sources. Separate intraday, swing, and long-term."].join(String.fromCharCode(10));try{await navigator.clipboard.writeText(brief);ask.textContent="Brief copied — paste it in Claude";}catch{ask.textContent="Clipboard blocked — brief not copied";}window.open("https://claude.ai/new","_blank","noopener");});}
 }
 
-let liveDeskBusy=false,liveIdeasLast=0;
+let liveDeskBusy=false,liveDeskRefreshPending=false,liveIdeasLast=0;
 const liveApiBase=()=>{try{let u=localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev";while(u.endsWith("/"))u=u.slice(0,-1);return u}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
 const liveTime=x=>{if(!x)return"Timestamp unavailable";const d=new Date(x);return Number.isFinite(d.getTime())?d.toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria time":"Timestamp unavailable"};
 function renderLiveIdeas(data){
@@ -127,11 +127,12 @@ async function refreshLiveIntelligence(force=false){
   const analysisText=$("chart-ai-context")?.innerText||"";
   if(!chart&&$("live-move-headline")&&analysisText){$("live-move-headline").textContent="Chart context";$("live-move-explainer").textContent=analysisText;$("live-move-time").textContent="Mirrored from the live chart analysis"}
  }catch(error){if(status)status.textContent="Live intelligence update failed: "+error.message}
- finally{liveDeskBusy=false}
+ finally{liveDeskBusy=false;if(liveDeskRefreshPending){liveDeskRefreshPending=false;refreshLiveIntelligence(false)}}
 }
 $("live-intelligence-refresh")?.addEventListener("click",()=>refreshLiveIntelligence(true));
-window.addEventListener("gold-terminal-updated",()=>refreshLiveIntelligence(false));
-window.addEventListener("gold-chart-analysis-updated",()=>refreshLiveIntelligence(false));
+function requestLiveDeskRefresh(){if(liveDeskBusy){liveDeskRefreshPending=true;return}refreshLiveIntelligence(false)}
+window.addEventListener("gold-terminal-updated",requestLiveDeskRefresh);
+window.addEventListener("gold-chart-analysis-updated",requestLiveDeskRefresh);
 refreshLiveIntelligence(true);
 setInterval(()=>refreshLiveIntelligence(false),60000);
 
