@@ -571,5 +571,5 @@ body{top:0!important;position:static!important;}
 .live-idea-meta{font-size:9px;color:#91a1af;letter-spacing:.03em}
 .live-idea-card a,.live-news-card a{font-size:10px;color:#d8b96e}
 .live-intelligence-foot{font-size:10px;line-height:1.6;color:#8293a1;margin:12px 0 0}
-#gold-destination,.horizon-short-panel>.outlook-grid,.horizon-short-panel>.outlook-section{display:none!important}
+#gold-destination,#horizon-short-panel>.outlook-grid,#horizon-short-panel>.outlook-section{display:none!important}
 @media(max-width:700px){.live-intelligence{padding:12px}.live-intelligence-head{align-items:flex-start}.live-intelligence-head h2{font-size:18px}.live-intelligence-columns{grid-template-columns:1fr}.live-intelligence-quote strong{font-size:20px}.horizon-tabs{grid-template-columns:1fr 1fr!important}.horizon-tab{min-height:64px;padding:10px}.live-feed-heading{align-items:flex-start}}
