@@ -96,4 +96,5 @@ try{
  const saved=JSON.parse(localStorage.getItem('why-gold-last-data')||'null');
  if(saved&&saved.market&&saved.market.gold)applyData(saved,'cache');
 }catch(error){console.warn('Saved market cache could not be rendered',error)}
+window.refreshGoldTerminal=refresh;
 refresh();setInterval(refresh,300000);
