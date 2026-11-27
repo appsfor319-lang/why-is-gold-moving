@@ -150,7 +150,7 @@ function removeOverlays(){
  priceLines=[];
 }
 function analysisLevels(result,bars){
- const price=Number(result.summary.last.close),above=[],below=[];
+ const price=Number(bars[bars.length-1].close),above=[],below=[];
  const research=latestResearchLevels.filter(x=>Number.isFinite(Number(x.price))).map(x=>({price:Number(x.price),label:x.label||"Published level",source:true}));
  const structure=[...(result.summary.structure.recent_swing_highs||[]).map(x=>({price:Number(x),label:"Recent swing high"})),...(result.summary.structure.recent_swing_lows||[]).map(x=>({price:Number(x),label:"Recent swing low"}))];
  [...research,...structure].forEach(x=>{if(x.price>price)above.push(x);else if(x.price<price)below.push(x)});
@@ -195,7 +195,7 @@ function drawAnalysisOverlay(result,bars){
  drawProjection(bearPoint,levels.nextBear,"#ef7772","NEXT DOWNSIDE LIQUIDITY");
  analysisLayer.appendChild(svg);
  const banner=document.createElement("div");banner.className="chart-consensus-overlay";
- banner.textContent="CROSS-SOURCE RULE · NO DIRECTIONAL UNANIMITY · WAIT FOR CLOSE + RETEST";
+ banner.textContent="CONSENSUS CHECK · NO UNANIMOUS DIRECTION · WAIT FOR CONFIRMED CLOSE + RETEST";
  analysisLayer.appendChild(banner);
 }
 function drawIndicator(result,bars){
@@ -329,6 +329,6 @@ document.addEventListener("DOMContentLoaded",()=>{
  if(!window.LightweightCharts){$("chart-feed-status").textContent="Chart library failed to load";return}
  initChart();
  document.querySelectorAll(".chart-tf").forEach(b=>b.addEventListener("click",()=>setIntervalChart(b.dataset.interval)));
- loadResearchLevels();loadChart(true);connectLiveStream();setInterval(()=>{if(!streamConnected||!lastStreamTick||Date.now()-lastStreamTick>90000)loadChart(false);},60000);
+ loadResearchLevels();loadChart(true);connectLiveStream();setInterval(loadResearchLevels,5*60*1000);setInterval(()=>{if(!streamConnected||!lastStreamTick||Date.now()-lastStreamTick>90000)loadChart(false);},60000);
 });
 })();
