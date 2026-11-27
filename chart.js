@@ -193,6 +193,7 @@ function renderExplanation(a){
  if($("live-move-headline"))$("live-move-headline").textContent=a.headline||"Chart analysis";
  if($("live-move-time"))$("live-move-time").textContent="Updated "+new Date(a.updated_at||Date.now()).toLocaleTimeString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria time · "+(a.engine==="gemini-chart"?"Gemini chart analysis":"rules-based evidence");
  const liveCard=$("live-move-headline")?.closest(".live-move-card");if(liveCard){liveCard.classList.remove("direction-bullish","direction-bearish");const text=String(a.body||"").toLowerCase();if(/bullish|higher highs|reclaim|buyers hold|upside/.test(text))liveCard.classList.add("direction-bullish");else if(/bearish|lower lows|breakdown|sellers hold|downside/.test(text))liveCard.classList.add("direction-bearish");}
+ window.dispatchEvent(new Event("gold-chart-analysis-updated"));
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 async function explain(summary,force){
