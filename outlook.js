@@ -129,7 +129,6 @@ async function refreshLiveIntelligence(force=false){
  }catch(error){if(status)status.textContent="Live intelligence update failed: "+error.message}
  finally{liveDeskBusy=false;if(liveDeskRefreshPending){liveDeskRefreshPending=false;refreshLiveIntelligence(false)}}
 }
-$("live-intelligence-refresh")?.addEventListener("click",()=>refreshLiveIntelligence(true));
 function requestLiveDeskRefresh(){if(liveDeskBusy){liveDeskRefreshPending=true;return}refreshLiveIntelligence(false)}
 window.addEventListener("gold-terminal-updated",requestLiveDeskRefresh);
 window.addEventListener("gold-chart-analysis-updated",requestLiveDeskRefresh);
@@ -234,7 +233,6 @@ async function load(force=false){
 }
 window.addEventListener("gold-terminal-updated",()=>{if($("pane-outlook")?.classList.contains("active"))load(false)});
 document.querySelectorAll(".tab").forEach(b=>{if(b.dataset.tab==="outlook")b.addEventListener("click",()=>load(false))});
-$("outlook-refresh")?.addEventListener("click",()=>load(true));
 setInterval(()=>{if($("pane-outlook")?.classList.contains("active")&&(!last||Date.now()-last>15*60*1000))load(false)},60000);
 if($("pane-outlook")?.classList.contains("active"))load(false);
 })();
