@@ -109,6 +109,7 @@ function renderPublishedResearch(d){
  if(!d)return;publishedResearch=d;
  const $d=id=>document.getElementById(id),fmt=n=>"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:2});
  const levels=d.levels||[],paths=d.paths||[],allPros=d.professional_views||[],pros=allPros.filter(isShortHorizon),community=d.community_views||[];
+ const shortBox=$("short-term-synthesis");if(shortBox){shortBox.textContent="";const call=node("article","short-term-call "+directionClass(d.short_term_bias||d.bias));call.append(node("span","outlook-label","SHORT-TERM DESK CONCLUSION"),node("h3",null,d.short_term_bias||d.bias||"No short-term direction supplied"),node("p",null,d.short_term_summary||d.bottom_line||""),node("p","short-target","Conditional destination: "+(d.short_term_target||"No sourced target supplied")),node("small","fine","Confidence: "+(d.short_term_confidence||d.confidence||"Not stated")));shortBox.append(call);}
  const current=Number(d.price_reference?.high??d.price_reference?.low);
  const bearish=paths.find(p=>/bear/i.test(p.name)),bullish=paths.find(p=>/bull|recovery|countertrend/i.test(p.name)),base=paths.find(p=>/base|range/i.test(p.name));
  const next=(/bearish|downside/i.test(d.bias||"")?bearish:base)||bearish||bullish;
