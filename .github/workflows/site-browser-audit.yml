@@ -19,7 +19,7 @@ permissions:
 
 concurrency:
   group: live-site-browser-audit
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   browser-audit:
