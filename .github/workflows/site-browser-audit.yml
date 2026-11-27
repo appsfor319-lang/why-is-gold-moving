@@ -20,8 +20,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: live-site-browser-audit
-  cancel-in-progress: false
+  group: live-site-browser-audit-final
+  cancel-in-progress: true
 
 jobs:
   browser-audit:
