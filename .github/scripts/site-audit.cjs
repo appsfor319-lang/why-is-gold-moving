@@ -109,7 +109,7 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Outlook script is loaded", snapshot.script.some(s => /outlook\.js\?v=7/.test(s)), snapshot.script.join(", "));
+    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=7/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart5/.test(s)) && snapshot.script.some(s => /chart\.js\?v=ufd7/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
     check("Price levels render", snapshot.counts.levels >= 1 && snapshot.counts.levels === snapshot.research?.levels, snapshot.counts.levels + " rendered / " + snapshot.research?.levels + " in JSON");
     check("Scenarios render", snapshot.counts.scenarios >= 1 && snapshot.counts.scenarios === snapshot.research?.paths, snapshot.counts.scenarios + " rendered / " + snapshot.research?.paths + " in JSON");
