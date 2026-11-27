@@ -134,19 +134,18 @@ function renderFallback(d){
  if(publishedResearch)renderPublishedResearch(publishedResearch); $("outlook-status").textContent=publishedResearch?"Published source-checked research · "+stamp(publishedResearch.updated_at)+" · live AI endpoint unavailable":"Snapshot "+stamp(d?.updated_at)+" · forecast/research backend not connected";
 }
 async function load(force=false){
- if(busy)return;busy=true;$("outlook-status").textContent="Researching live gold market…";
- const d=window.goldTerminalData;
- if(!d){$("outlook-status").textContent="Waiting for the main terminal to load live data.";busy=false;return;}
- renderFallback(d);
+ if(busy)return;busy=true;
+ $("outlook-status").textContent="Loading published research…";
  try{
-  const r=await fetch(api()+"/api/market-outlook",{method:"POST",headers:{"content-type":"application/json"},cache:"no-store",body:JSON.stringify({market:marketContext(d),request:{force_refresh:force,focus:"Where XAUUSD is most likely going now; why price is moving or stuck; sourced support/resistance/targets; credible analyst consensus; bullish and bearish scenarios; catalysts and invalidation.",instructions:"Do not use the user's trading strategy. Explain the live market story in plain language. PRIORITIZE recognized professional forecast sources: LBMA annual and snapshot surveys and historical forecast-vs-actual; Fastmarkets forecast competitions and published rankings; original bank/commodity research desks (HSBC, UBS, TD Securities, RBC, Standard Chartered, Bloomberg Intelligence, StoneX, Metals Focus, Heraeus, CPM Group, Capital Economics, MKS PAMP) only when accessible. Reuters institutional polls and reporting are context, not individual win-rate records. Social accounts and TradingView are discovery-only; include only verified identity, affiliation and original calls. Every target and level needs a source or market evidence. Count only independent opinions, deduplicate reposts, disclose inaccessible sources and stale data, never fabricate analyst counts, citations, credentials or win rates. Individual accuracy metrics require dated forecasts independently audited: minimum 30 for provisional stats, preferably 100+. Include sample size, timeframe, directional accuracy, target hit rate, mean error, losses, methodology and comparison against simply buying gold. Without audited history mark UNVERIFIED and assign zero performance weight. Separate annual survey forecasts from intraday/daily calls. Return a structured outlook with direction, calibrated confidence, summary, why, obstacle, next target and reason, levels, scenarios, consensus and sources."}}),signal:AbortSignal.timeout(45000)});
-  if(!r.ok)throw Error("HTTP "+r.status);
-  const payload=await r.json(),outlook=payload.outlook||payload.analysis||payload;
-  if(!outlook||typeof outlook!=="object")throw Error("Invalid outlook payload");
-  render(outlook,d);last=Date.now();
+  const r=await fetch("./research/where-gold-going-latest.json?refresh="+Date.now(),{cache:"no-store"});
+  if(!r.ok)throw Error("Research file HTTP "+r.status);
+  const d=await r.json();
+  renderDestination(d);renderPublishedResearch(d);
+  $("outlook-status").textContent="Published research loaded · "+stamp(d.updated_at)+" · automated review runs daily; live quotes refresh separately";
+  last=Date.now();
  }catch(e){
-  $("outlook-status").textContent="Showing current market snapshot · outlook endpoint unavailable ("+e.message+")";
-  console.warn("Market outlook unavailable:",e);
+  $("outlook-status").textContent="Research file unavailable: "+e.message;
+  console.warn("Published research refresh failed",e);
  }
  busy=false;
 }
