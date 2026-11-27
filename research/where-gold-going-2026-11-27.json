@@ -131,6 +131,12 @@
       "view": "Bearish retest view: $3,500 area and range near $3,500–$3,575, with news as catalyst.",
       "label": "Bearish idea · community",
       "url": "https://www.tradingview.com/markets/futures/ideas/"
+    },
+    {
+      "source": "X / Twitter live search",
+      "view": "No individual X posts were authenticated and source-checked in this snapshot. Use the live search to discover posts; treat anonymous calls and screenshots as unverified until traced to the original account.",
+      "label": "X discovery only · not verified",
+      "url": "https://x.com/search?q=XAUUSD%20gold%20forecast&f=live"
     }
   ],
   "positioning": "Public CFTC Commitments of Traders is the closest transparent proxy for large speculative positioning, but it is weekly and delayed. It cannot show real-time whale orders, private OTC positions, or live stop clusters. No verified live whale flow is available here.",
@@ -162,6 +168,10 @@
     {
       "name": "TradingView community ideas",
       "url": "https://www.tradingview.com/markets/futures/ideas/"
+    },
+    {
+      "name": "X live search (discovery only)",
+      "url": "https://x.com/search?q=XAUUSD%20gold%20forecast&f=live"
     }
   ],
   "limitations": "Manual source-check snapshot. The site should not present this as live X sentiment, real-time whale data, a statistically proven forecast, or a verified TradingView analyst accuracy ranking. Refresh sources and timestamp before acting."
