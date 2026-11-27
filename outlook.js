@@ -55,6 +55,22 @@ function renderResearchSnapshot(s,id){
  const src=node("div","outlook-sources");section.append(node("h4",null,live?"Data-source notes":"Sources attached to the imported research"),src);
  (s.sources||[]).forEach(x=>{const card=node("article","outlook-source");card.append(node("div","outlook-source-meta",x.source),node("h4",null,x.title));const a=node("a",null,"Open source ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);src.append(card)});
 }
+function renderDestination(d){
+ if(!d)return;const $d=id=>document.getElementById(id);const fmt=n=>"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:2});
+ $d("destination-updated").textContent=d.snapshot_label+" · Ref quote "+fmt(d.price_reference.low)+"–"+fmt(d.price_reference.high);
+ $d("destination-bias").textContent=d.bias;
+ $d("destination-bottomline").textContent=d.bottom_line;
+ const lev=$d("destination-levels");lev.textContent="";
+ (d.levels||[]).forEach(l=>{const c=node("article","destination-level");c.append(node("span","level-label",l.label),node("strong",null,fmt(l.price)),node("p",null,l.note));lev.append(c)});
+ const paths=$d("destination-paths");paths.textContent="";
+ (d.paths||[]).forEach(p=>{const c=node("article","destination-path");c.append(node("h4",null,p.name),node("p",null,"Trigger: "+p.trigger),node("p",null,"Path: "+p.target),node("p",null,"Invalidation: "+p.invalidation));paths.append(c)});
+ function sourceCards(id,items){const el=$d(id);el.textContent="";(items||[]).forEach(a=>{const c=node("article","destination-source");c.append(node("div","destination-source-label",a.horizon||a.label||a.published||a.source),node("h4",null,a.source),node("p",null,a.view));const link=node("a",null,"Read source ↗");link.href=a.url;link.target="_blank";link.rel="noopener noreferrer";c.append(link);el.append(c)})}
+ sourceCards("destination-pros",d.professional_views);sourceCards("destination-community",d.community_views);
+ $d("destination-positioning").textContent=d.positioning;
+ const src=$d("destination-sources");src.textContent="";(d.sources||[]).forEach(s=>{const a=node("a",null,s.name);a.href=s.url;a.target="_blank";a.rel="noopener noreferrer";src.append(a)});
+ $d("destination-limitations").textContent=d.limitations||"Views are source summaries, not recommendations. Quote may be delayed.";
+}
+fetch("./research/where-gold-going-2026-11-27.json",{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("snapshot HTTP "+r.status);return r.json()}).then(renderDestination).catch(e=>{const el=document.getElementById("destination-bottomline");if(el)el.textContent="Source-checked outlook unavailable: "+e.message});
 Promise.all([fetch("./research/live-market-outlook.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),fetch("./research/claude-market-snapshot-2026-11-27.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([live,legacy])=>{if(live)renderResearchSnapshot(live,"live-research-snapshot");if(legacy)renderResearchSnapshot(legacy,"claude-research-snapshot")});
 function renderFallback(d){
  const ctx=marketContext(d),g=ctx.price,change=ctx.change_pct,brief=ctx.briefing||{};
