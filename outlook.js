@@ -1,0 +1,70 @@
+(()=>{"use strict";
+const $=id=>document.getElementById(id);
+const api=()=>{try{return(localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev").replace(/\\/+$/,"")}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money=n=>n==null||!Number.isFinite(Number(n))?"—":"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const stamp=x=>x?new Date(x).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria time":"Timestamp unavailable";
+let busy=false,last=null;
+function marketContext(d){const m=d?.market||{},g=m.gold||{};return{price:g.value,change_pct:g.change_pct,change_period:g.change_period,updated_at:d?.updated_at,dxy:m.dxy,yield:m.yield,silver:m.silver,oil:m.oil,briefing:d?.briefing,news:(d?.news||[]).slice(0,15),calendar:(d?.calendar||[]).slice(0,8),positioning:d?.positioning,sources:d?.sources};}
+function sourceCard(s){const url=s.url||s.source_url||"",valid=/^https?:\\/\\//i.test(url);return'<article class="outlook-source"><div class="outlook-source-meta">'+esc(s.source||s.author||"Source")+' · '+esc(stamp(s.published_at||s.timestamp))+'</div><h4>'+esc(s.title||s.headline||"Market source")+'</h4><p>'+esc(s.summary||s.reason||"")+'</p>'+(valid?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Open original ↗</a>':'<span class="fine">Source link unavailable</span>')+'</article>'}
+function render(o,d){
+ const direction=String(o.direction||"").toLowerCase(),label=direction.includes("bull")?"BULLISH":direction.includes("bear")?"BEARISH":direction.includes("neutral")?"NEUTRAL":direction||"UNASSESSED";
+ $("outlook-direction").textContent=label;$("outlook-direction").className=direction.includes("bull")?"bull":direction.includes("bear")?"bear":"";
+ $("outlook-confidence").textContent=o.confidence!=null?"Confidence: "+o.confidence+(typeof o.confidence==="number"?"%":""):"Confidence not provided";
+ $("outlook-summary").textContent=o.summary||o.headline||"No summary supplied.";
+ $("outlook-why-title").textContent=o.why_title||"Main drivers";
+ $("outlook-why").textContent=o.why||o.drivers_explanation||"No verified causal explanation returned.";
+ $("outlook-stuck-title").textContent=o.obstacle||o.resistance_support||"Current obstacle not identified";
+ $("outlook-stuck").textContent=o.obstacle_reason||o.why_stuck||"No verified reason supplied for the current stall.";
+ const target=o.next_target; $("outlook-next-target").textContent=typeof target==="object"?money(target.price):target==null?"—":String(target);
+ $("outlook-next-reason").textContent=o.next_target_reason||o.target_reason||"Target reasoning not supplied.";
+ const levels=Array.isArray(o.levels)?o.levels:[];
+ $("outlook-levels").innerHTML=levels.length?levels.map(l=>'<article class="outlook-level"><span class="level-kind">'+esc(l.type||l.label||"Level")+'</span><strong>'+esc(money(l.price))+'</strong><p>'+esc(l.reason||"Reason not supplied")+'</p><small>'+esc(l.consensus_count==null?"Independent sources not counted":l.consensus_count+" independent mentions")+'</small></article>').join(""):'<div class="empty">No verified price levels in the response. Do not invent them.</div>';
+ const scenarios=Array.isArray(o.scenarios)?o.scenarios:[];
+ $("outlook-scenarios").innerHTML=scenarios.length?scenarios.map(s=>'<article class="outlook-scenario"><h4>'+esc(s.name||s.direction||"Scenario")+'</h4><p><b>Trigger:</b> '+esc(s.trigger||"Not specified")+'</p><p><b>Path / target:</b> '+esc(s.target||s.path||"Not specified")+'</p><p><b>Why:</b> '+esc(s.reason||"Not explained")+'</p><p><b>Invalidation:</b> '+esc(s.invalidation||"Not specified")+'</p></article>').join(""):'<div class="empty">No scenarios returned.</div>';
+ const c=o.consensus||{},opinions=Array.isArray(c.opinions)?c.opinions:[];
+ $("outlook-consensus").innerHTML=(c.sources_analyzed!=null?'<div class="consensus-count"><strong>'+esc(c.sources_analyzed)+'</strong><span>sources analyzed</span><strong>'+esc(c.bullish_count??"—")+'</strong><span>bullish</span><strong>'+esc(c.bearish_count??"—")+'</strong><span>bearish</span><strong>'+esc(c.neutral_count??"—")+'</strong><span>neutral</span></div>':'')+(c.summary?'<p class="consensus-summary">'+esc(c.summary)+'</p>':'')+(opinions.length?opinions.map(sourceCard).join(""):'<div class="empty">No individual professional opinions supplied. Counts are withheld until sources are available and deduplicated.</div>');
+ const src=Array.isArray(o.sources)?o.sources:[];$("outlook-sources").innerHTML=src.length?src.map(sourceCard).join(""):'<div class="empty">No source list returned.</div>';
+ $("outlook-status").textContent="Outlook updated "+stamp(o.updated_at||d?.updated_at)+" · "+(o.engine||"analysis engine")+" · "+(o.data_freshness||"freshness not specified");
+}
+function renderFallback(d){
+ const ctx=marketContext(d),g=ctx.price,change=ctx.change_pct,brief=ctx.briefing||{};
+ $("outlook-direction").textContent=change==null?"UNASSESSED":Number(change)>0?"GOLD UP TODAY":Number(change)<0?"GOLD DOWN TODAY":"FLAT TODAY";
+ $("outlook-direction").className=change==null?"":Number(change)>0?"bull":"bear";
+ $("outlook-confidence").textContent="Market snapshot only · no forecast engine connected";
+ $("outlook-summary").textContent=brief.headline||brief.body||"Live market readings are available, but the forecast/research endpoint has not been connected.";
+ $("outlook-why-title").textContent="Current market briefing";
+ $("outlook-why").textContent=brief.body||"The existing Why Is Gold Moving? briefing is the only verified explanation currently available.";
+ $("outlook-stuck-title").textContent="No verified obstacle level";
+ $("outlook-stuck").textContent="This site currently has no dedicated live consensus/price-level research endpoint. We will not invent resistance, support, or targets.";
+ $("outlook-next-target").textContent="Not available";
+ $("outlook-next-reason").textContent="The forecast engine must return sourced levels before this can be populated.";
+ $("outlook-levels").innerHTML='<div class="empty">No sourced support/resistance levels yet.</div>';
+ $("outlook-scenarios").innerHTML='<div class="empty">Scenario analysis is not active until the Worker outlook endpoint is added.</div>';
+ $("outlook-consensus").innerHTML='<div class="empty">Professional/social consensus collection is not connected. No counts or fake agreement displayed.</div>';
+ const headlines=(ctx.news||[]).slice(0,8).map(n=>({source:n.source,title:n.title,summary:n.summary,published_at:n.published_at,url:n.url}));
+ $("outlook-sources").innerHTML=headlines.length?headlines.map(sourceCard).join(""):'<div class="empty">No news sources in current data.</div>';
+ $("outlook-status").textContent="Snapshot "+stamp(d?.updated_at)+" · forecast/research backend not connected";
+}
+async function load(force=false){
+ if(busy)return;busy=true;$("outlook-status").textContent="Researching live gold market…";
+ const d=window.goldTerminalData;
+ if(!d){$("outlook-status").textContent="Waiting for the main terminal to load live data.";busy=false;return;}
+ renderFallback(d);
+ try{
+  const r=await fetch(api()+"/api/market-outlook",{method:"POST",headers:{"content-type":"application/json"},cache:"no-store",body:JSON.stringify({market:marketContext(d),request:{force_refresh:force,focus:"Where XAUUSD is most likely going now; why price is moving or stuck; sourced support/resistance/targets; credible analyst consensus; bullish and bearish scenarios; catalysts and invalidation.",instructions:"Do not use the user's trading strategy. Explain the live market story in plain language. Research fresh GoldSquawk, TradingView ideas, X/Twitter professional gold/macro analysts, credible news and macro data. Every target and level needs a source or market evidence. Count only independent opinions, deduplicate reposts, disclose inaccessible sources and stale data, never fabricate analyst counts or citations. Return a structured outlook with direction, calibrated confidence, summary, why, obstacle, next target and reason, levels, scenarios, consensus and sources."}}),signal:AbortSignal.timeout(45000)});
+  if(!r.ok)throw Error("HTTP "+r.status);
+  const payload=await r.json(),outlook=payload.outlook||payload.analysis||payload;
+  if(!outlook||typeof outlook!=="object")throw Error("Invalid outlook payload");
+  render(outlook,d);last=Date.now();
+ }catch(e){
+  $("outlook-status").textContent="Showing current market snapshot · outlook endpoint unavailable ("+e.message+")";
+  console.warn("Market outlook unavailable:",e);
+ }
+ busy=false;
+}
+window.addEventListener("gold-terminal-updated",()=>{if($("pane-outlook")?.classList.contains("active"))load(false)});
+document.querySelectorAll(".tab").forEach(b=>{if(b.dataset.tab==="outlook")b.addEventListener("click",()=>load(false))});
+$("outlook-refresh")?.addEventListener("click",()=>load(true));
+setInterval(()=>{if($("pane-outlook")?.classList.contains("active")&&(!last||Date.now()-last>15*60*1000))load(false)},60000);
+})();
