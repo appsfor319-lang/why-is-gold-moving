@@ -96,4 +96,5 @@ window.addEventListener("gold-terminal-updated",()=>{if($("pane-outlook")?.class
 document.querySelectorAll(".tab").forEach(b=>{if(b.dataset.tab==="outlook")b.addEventListener("click",()=>load(false))});
 $("outlook-refresh")?.addEventListener("click",()=>load(true));
 setInterval(()=>{if($("pane-outlook")?.classList.contains("active")&&(!last||Date.now()-last>15*60*1000))load(false)},60000);
+if($("pane-outlook")?.classList.contains("active"))load(false);
 })();
