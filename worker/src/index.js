@@ -673,8 +673,8 @@ async function tradingViewGoldIdeas(force=false){
   const response=await fetch("https://www.tradingview.com/feed/",{headers:{"User-Agent":"Mozilla/5.0 (compatible; GoldMarketDesk/1.0)","Accept":"application/rss+xml, application/atom+xml, application/xml, text/xml, */*"},signal:AbortSignal.timeout(12000)});
   if(!response.ok)throw Error("TradingView RSS HTTP "+response.status);
   const xml=await response.text();
-  const entries=[...xml.matchAll(new RegExp(String.raw\`<(item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/\1>\`,"gi"))];
-  const read=(block,tag)=>{const re=new RegExp(String.raw\`<\${tag}(?:\s[^>]*)?>([\s\S]*?)<\/\${tag}>\`,"i");const m=block.match(re);return m?xmlText(m[1]):""};
+  const entries=[...xml.matchAll(new RegExp("<(item|entry)(?:\\s[^>]*)?>([\\s\\S]*?)</\\1>","gi"))];
+  const read=(block,tag)=>{const re=new RegExp("<"+tag+"(?:\\s[^>]*)?>([\\s\\S]*?)</"+tag+">","i");const m=block.match(re);return m?xmlText(m[1]):""};
   const ideas=entries.map(match=>{
    const block=match[2],title=read(block,"title");
    let url=read(block,"link");if(!url){const link=block.match(/<link[^>]+href=["']([^"']+)["']/i);if(link)url=link[1]}
@@ -683,7 +683,7 @@ async function tradingViewGoldIdeas(force=false){
    const author=read(block,"dc:creator")||read(block,"author")||read(block,"creator")||"TradingView community";
    const published=rawDate&&Number.isFinite(Date.parse(rawDate))?new Date(rawDate).toISOString():null;
    const gold=/\bXAUUSD?\b|XAU\s*[\/_-]\s*USD|\bGOLD\b|\bGC1!?\b|\bMGC1!?\b|gold futures/i.test(title+" "+description);
-   if(!gold||!title||!url||!/^https:\/\//i.test(url)||!published)return null;
+   if(!gold||!title||!url||!url.startsWith("https://")||!published)return null;
    const age=Date.now()-Date.parse(published);if(age< -3600000||age>72*3600000)return null;
    const text=(title+" "+description).toLowerCase();
    const bias=/\b(buy|long|bullish|upside|breakout up|demand zone|support holds)\b/.test(text)&&!/\b(sell|short|bearish|downside)\b/.test(text)?"bullish":/\b(sell|short|bearish|downside)\b/.test(text)&&!/\b(buy|long|bullish)\b/.test(text)?"bearish":"mixed";
