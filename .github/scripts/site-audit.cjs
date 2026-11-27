@@ -28,7 +28,7 @@ function check(name, pass, detail) {
   let deploymentReady = false;
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
-      const asset = new URL("outlook.js?v=8&deploy_audit=" + Date.now(), base);
+      const asset = new URL("outlook.js?v=9&deploy_audit=" + Date.now(), base);
       const response = await fetch(asset, { cache: "no-store" });
       const source = response.ok ? await response.text() : "";
       if (response.ok && source.includes(expectedRendererMarker)) {
