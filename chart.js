@@ -135,8 +135,9 @@ function renderWhereTable(summary,bars){
  root.innerHTML=unique.length?unique.map(x=>'<tr class="'+(x.price>=price?"resistance-row":"support-row")+'"><td>'+escapeHtml(x.label)+'</td><td><b>'+fmt(x.price)+'</b></td><td>'+escapeHtml(x.note||"Published reference level.")+'</td></tr>').join(""):'<tr><td colspan="3">No confirmed nearby levels yet. Waiting for more candles.</td></tr>';
  const above=unique.filter(x=>x.price>price).sort((a,b)=>a.price-b.price),below=unique.filter(x=>x.price<price).sort((a,b)=>b.price-a.price);
  const r=above[0],sup=below[0],bull=$("where-bull-case"),bear=$("where-bear-case");
- if(bull)bull.textContent=r?"A 5m/15m close above "+fmt(r.price)+" and a successful retest would strengthen the bullish case; next upside liquidity/resistance becomes the target.":"No confirmed resistance above current price yet; wait for fresh structure.";
- if(bear)bear.textContent=sup?"A close below "+fmt(sup.price)+" followed by a failed reclaim would strengthen the bearish case; next downside liquidity/support becomes the target.":"No confirmed support below current price yet; wait for fresh structure.";
+ const nextR=above[1],nextS=below[1];
+  if(bull)bull.textContent=r?"BUYERS: wait for a 5m/15m candle close above "+fmt(r.price)+" and a successful retest. Next upside target: "+(nextR?fmt(nextR.price):"next confirmed liquidity above")+". No entry on a wick alone.":"No confirmed resistance above price; wait for fresh structure and do not guess a breakout.";
+ if(bear)bear.textContent=sup?"SELLERS: wait for a 5m/15m close below "+fmt(sup.price)+" and a failed reclaim. Next downside target: "+(nextS?fmt(nextS.price):"next confirmed liquidity below")+". No entry on a wick alone.":"No confirmed support below price; wait for fresh structure and do not guess a breakdown.";
  const status=$("where-chart-status");if(status)status.textContent="Live chart: "+fmt(price)+" · "+tfLabel[interval]+" structure · "+(latestResearchUpdated?"Research levels dated "+new Date(latestResearchUpdated).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" ALG":"chart-derived levels only");
 }
 async function loadResearchLevels(){
