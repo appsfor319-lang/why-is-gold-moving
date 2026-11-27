@@ -8,7 +8,7 @@ const sessions=[
  {key:"london",name:"Europa/London",timezone:"Europe/London",start:"0800",end:"1700",color:"#ff9800"},
  {key:"newyork",name:"New York",timezone:"America/New_York",start:"0800",end:"1700",color:"#2196f3"}
 ];
-let interval="5min",chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false,streamUnavailable=false;
+let interval="5min",lastStreamTick=0,chart,candleSeries,volumeSeries,chartData=null,overlaySeries=[],priceLines=[],markersApi=null,lastAnalysisCandle=null,analysisBusy=false,obZoneLayer=null,activeZoneData=[],fitOnNextLoad=true,streamSocket=null,streamHeartbeat=null,streamRetry=null,streamConnected=false,streamUnavailable=false;
 const tfLabel={"5min":"5m","15min":"15m","30min":"30m","1h":"1H"};
 function localParts(ts,tz){
  const p=new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hourCycle:"h23"}).formatToParts(new Date(ts*1000));
@@ -204,6 +204,7 @@ async function explain(summary,force){
  finally{analysisBusy=false}
 }
 function applyLiveTick(tick){
+ lastStreamTick=Date.now();
  if(!chartData||!Array.isArray(chartData.candles)||!tick||!Number.isFinite(Number(tick.price))||!Number.isFinite(Number(tick.timestamp)))return;
  const price=Number(tick.price),step=({"5min":300,"15min":900,"30min":1800,"1h":3600})[interval]||300,bucket=Math.floor(Number(tick.timestamp)/step)*step,bars=chartData.candles,last=bars[bars.length-1];
  if(!last||bucket<last.time)return;
@@ -252,6 +253,6 @@ document.addEventListener("DOMContentLoaded",()=>{
  if(!window.LightweightCharts){$("chart-feed-status").textContent="Chart library failed to load";return}
  initChart();
  document.querySelectorAll(".chart-tf").forEach(b=>b.addEventListener("click",()=>setIntervalChart(b.dataset.interval)));
- loadChart(true);connectLiveStream();setInterval(()=>{if(!streamConnected)loadChart(false);},300000);
+ loadChart(true);connectLiveStream();setInterval(()=>{if(!streamConnected||!lastStreamTick||Date.now()-lastStreamTick>90000)loadChart(false);},60000);
 });
 })();
