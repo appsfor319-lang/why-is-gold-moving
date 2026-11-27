@@ -80,7 +80,7 @@ function renderDestination(d){
 }
 
 let liveDeskBusy=false,liveIdeasLast=0;
-const liveApiBase=()=>{try{return (localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev").replace(/\\/+$/,"")}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
+const liveApiBase=()=>{try{let u=localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev";while(u.endsWith("/"))u=u.slice(0,-1);return u}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
 const liveTime=x=>{if(!x)return"Timestamp unavailable";const d=new Date(x);return Number.isFinite(d.getTime())?d.toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria time":"Timestamp unavailable"};
 function renderLiveIdeas(data){
  const root=$("live-tradingview-ideas"),status=$("tradingview-feed-status");if(!root||!status)return;
