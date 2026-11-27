@@ -2,17 +2,17 @@
   "source": "Automated multi-source market snapshot",
   "snapshot_type": "live_heuristic",
   "snapshot_date": "2026-11-27",
-  "updated_at": "2026-11-27T01:59:28.011Z",
+  "updated_at": "2026-11-27T02:03:49.538Z",
   "live": true,
   "engine": "XAUS gold spot + cross-market Yahoo data + headline keyword heuristic",
   "caveat": "Automated quote snapshot, not calibrated prediction or verified analyst consensus. Spot quote freshness metadata is included where provider supplies it. Check timestamps and broker price before decisions.",
-  "price": 3578.399902,
+  "price": 3569.699951,
   "price_range_usd": [
-    3578.399902,
-    3578.399902
+    3569.699951,
+    3569.699951
   ],
-  "short_term_direction": "Bullish lean",
-  "short_term_confidence": "42% heuristic score (not statistical confidence)",
+  "short_term_direction": "Neutral / mixed",
+  "short_term_confidence": "36% heuristic score (not statistical confidence)",
   "long_term_direction": "Not modeled",
   "summary": "Lean is based on available gold momentum, cross-market changes and keyword counts from recent headlines. It is not AI forecast or institutional consensus.",
   "range_usd": [
@@ -20,11 +20,11 @@
     3691
   ],
   "near_resistance": [
-    3637.7,
+    3629,
     3691
   ],
   "support": [
-    3519.1,
+    3510.4,
     3453.8
   ],
   "major_resistance": 3691,
@@ -63,7 +63,7 @@
     {
       "bias": "positive",
       "title": "Gold momentum",
-      "detail": "5-day change 0.91%; latest change -0.66%"
+      "detail": "5-day change 0.67%; latest change -0.90%"
     },
     {
       "bias": "negative",
@@ -76,9 +76,9 @@
       "detail": "5-day move -0.24 points"
     },
     {
-      "bias": "positive",
+      "bias": "mixed",
       "title": "Headline tone",
-      "detail": "3 positive / 2 negative keyword hits from 20 headlines"
+      "detail": "3 positive / 3 negative keyword hits from 20 headlines"
     }
   ],
   "analyst_consensus": {
@@ -88,15 +88,15 @@
   },
   "market_inputs": {
     "gold": {
-      "price": 3578.399902,
-      "change_5d_pct": 0.9108570542285976,
-      "latest_change_pct": -0.6579522500763435,
+      "price": 3569.699951,
+      "change_5d_pct": 0.6655184850963058,
+      "latest_change_pct": -0.899476666389043,
       "high_5d": 3691,
       "low_5d": 3453.8,
       "source": "XAUS spot API",
-      "as_of": "2026-11-27T01:59:24.124Z",
+      "as_of": "2026-11-27T02:03:23.936Z",
       "freshness": "fresh",
-      "age_seconds": 25
+      "age_seconds": 22
     },
     "dxy": {
       "price": 103.80999755859375,
@@ -120,8 +120,8 @@
     },
     "headline_sentiment": {
       "positive": 3,
-      "negative": 2,
-      "net": 1
+      "negative": 3,
+      "net": 0
     },
     "headlines": [
       {
@@ -139,10 +139,24 @@
         "summary": ""
       },
       {
+        "title": "Gold declines to near $3,550 amid hawkish Fed expectations - www.tmgm.com",
+        "url": "https://news.google.com/rss/articles/CBMixAFBVV95cUxNQnRlN2h0SUtGa2dKaHZKTV9qc1VYMVJLeFFlNV90X2RZRWJJOTBtMS02ZGFMdHRjSUx6dWplRXJhUEU3cl9COFF3X3QyT3lZMlZyV1I4d1hEXzdNb2pIYjk3Wm9tenJCRDNyeVNSM3FfUUpDcGhqV2tyWmVuVlpMaTQ0cTBQNFlyZDRzdFN6ZHJHR0dYU3hCa0N6QWhyM3lCcXhqSERGNlhYMk40ZlJuY1ZDaDVBM3NNMVdOZHNHRjdMNWlJ?oc=5",
+        "published_at": "Thu, 26 Nov 2026 23:49:07 GMT",
+        "source": "www.tmgm.com",
+        "summary": ""
+      },
+      {
         "title": "Gold declines to near $3,550 amid hawkish Fed expectations - FXStreet",
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQUWl6WDgzM0tfbzV6bDlPc0dfd3hpbUtHa3pQSDRHeGFIa0JySjNXaEF0V2NTanlDYktkaTV0dHdEdmhqOWtYSk5vMHZSNU8zRTVLN2w3RnY3OXVmRXFHMkpqTnExblo2ekNGMzNLSU9nM3R3M1g2SHFJVGM1aWFSaUdRS2xCUVVncjlTczVmeVk2bE9jRm1faFBseG11ejBhZmc?oc=5",
         "published_at": "Thu, 26 Nov 2026 23:37:16 GMT",
         "source": "FXStreet",
+        "summary": ""
+      },
+      {
+        "title": "Gold Traders are Watching 5 Historic Signals - CryptoRank",
+        "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPTmNFSi1EQTFPYkFFVEZvLWdKNG1GbDNSc3pPSGppWnJVLV9GakE2RFpIRnVLUmNQcy1OVGpDS0RBX1psOUtGMFR0Rkw5WFg5cG9BNDZaVVRBQmNwdEE5TExudTNFRlBNSVhUOFZmM0V1UGlucjY5VEJBYlpWZWpIclZuR2sySGVC?oc=5",
+        "published_at": "Thu, 26 Nov 2026 23:12:30 GMT",
+        "source": "CryptoRank",
         "summary": ""
       },
       {
@@ -178,13 +192,6 @@
         "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQT0tJUGZRalRLaEJRdmM4bk8tYmlGaG1VWi15bTFNQmNjSlJKWjR0M1hXUnRnYTA1dVl5dnRZSUVFTzB4T3hIT0k5dHVLMENxUHktVVVCUFN2NUxIT05sbnhITlMyQ19sSFFEZ3BxNkxHal9xbDlxSTdqdU0yb092MnBTMlBZRFdRYk1tTFVZQUpWUzRhY21j?oc=5",
         "published_at": "Thu, 26 Nov 2026 20:55:00 GMT",
         "source": "Kalkine Media",
-        "summary": ""
-      },
-      {
-        "title": "$3,570 area: Gold price stalls as Fed hike bets restrain bulls - www.tmgm.com",
-        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNX0k0eEY4WWQ1TV9ZeHNxVEx3RHBhc0RkdTNhRWV1TVpyZUQ2bUFfLUhXbHQ2NFRKTVFIc28wYVh0b1Vsb2h4ZWROTHFDNkNsU2dDZy1oRWFrQWYzMWxNajczc1pCak55S3RSamtMVzZwbWNpeE1vbmZIbUlSZFJOUEl1eE9ZUVg4Ulg1dnVPWS1NUGQtRnVoMTBOUzhRaGpZbElDZmlhd0xoMFJ2bUc4T2NYQVBEOXE5Y2U3ZlQ3RVRFTEVGU0xaQlJB?oc=5",
-        "published_at": "Thu, 26 Nov 2026 20:49:20 GMT",
-        "source": "www.tmgm.com",
         "summary": ""
       },
       {
@@ -230,13 +237,6 @@
         "summary": ""
       },
       {
-        "title": "Gold Price Forecast: XAU/USD Rebounds Above $3,600 as Buyers Defend Key Support Despite Higher PCE Inflation - FXLeaders",
-        "url": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPV0QwUkdQUTRVWmpEbER3OG9sa2hrdFJpTFhFbHhBNENDYndXc0RFbEFkUnN4ZjFhX0RWVmZUdjFEMmRxQ2tKLWZINGdRVXo5eXZ4UHNseUtGM1Nsd2xwTld5ekxxRU9vcjlFX2dqdkFpU3lNYndid2xabF9YdUZhTHVMWF9DaVFkeVRvWWx3ZXFrWjgxc2paWWhEUkdOOG5CVkhTU1hxbWVvd3BnMjl1U2RkYkNvZGVhV2dxTldCREJpRlBJVGZLakJDblhKc1owQU5zcGg4MnlBVXpoNEtZNDNR?oc=5",
-        "published_at": "Thu, 26 Nov 2026 17:41:58 GMT",
-        "source": "FXLeaders",
-        "summary": ""
-      },
-      {
         "title": "Gold Price Forecast — XAU/USD ($3,569) $3,740 Upside Target on 97.5% Fed Hike Odds - TradingNEWS",
         "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPbG9xdUluTTgtMUw0QTgtTEQ4WnlWdlRBYVFiU2xSeWZVTlZJOUlWUTRKcGlHSDBMV01KMU5zWTZscGd6YWlvVkVVeVNNMm5fWk9paTFSOUZZR3pwbkVFRk9WY1l3MXBnRnRVelZuYjdWR3otMWp2bVJhNEh6d21McVQtZ3Y2N0RoY0czVXdlUWpwUDlKSjFPM3JKbWNQaHNJWVlsVmdibE1heV9IYVRnclVXSTNrSGRTcWtzRFdn?oc=5",
         "published_at": "Thu, 26 Nov 2026 17:17:06 GMT",
@@ -251,17 +251,17 @@
         "summary": ""
       },
       {
-        "title": "META_TITLE_QUOTE - Yahoo Finance",
-        "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFAyUjl3TDFqeXJOOE9qNm8tYXNFcUJJREpDdXFNaE9fU0d0d29zN0pkaExFZUZiZENwMVJIOW5UTGVGVmZJRlB0dUJhSEZLUQ?oc=5",
-        "published_at": "Thu, 26 Nov 2026 17:06:35 GMT",
-        "source": "Yahoo Finance",
-        "summary": ""
-      },
-      {
         "title": "Gold forecast: XAU/USD steadies as the dollar rally runs out of steam - FOREX.com",
         "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPdEtxZWxYaHZxcnVkdHhNUnd4ZzN6Mm5Iczh5Q2xEd2xLWEFWZG1oWURxb3VpaG9xcTB3a1pCdEM5SzBhWUwwbnNPcEVyTUlvTDV1emJ3OGFCSjYzallkZlA3YmNDUlhIWnRTUDY2UDZXSUZDdThwSVcwUU0tTmR2VFAtUlpNc1hUaGFDT3VZenJ3bGtjUmZ0NUlld3F6b1NNMVlCdGZ5U3lxMUZSLXZNT2sxM0FLZw?oc=5",
         "published_at": "Thu, 26 Nov 2026 17:04:31 GMT",
         "source": "FOREX.com",
+        "summary": ""
+      },
+      {
+        "title": "Gold Breaks Down but is This a Sign of What’s to Come? - StoneX",
+        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxOVEVJZDNBZS1OLW92S0hGaURiVTUxZkNicmhHYjZxN3VQbnZhQlgyVEFTb2hGQTFPZUtmYVg1Sk5aRXU2UU1aYUN2ZjBZRUxMeUFGRWx6c2w1dVB0SmQ3ck4wVE92aDNhQXBZNnNCcXN4MGxPS2JZd1NkS1MxWmN6NlRjc2Jra0RlWTlickROVVBpS0t6dW44eFdCOUhKMEd2Yk1z?oc=5",
+        "published_at": "Thu, 26 Nov 2026 16:55:32 GMT",
+        "source": "StoneX",
         "summary": ""
       }
     ]
@@ -284,4 +284,4 @@
     }
   ],
   "errors": []
-}\n
+}
