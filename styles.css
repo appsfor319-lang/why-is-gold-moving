@@ -620,3 +620,29 @@ body{top:0!important;position:static!important;}
 .research-tabs{margin:14px 0 0;position:relative;z-index:1}
 #gold-destination{margin:12px 0 22px;scroll-margin-top:12px}
 @media(max-width:720px){.research-tabs{display:flex;overflow-x:auto;gap:6px;white-space:nowrap}.research-tabs .tab{flex:0 0 auto;padding:10px 12px;font-size:11px}#gold-destination{padding:14px 12px;margin:10px 0 18px}.destination-heading{display:block}.destination-bias{margin-top:8px;max-width:none}.destination-bottomline{font-size:13px;line-height:1.55;padding:12px}.destination-levels{grid-template-columns:repeat(2,minmax(0,1fr))}.destination-columns{grid-template-columns:1fr}.destination-paths{grid-template-columns:1fr}.destination-sources{overflow-wrap:anywhere}}
+
+
+/* Clean analytical price map overlay: no session timeline clutter */
+.analysis-overlay-layer{position:absolute;inset:0;z-index:8;overflow:hidden;pointer-events:none}
+.analysis-overlay-layer>svg{position:absolute;inset:0;display:block;overflow:hidden;pointer-events:none}
+.chart-consensus-overlay{position:absolute;left:10px;top:10px;max-width:calc(100% - 90px);padding:7px 9px;border:1px solid rgba(228,184,95,.48);border-radius:5px;background:rgba(8,13,19,.9);color:#e4c47d;font:9px/1.45 'DM Mono',monospace;letter-spacing:.02em;white-space:normal;box-shadow:0 3px 12px #0005}
+.xau-chart{height:clamp(420px,42vw,560px);min-height:380px;max-width:100%;overflow:hidden;touch-action:pan-y}
+.live-chart-panel,.chart-head,.chart-controls,.timeframe-buttons{min-width:0;max-width:100%}
+.chart-price-row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.where-chart-scenarios{align-items:stretch}
+.where-scenario{min-width:0;overflow-wrap:anywhere}
+@media(max-width:760px){
+ .live-chart-panel{padding:12px;overflow:hidden}
+ .chart-head{gap:8px}
+ .chart-controls{width:100%;overflow-x:auto}
+ .timeframe-buttons{display:flex;gap:5px;width:max-content;max-width:none}
+ .chart-tf{flex:0 0 auto}
+ .xau-chart{height:clamp(350px,108vw,470px);min-height:350px;width:100%}
+ .chart-consensus-overlay{font-size:8px;max-width:calc(100% - 78px);left:7px;top:7px;padding:6px 7px}
+ .where-chart-table-wrap{max-width:100%}
+ .where-chart-table table{min-width:0}
+}
+@media(min-width:761px){
+ .live-chart-panel{padding:20px}
+ .xau-chart{height:clamp(470px,43vw,620px)}
+}
