@@ -215,5 +215,50 @@
       "published": "Not verified"
     }
   ],
-  "limitations": "Source-checked update, not a calibrated forecasting model. Live spot is indicative; XAUS quote timestamp/freshness is recorded in the separate 15-minute snapshot. Public professional views and community posts are snapshots, not continuously refreshed. X posts not authenticated. COT is delayed weekly, not live order flow. Holiday-thin liquidity can distort technical breaks. Probabilities are intentionally omitted because this is not a validated probability model."
+  "limitations": "Source-checked update, not a calibrated forecasting model. Live spot is indicative; XAUS quote timestamp/freshness is recorded in the separate 15-minute snapshot. Public professional views and community posts are snapshots, not continuously refreshed. X posts not authenticated. COT is delayed weekly, not live order flow. Holiday-thin liquidity can distort technical breaks. Probabilities are intentionally omitted because this is not a validated probability model.",
+  "horizon_outlook": [
+    {
+      "horizon": "Intraday / next session",
+      "bias": "Neutral-to-bearish below 3,589",
+      "view": "Price is near the lower-middle of the 3,558–3,589 decision band; holiday liquidity makes a direction call low conviction. Prefer wait for acceptance outside the band.",
+      "trigger": "Hold above 3,589.38 for recovery; fail below 3,558/3,526.83 for downside",
+      "target": "Upside 3,635 then 3,689; downside 3,500 then 3,426.80",
+      "invalidation": "Sustained break above 3,689 invalidates immediate bearish setup; loss of 3,426.80 invalidates reversal thesis"
+    },
+    {
+      "horizon": "Swing · 1–5 sessions",
+      "bias": "Bearish pressure, rebound possible",
+      "view": "Hawkish repricing remains a headwind; the rebound bottom is a countertrend signal and needs confirmation.",
+      "trigger": "Break/hold below 3,526.83 or reclaim 3,589.38 then 3,689.87",
+      "target": "Bear path 3,500/3,426.80; recovery 3,697 then 3,787.76–3,872.94",
+      "invalidation": "Bearish case weakens above 3,689.87"
+    },
+    {
+      "horizon": "Medium · several weeks",
+      "bias": "Mixed / correction risk",
+      "view": "Professional views diverge: near-term correction targets 3,400–3,500 versus recovery toward 3,900–4,000. Inflation and Fed policy remain key.",
+      "trigger": "Fed path, US jobs/inflation, trend reclaim above 3,872 or new low below 3,426.80",
+      "target": "Source views cluster around 3,400–3,500 downside and 3,900–4,000 recovery",
+      "invalidation": "Fresh macro repricing and price acceptance outside key range"
+    },
+    {
+      "horizon": "Long-term · 6–18 months",
+      "bias": "Bullish but not straight-line",
+      "view": "TD Securities and FXEmpire long-horizon outlooks cite potential higher prices; current correction and policy uncertainty create significant risk.",
+      "trigger": "Easing policy expectations, continued official-sector demand, trend stabilization",
+      "target": "Published long-term views include 5,000–5,600; these are analyst forecasts, not guaranteed targets",
+      "invalidation": "Persistent real-yield/dollar strength and structural breakdown would challenge the bullish thesis"
+    }
+  ],
+  "positioning_data": {
+    "report_date": "Positions as of Nov 17, 2026",
+    "source": "CFTC COMEX Gold Futures-only COT",
+    "noncommercial_net": 166132,
+    "noncommercial_change": -23975,
+    "managed_money_net": 102942,
+    "managed_money_change": -9399,
+    "open_interest": 407834,
+    "next_release": "Nov 30, 2026 (holiday delayed)",
+    "note": "Speculators remain net-long while reducing exposure; weekly/delayed, not live order flow."
+  }
 }
