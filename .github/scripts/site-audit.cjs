@@ -68,7 +68,7 @@ function check(name, pass, detail) {
     const snapshot = await page.evaluate(async () => {
       const ids = ["outlook-status","destination-updated","destination-bias","destination-bottomline",
         "outlook-direction","outlook-summary","outlook-stuck","outlook-next-target",
-        "outlook-levels","outlook-scenarios","outlook-consensus","outlook-sources","chart-feed-status","chart-last-price","short-term-synthesis","horizon-long-panel"];
+        "outlook-levels","outlook-scenarios","outlook-consensus","outlook-sources","chart-feed-status","chart-last-price","short-term-synthesis","horizon-long-panel","live-intelligence","live-intelligence-price","live-move-headline","live-tradingview-ideas","tradingview-feed-status"];
       const text = id => document.getElementById(id)?.innerText?.trim() || "";
       let research = null, researchStatus = null;
       try {
@@ -94,6 +94,9 @@ function check(name, pass, detail) {
         chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },
         tabCount: document.querySelectorAll(".horizon-tab").length,
         longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
+        horizonButtonsVisible: [...document.querySelectorAll(".horizon-tab")].every(b => getComputedStyle(b).display !== "none" && b.getBoundingClientRect().height > 30),
+        livePanelVisible: !!document.getElementById("live-intelligence") && getComputedStyle(document.getElementById("live-intelligence")).display !== "none",
+        staticShortSnapshotHidden: getComputedStyle(document.getElementById("gold-destination")).display === "none",
         counts: {
           levels: document.querySelectorAll("#outlook-levels .outlook-level").length,
           scenarios: document.querySelectorAll("#outlook-scenarios .outlook-scenario").length,
@@ -111,11 +114,21 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=9/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart5/.test(s)) && snapshot.script.some(s => /chart\.js\?v=ufd7/.test(s)), snapshot.script.join(", "));
+    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live10/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart5/.test(s)) && snapshot.script.some(s => /chart\.js\?v=shock8/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
     check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
     check("Both horizon tabs are present", snapshot.tabCount === 2 && snapshot.longHidden === true, "Short and long term tabs");
+    check("Both horizon controls are visibly rendered", snapshot.horizonButtonsVisible, "Visible two-button horizon switcher");
+    check("Live intelligence panel is visible", snapshot.livePanelVisible, snapshot.panels["live-intelligence"].slice(0, 180));
+    check("Dated short-term snapshot is hidden from live view", snapshot.staticShortSnapshotHidden, "Old snapshot price map is not presented as current");
+    await page.locator("#tab-long-term").click();
+    const longTabWorks = await page.locator("#horizon-long-panel").evaluate(el => !el.hidden && getComputedStyle(el).display !== "none");
+    await page.screenshot({ path: path.join(out, "long-term-tab.png"), fullPage: true });
+    await page.locator("#tab-short-term").click();
+    const shortTabWorks = await page.locator("#horizon-short-panel").evaluate(el => !el.hidden && getComputedStyle(el).display !== "none");
+    check("Horizon tabs switch panels in both directions", longTabWorks && shortTabWorks, "Long panel opens and short panel returns");
+
 
     check("Price levels render", snapshot.counts.levels >= 1 && snapshot.counts.levels === snapshot.research?.levels, snapshot.counts.levels + " rendered / " + snapshot.research?.levels + " in JSON");
     check("Scenarios render", snapshot.counts.scenarios >= 1 && snapshot.counts.scenarios === snapshot.research?.paths, snapshot.counts.scenarios + " rendered / " + snapshot.research?.paths + " in JSON");
