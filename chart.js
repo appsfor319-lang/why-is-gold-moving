@@ -203,12 +203,17 @@ async function explain(summary,force){
  analysisBusy=true;lastAnalysisCandle=candle;
  try{
   const terminal=window.goldTerminalData||{};
-  const response=await fetch(apiBase()+"/api/chart-analysis",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chart:summary,market:terminal.market||{},headlines:(terminal.news||[]).slice(0,6).map(n=>({title:n.title,source:n.source,published_at:n.published_at}))}),signal:AbortSignal.timeout(14000)});
+  let communityIdeas=window.goldTradingViewIdeas||[];
+  try{const ideaResponse=await fetch(apiBase()+"/api/tradingview-gold-ideas",{cache:"no-store",signal:AbortSignal.timeout(8000)});if(ideaResponse.ok){const ideaData=await ideaResponse.json();communityIdeas=(ideaData.ideas||communityIdeas).slice(0,8);window.goldTradingViewIdeas=communityIdeas;}}catch{}
+  const response=await fetch(apiBase()+"/api/chart-analysis",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({chart:summary,market:terminal.market||{},headlines:(terminal.news||[]).slice(0,6).map(n=>({title:n.title,source:n.source,published_at:n.published_at})),community_ideas:communityIdeas}),signal:AbortSignal.timeout(14000)});
   if(!response.ok)throw Error("Chart analysis HTTP "+response.status);
   const data=await response.json();if(data.analysis)renderExplanation(data.analysis);
  }catch(e){renderExplanation({headline:"Chart is live; AI explanation unavailable",body:"The chart and indicator are still updating. The analysis service returned: "+e.message,confidence:"LOW",engine:"offline",updated_at:new Date().toISOString()})}
  finally{analysisBusy=false}
 }
+let lastExternalContextAnalysisAt=0;
+window.addEventListener("gold-terminal-updated",()=>{if(window.goldChartSummary&&Date.now()-lastExternalContextAnalysisAt>180000){lastExternalContextAnalysisAt=Date.now();explain(window.goldChartSummary,true)}});
+window.addEventListener("gold-tradingview-ideas-updated",()=>{if(window.goldChartSummary&&Date.now()-lastExternalContextAnalysisAt>60000){lastExternalContextAnalysisAt=Date.now();explain(window.goldChartSummary,true)}});
 function applyLiveTick(tick){
  lastStreamTick=Date.now();
  if(!chartData||!Array.isArray(chartData.candles)||!tick||!Number.isFinite(Number(tick.price))||!Number.isFinite(Number(tick.timestamp)))return;
