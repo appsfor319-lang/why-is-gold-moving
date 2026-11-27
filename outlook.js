@@ -29,17 +29,19 @@ const verified=Array.isArray(o.verified_analysts)?o.verified_analysts:(Array.isA
  $("outlook-status").textContent="Outlook updated "+stamp(o.updated_at||d?.updated_at)+" · "+(o.engine||"analysis engine")+" · "+(o.data_freshness||"freshness not specified");
 }
 function node(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
-let researchSnapshot=null;
-function renderResearchSnapshot(s){
+function renderResearchSnapshot(s,id){
  if(!s)return;const pane=$("pane-outlook");if(!pane)return;
- let section=$("claude-research-snapshot");if(!section){section=node("section","outlook-section");section.id="claude-research-snapshot";pane.insertBefore(section,pane.querySelector(".outlook-foot"))}
+ const live=!!s.live;const sectionId=id||(live?"live-research-snapshot":"claude-research-snapshot");
+ let section=$(sectionId);if(!section){section=node("section","outlook-section");section.id=sectionId;pane.insertBefore(section,pane.querySelector(".outlook-foot"))}
  section.textContent="";
- const head=node("div","outlook-section-head");head.append(node("p","eyebrow","IMPORTED RESEARCH · NOT LIVE"));head.append(node("h3",null,"Claude research snapshot · "+s.snapshot_date));section.append(head);
+ const head=node("div","outlook-section-head");head.append(node("p","eyebrow",live?"AUTO-REFRESHED · HEURISTIC, NOT AI":"IMPORTED RESEARCH · NOT LIVE"));head.append(node("h3",null,(live?"Automatic market snapshot":"Claude research snapshot")+" · "+s.snapshot_date));section.append(head);
  const warning=node("div","outlook-snapshot-warning",s.caveat||"Imported snapshot; not independently verified.");section.append(warning);
  const overview=node("div","outlook-snapshot-grid");section.append(overview);
- const overviewCards=[["Short-term",s.short_term_direction,s.short_term_confidence],["6–12 months",s.long_term_direction,"Long-horizon view"],["Snapshot price",s.price_range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","USD range at time of research"],["Likely range",s.range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","Snapshot scenario range"]];
+ const overviewCards=live?[["Short-term lean",s.short_term_direction,s.short_term_confidence],["Current gold",money(s.price),"Latest quote · auto-refresh"],["5-day range",s.range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","Observed high / low"],["Engine",s.engine||"Heuristic","Not a calibrated model"]]:[["Short-term",s.short_term_direction,s.short_term_confidence],["6–12 months",s.long_term_direction,"Long-horizon view"],["Snapshot price",s.price_range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","USD range at time of research"],["Likely range",s.range_usd?.map(v=>money(v)).join(" – ")||"Not supplied","Snapshot scenario range"]];
  overviewCards.forEach(([a,b,c])=>{const card=node("article","outlook-card");card.append(node("span","outlook-label",a.toUpperCase()),node("h3",null,b||"Not stated"),node("p",null,c||""));overview.append(card)});
  const sum=node("p","outlook-snapshot-summary",s.summary||"");section.append(sum);
+ if(live&&s.market_inputs){const mi=s.market_inputs;const data=node("div","outlook-snapshot-grid");section.append(node("h4",null,"Market inputs"),data);[[ "Gold 5-day",mi.gold?.change_5d_pct!=null?mi.gold.change_5d_pct.toFixed(2)+"%":"—"],["DXY 5-day",mi.dxy?.change_5d_pct!=null?mi.dxy.change_5d_pct.toFixed(2)+"%":"Unavailable"],["Silver",mi.silver?.price!=null?money(mi.silver.price):"Unavailable"],["US 10Y",mi.us10y?.value!=null?mi.us10y.value.toFixed(2)+"%":"Unavailable"],["Oil",mi.oil?.price!=null?money(mi.oil.price):"Unavailable"],["Headlines",mi.headlines?.length||0]].forEach(([k,v])=>{const c=node("article","outlook-level");c.append(node("span","level-kind",k),node("strong",null,String(v)));data.append(c)});}
+ if(live&&s.market_inputs?.headlines?.length){const news=node("div","outlook-sources");section.append(node("h4",null,"Fresh headlines (RSS)"),news);s.market_inputs.headlines.slice(0,8).forEach(n=>{const c=node("article","outlook-source");c.append(node("div","outlook-source-meta",n.source||"News feed"),node("h4",null,n.title));if(n.published_at)c.append(node("p",null,n.published_at));if(n.url){const a=node("a",null,"Open source ↗");a.href=n.url;a.target="_blank";a.rel="noopener noreferrer";c.append(a)}news.append(c)});}
  const levels=node("div","outlook-snapshot-grid");section.append(node("h4",null,"Snapshot levels (not refreshed)"),levels);
  [["Near resistance",s.near_resistance],["Support",s.support],["Major resistance",[s.major_resistance]],["Upside targets",s.upside_targets],["Downside targets",s.downside_targets]].forEach(([label,vals])=>{if(!Array.isArray(vals)||!vals.length)return;const card=node("article","outlook-level");card.append(node("span","level-kind",label),node("strong",null,vals.map(v=>money(v)).join(" · ")));levels.append(card)});
  const scenarios=node("div","outlook-scenarios");section.append(node("h4",null,"Conditional paths"),scenarios);
@@ -53,7 +55,7 @@ function renderResearchSnapshot(s){
  const src=node("div","outlook-sources");section.append(node("h4",null,"Sources attached to the imported research"),src);
  (s.sources||[]).forEach(x=>{const card=node("article","outlook-source");card.append(node("div","outlook-source-meta",x.source),node("h4",null,x.title));const a=node("a",null,"Open source ↗");a.href=x.url;a.target="_blank";a.rel="noopener noreferrer";card.append(a);src.append(card)});
 }
-fetch("./research/claude-market-snapshot-2026-11-27.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).then(s=>{researchSnapshot=s;renderResearchSnapshot(s)}).catch(()=>{});
+Promise.all([fetch("./research/live-market-outlook.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),fetch("./research/claude-market-snapshot-2026-11-27.json",{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null)]).then(([live,legacy])=>{if(live)renderResearchSnapshot(live,"live-research-snapshot");if(legacy)renderResearchSnapshot(legacy,"claude-research-snapshot")});
 function renderFallback(d){
  const ctx=marketContext(d),g=ctx.price,change=ctx.change_pct,brief=ctx.briefing||{};
  $("outlook-direction").textContent=change==null?"UNASSESSED":Number(change)>0?"GOLD UP TODAY":Number(change)<0?"GOLD DOWN TODAY":"FLAT TODAY";
