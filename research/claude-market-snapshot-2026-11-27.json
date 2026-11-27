@@ -1,0 +1,174 @@
+{
+  "source": "Claude project supplied by user",
+  "snapshot_date": "2026-11-27",
+  "price_range_usd": [
+    3565,
+    3600
+  ],
+  "short_term_direction": "Neutral to bearish",
+  "short_term_confidence": "~55% (author estimate; not independently calibrated)",
+  "long_term_direction": "Bullish (6–12 months)",
+  "summary": "Gold is described as rebounding within a damaged range rather than in a confirmed uptrend. The snapshot leans lower over the next few days but bullish over 6–12 months.",
+  "range_usd": [
+    3450,
+    3700
+  ],
+  "near_resistance": [
+    3597,
+    3635
+  ],
+  "support": [
+    3500,
+    3430,
+    3450
+  ],
+  "major_resistance": 3700,
+  "upside_targets": [
+    3850,
+    3900,
+    4000
+  ],
+  "downside_targets": [
+    3340,
+    3200,
+    3300
+  ],
+  "scenarios": [
+    {
+      "name": "Range / bearish lean",
+      "trigger": "Rejection around $3,597–3,635",
+      "path": "$3,500, then $3,450",
+      "reason": "Snapshot reports rebound caps and defended lower support",
+      "invalidation": "Sustained close above $3,700"
+    },
+    {
+      "name": "Support bounce",
+      "trigger": "$3,430–3,450 holds again",
+      "path": "Potential squeeze toward $3,680–3,700",
+      "reason": "Snapshot describes repeated defense of the support area",
+      "invalidation": "Break below $3,430"
+    },
+    {
+      "name": "Bullish breakout",
+      "trigger": "Daily close above $3,700",
+      "path": "$3,850, then $3,900–4,000",
+      "reason": "Breakout scenario in the supplied research",
+      "invalidation": "Return below breakout zone"
+    },
+    {
+      "name": "Bearish breakdown",
+      "trigger": "Close below $3,400–3,430",
+      "path": "$3,340, then $3,200–3,300",
+      "reason": "Downside stress scenario cited in the snapshot",
+      "invalidation": "Reclaim of $3,450–3,500"
+    }
+  ],
+  "drivers": [
+    {
+      "bias": "bearish",
+      "title": "Fed repricing / sticky inflation",
+      "detail": "The report says hot inflation and strong GDP raised December hike expectations; verify these figures and pricing before relying on them."
+    },
+    {
+      "bias": "bearish",
+      "title": "Dollar and yields",
+      "detail": "Stronger dollar and yields were described as pressure, easing during the rebound."
+    },
+    {
+      "bias": "mixed",
+      "title": "Short-covering / dip buyers",
+      "detail": "Buying near $3,400–3,500 and easing yields/dollar were cited as rebound catalysts."
+    },
+    {
+      "bias": "mixed",
+      "title": "Flows and risk appetite",
+      "detail": "ETF liquidation was characterized as temporary pressure; equities and oil/geopolitical risk were mixed."
+    }
+  ],
+  "analyst_consensus": {
+    "short_term": "No verified short-term professional consensus in the supplied report; its directional lean is the author's analysis, not a scored consensus.",
+    "long_term": "The report cites institutional survey averages as bullish context, but they are long-horizon surveys, not verified intraday records.",
+    "unverified_opinions": [
+      {
+        "source": "TD Securities",
+        "view": "Too early to call a bottom; long-term bullish",
+        "levels": "Support near $3,450; ~$5,000 late-2027 target",
+        "status": "UNVERIFIED in this snapshot"
+      },
+      {
+        "source": "Kitco (Said)",
+        "view": "Neutral: cyclical correction within a bull market",
+        "levels": "$3,500 key; $3,400–4,000 range",
+        "status": "UNVERIFIED in this snapshot"
+      },
+      {
+        "source": "FXEmpire",
+        "view": "Conditionally bullish",
+        "levels": "Above $3,700: $3,850 then $3,900–4,000",
+        "status": "UNVERIFIED in this snapshot"
+      },
+      {
+        "source": "FinScans",
+        "view": "Bearish below $3,680–3,700",
+        "levels": "Cap cited near $3,597",
+        "status": "UNVERIFIED in this snapshot"
+      },
+      {
+        "source": "RoboForex (23 Nov)",
+        "view": "Bearish",
+        "levels": "Correction to $3,705 then dip to $3,535",
+        "status": "UNVERIFIED in this snapshot"
+      },
+      {
+        "source": "ING via aggregator",
+        "view": "Dollar and higher-for-longer weigh",
+        "levels": "—",
+        "status": "UNVERIFIED in this snapshot"
+      },
+      {
+        "source": "Natixis stress scenario",
+        "view": "Bearish scenario",
+        "levels": "$3,340 by January",
+        "status": "UNVERIFIED in this snapshot"
+      }
+    ]
+  },
+  "caveat": "These figures and narratives were copied from the Claude-supplied research snapshot. They are not live data and have not been independently rechecked by this site. Treat as historical context only until sources are verified.",
+  "sources": [
+    {
+      "source": "LBMA Forecast Survey",
+      "title": "Individual analyst forecasts",
+      "url": "https://www.lbma.org.uk/forecast-survey-2026/analysts-forecasts"
+    },
+    {
+      "source": "LBMA",
+      "title": "Historical forecast survey data",
+      "url": "https://www.lbma.org.uk/prices-and-data/lbma-annual-precious-metals-forecast-survey"
+    },
+    {
+      "source": "Reuters",
+      "title": "Commodities coverage",
+      "url": "https://www.reuters.com/markets/commodities/"
+    },
+    {
+      "source": "PKMR Consulting",
+      "title": "Gold-Eagle analyst scorecard",
+      "url": "https://www.pkmrconsulting.com/research/gold-eagle-analyst-scorecard/"
+    },
+    {
+      "source": "TD Securities via FXStreet",
+      "title": "Gold crossroads view",
+      "url": "https://www.fxstreet.com/news/gold-crossroads-view-and-upside-risks-td-securities-202611260823"
+    },
+    {
+      "source": "Kitco",
+      "title": "Gold market commentary",
+      "url": "https://www.kitco.com/news/article/2026-11-20/gold-and-silver-suffer-brutal-losses-liquidity-crunch-deepens-analysts-see"
+    },
+    {
+      "source": "RoboForex",
+      "title": "Gold forecast 23 Nov 2026",
+      "url": "https://roboforex.com/beginners/analytics/forex-forecast/gold/xau-usd-gold-forecast-2026-11-23/"
+    }
+  ]
+}
