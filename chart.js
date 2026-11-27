@@ -185,7 +185,7 @@ function drawAnalysisOverlay(result,bars){
  const width=$("xau-chart").clientWidth,height=$("xau-chart").clientHeight;
  if(width<120||height<120)return;
  const levels=analysisLevels(result,bars),scale=chart.timeScale(),last=bars[bars.length-1];
- const xNow=scale.timeToCoordinate(last.time),x1=Math.max(8,Math.min(width-78,xNow==null?width*.68:xNow));
+ const x1=Math.max(8,Math.min(width-78,width*.46));
  const ns="http://www.w3.org/2000/svg",svg=document.createElementNS(ns,"svg");
  svg.setAttribute("viewBox","0 0 "+width+" "+height);svg.setAttribute("width",width);svg.setAttribute("height",height);svg.setAttribute("aria-hidden","true");
  const addLine=(xA,yA,xB,yB,color,dash,opacity=1)=>{
