@@ -105,11 +105,17 @@ async function refreshLiveIntelligence(force=false){
   const api=liveApiBase(),terminal=window.goldTerminalData||{};
   const quote=terminal.market?.gold||{},chart=window.goldChartSummary||null;
   const domPrice=Number(String($("chart-last-price")?.textContent||"").replace(/[^0-9.]/g,""));
-  const chartPrice=Number(chart?.last?.close),tickAt=Number(window.goldLastTickAt),tickFresh=Number.isFinite(tickAt)&&Date.now()/1000-tickAt<120;
-  const shown=tickFresh&&Number.isFinite(Number(window.goldLastTickPrice))?Number(window.goldLastTickPrice):Number.isFinite(domPrice)&&domPrice>0?domPrice:Number.isFinite(chartPrice)&&chartPrice>0?chartPrice:(!quote.stale&&quote.freshness!=="stale"?quote.value:null);
-  const quoteDate=tickFresh?new Date(tickAt*1000).toISOString():chart?.last?.time?new Date(chart.last.time*1000).toISOString():quote.timestamp||terminal.updated_at;
+  const chartPrice=Number(chart?.last?.close),tickAt=Number(window.goldLastTickAt),nowSeconds=Date.now()/1000;
+  const tickAge=nowSeconds-tickAt,tickFresh=Number.isFinite(tickAt)&&tickAge>=-30&&tickAge<120;
+  const candleAt=Number(chart?.last?.time),candleAge=nowSeconds-candleAt;
+  const candleLimit=chart?.timeframe==="1h"?70*60:chart?.timeframe==="30min"?40*60:chart?.timeframe==="15min"?25*60:15*60;
+  const chartFresh=Number.isFinite(candleAt)&&candleAge>=-120&&candleAge<candleLimit;
+  const quoteAt=Date.parse(quote.timestamp||"")/1000,quoteAge=nowSeconds-quoteAt;
+  const quoteFresh=Number.isFinite(quoteAt)&&quoteAge>=-30&&quoteAge<15*60&&!quote.stale&&quote.freshness!=="stale";
+  const shown=tickFresh&&Number.isFinite(Number(window.goldLastTickPrice))?Number(window.goldLastTickPrice):chartFresh?(Number.isFinite(domPrice)&&domPrice>0?domPrice:chartPrice):quoteFresh?quote.value:null;
+  const quoteDate=tickFresh?new Date(tickAt*1000).toISOString():chartFresh?new Date(candleAt*1000).toISOString():quoteFresh?quote.timestamp:null;
   if(price)price.textContent=shown?money(shown):"FRESH QUOTE UNAVAILABLE";
-  if(priceTime)priceTime.textContent=(tickFresh?"Twelve Data live tick":chart?"Live XAU/USD chart":quote.source||"XAU/USD reference")+" · "+liveTime(quoteDate)+(shown==null?" · no stale price substituted":"");
+  if(priceTime)priceTime.textContent=(tickFresh?"Twelve Data live tick":chartFresh?"Latest "+(chart?.timeframe||"chart")+" candle":quoteFresh?quote.source:"No fresh quote source")+" · "+liveTime(quoteDate)+(shown==null?" · stale readings hidden":"");
   const pct=chart?.last?.change_pct;
   if(change){change.textContent=pct==null?"Waiting for 5m candle":(pct>0?"+":"")+Number(pct).toFixed(2)+"%";change.className=pct>0?"direction-bullish":pct<0?"direction-bearish":"direction-neutral"}
   if(changeTime)changeTime.textContent=chart?.timeframe?chart.timeframe+" candle · chart feed":"Latest available chart move";
