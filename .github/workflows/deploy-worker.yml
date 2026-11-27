@@ -109,6 +109,12 @@ jobs:
               if (!chartResponse.ok || !Array.isArray(chart.candles) || chart.candles.length < 20 || chart.refresh_seconds !== 300) {
                 throw new Error("Live five-minute chart data or its five-minute REST fallback metadata is invalid");
               }
+              const ideasResponse = await fetch("https://why-is-gold-movingm.appsfor319.workers.dev/api/tradingview-gold-ideas", { cache: "no-store", signal: AbortSignal.timeout(15000) });
+              const ideas = await ideasResponse.json();
+              if (!ideasResponse.ok || !Array.isArray(ideas.ideas) || !ideas.source_url || !ideas.status) {
+                throw new Error("TradingView gold-ideas endpoint did not return a timestamped, structured response");
+              }
+              console.log("TRADINGVIEW_IDEAS_RESULT=PASS", ideas.status, "ideas", ideas.ideas.length, "updated", ideas.updated_at || "not available");
               const invalidNews = body.news.filter(item => {
                 if (!item.title || !item.source || !item.published_at || !item.url) return true;
                 const published = Date.parse(item.published_at);
