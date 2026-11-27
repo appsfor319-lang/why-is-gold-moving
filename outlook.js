@@ -87,6 +87,7 @@ function renderLiveIdeas(data){
  const ideas=Array.isArray(data?.ideas)?data.ideas:[];
  status.textContent=data?.status==="ok"?"Feed checked "+liveTime(data.updated_at):data?.status==="stale"?"Feed stale · "+liveTime(data.updated_at):"Feed unavailable";
  if(!ideas.length){root.innerHTML='<div class="empty">'+esc(data?.error||"No recent gold/XAUUSD ideas were returned by the public feed.")+'</div>';return;}
+ const newest=ideas[0]?ideas[0].url+"|"+ideas[0].published_at:"";if(newest&&newest!==window.goldTradingViewIdeaKey){window.goldTradingViewIdeaKey=newest;window.goldTradingViewIdeas=ideas.slice(0,8);window.dispatchEvent(new Event("gold-tradingview-ideas-updated"));}
  root.innerHTML=ideas.slice(0,10).map(x=>'<article class="live-idea-card '+directionClass(x.bias)+'"><div class="live-idea-meta">'+esc(x.author||"TradingView author")+' · '+esc(liveTime(x.published_at))+' · '+esc(x.classification||"Community idea")+'</div><h4>'+esc(x.title)+'</h4><p>'+esc(x.description||"No preview supplied by the RSS feed.")+'</p><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Open original TradingView idea ↗</a></article>').join("");
 }
 function renderLiveNews(data){
