@@ -2,17 +2,17 @@
   "source": "Automated multi-source market snapshot",
   "snapshot_type": "live_heuristic",
   "snapshot_date": "2026-11-27",
-  "updated_at": "2026-11-27T01:45:58.287Z",
+  "updated_at": "2026-11-27T01:59:28.011Z",
   "live": true,
   "engine": "XAUS gold spot + cross-market Yahoo data + headline keyword heuristic",
   "caveat": "Automated quote snapshot, not calibrated prediction or verified analyst consensus. Spot quote freshness metadata is included where provider supplies it. Check timestamps and broker price before decisions.",
-  "price": 3577.300049,
+  "price": 3578.399902,
   "price_range_usd": [
-    3577.300049,
-    3577.300049
+    3578.399902,
+    3578.399902
   ],
   "short_term_direction": "Bullish lean",
-  "short_term_confidence": "38% heuristic score (not statistical confidence)",
+  "short_term_confidence": "42% heuristic score (not statistical confidence)",
   "long_term_direction": "Not modeled",
   "summary": "Lean is based on available gold momentum, cross-market changes and keyword counts from recent headlines. It is not AI forecast or institutional consensus.",
   "range_usd": [
@@ -20,11 +20,11 @@
     3691
   ],
   "near_resistance": [
-    3636.6,
+    3637.7,
     3691
   ],
   "support": [
-    3518,
+    3519.1,
     3453.8
   ],
   "major_resistance": 3691,
@@ -63,7 +63,7 @@
     {
       "bias": "positive",
       "title": "Gold momentum",
-      "detail": "5-day change 0.88%; latest change -0.69%"
+      "detail": "5-day change 0.91%; latest change -0.66%"
     },
     {
       "bias": "negative",
@@ -76,9 +76,9 @@
       "detail": "5-day move -0.24 points"
     },
     {
-      "bias": "negative",
+      "bias": "positive",
       "title": "Headline tone",
-      "detail": "1 positive / 3 negative keyword hits from 20 headlines"
+      "detail": "3 positive / 2 negative keyword hits from 20 headlines"
     }
   ],
   "analyst_consensus": {
@@ -88,15 +88,15 @@
   },
   "market_inputs": {
     "gold": {
-      "price": 3577.300049,
-      "change_5d_pct": 0.8798412058317551,
-      "latest_change_pct": -0.6884859109963615,
+      "price": 3578.399902,
+      "change_5d_pct": 0.9108570542285976,
+      "latest_change_pct": -0.6579522500763435,
       "high_5d": 3691,
       "low_5d": 3453.8,
       "source": "XAUS spot API",
-      "as_of": "2026-11-27T01:45:26.821Z",
+      "as_of": "2026-11-27T01:59:24.124Z",
       "freshness": "fresh",
-      "age_seconds": 20
+      "age_seconds": 25
     },
     "dxy": {
       "price": 103.80999755859375,
@@ -119,11 +119,18 @@
       "source": "Yahoo Finance"
     },
     "headline_sentiment": {
-      "positive": 1,
-      "negative": 3,
-      "net": -2
+      "positive": 3,
+      "negative": 2,
+      "net": 1
     },
     "headlines": [
+      {
+        "title": "Gold steadies near 15-month low as Fed hike bets offset tech-led rally - Investing.com Canada",
+        "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxPMHhyNEhuMG1xMU5XUnNieGI0LWRrRTU2VEJwMVNLN2IxbzhRd0VqUGpxc21vajlzZ196VF9CeDZzcFFOaEZTeUE3SkFLQ1ZVOVJDV2pYQVJhMDJMVFR4ZzZTTnR3UjFZTG9IOElCNGtIZGNseEJhMWM0ZkFMXzZOdGFTNlZ4a3dnbHZDLUY1Q3FmTmFONVVYVTBiTkJ5bEtfR2UtSXI3VkRqSHlzWDdrLTVYZ0Z4RlBIZFAxR19ydmQ?oc=5",
+        "published_at": "Fri, 27 Nov 2026 01:31:24 GMT",
+        "source": "Investing.com Canada",
+        "summary": ""
+      },
       {
         "title": "ETFS Gold Trust (SGOL) Stock Price: Nov 25 Close $34.02 - Gotrade",
         "url": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE1DSlphTi1DVGxtM2U4eVdHZnZpaGhNQzduR19JMVJBTEZBOGVCMTVQeWt0NWlCcEpWMEYyTExnOXNVSmFLM1lkblFGU2FSbVRZUFh5TmlYUQ?oc=5",
@@ -136,13 +143,6 @@
         "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQUWl6WDgzM0tfbzV6bDlPc0dfd3hpbUtHa3pQSDRHeGFIa0JySjNXaEF0V2NTanlDYktkaTV0dHdEdmhqOWtYSk5vMHZSNU8zRTVLN2w3RnY3OXVmRXFHMkpqTnExblo2ekNGMzNLSU9nM3R3M1g2SHFJVGM1aWFSaUdRS2xCUVVncjlTczVmeVk2bE9jRm1faFBseG11ejBhZmc?oc=5",
         "published_at": "Thu, 26 Nov 2026 23:37:16 GMT",
         "source": "FXStreet",
-        "summary": ""
-      },
-      {
-        "title": "Gold Traders are Watching 5 Historic Signals - CryptoRank",
-        "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPTmNFSi1EQTFPYkFFVEZvLWdKNG1GbDNSc3pPSGppWnJVLV9GakE2RFpIRnVLUmNQcy1OVGpDS0RBX1psOUtGMFR0Rkw5WFg5cG9BNDZaVVRBQmNwdEE5TExudTNFRlBNSVhUOFZmM0V1UGlucjY5VEJBYlpWZWpIclZuR2sySGVC?oc=5",
-        "published_at": "Thu, 26 Nov 2026 23:12:30 GMT",
-        "source": "CryptoRank",
         "summary": ""
       },
       {
@@ -237,13 +237,6 @@
         "summary": ""
       },
       {
-        "title": "Bitcoin and Gold price forecast: Why daily technicals flash sell amid hawkish Fed and thanksgiving liquidity - FXStreet",
-        "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxNb09iaXJSZEJ2aGozZWJIaEc3WEpMLTNOZk9iU2YyMjNQY054NWRwNFlneEt0XzM5SmJRQV9CeTcyczdKWE9oUHp3dHNrRldkeUtYOUsxNUVRRU9LRFBqcEtvbmJaMTJjVEdqMXFJRTl6eElJeWVIZkMxM054SUNBSlpIeUNjOG9BU0RFRDhBSHZNaVNMTUFwYmVkTkN2UTV2Y29meW5ENjgyeTRIZl9BTnJnelp2Mm9UVHVZMk5HWWhlR1hMazFrbnNDdW1ISVRsVnh3N1VMUkZ3c3VFNG90anJMcmhmZlpFZlYzRGRwNzBRMjJaZ1JBN2gxbw?oc=5",
-        "published_at": "Thu, 26 Nov 2026 17:18:28 GMT",
-        "source": "FXStreet",
-        "summary": ""
-      },
-      {
         "title": "Gold Price Forecast — XAU/USD ($3,569) $3,740 Upside Target on 97.5% Fed Hike Odds - TradingNEWS",
         "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPbG9xdUluTTgtMUw0QTgtTEQ4WnlWdlRBYVFiU2xSeWZVTlZJOUlWUTRKcGlHSDBMV01KMU5zWTZscGd6YWlvVkVVeVNNMm5fWk9paTFSOUZZR3pwbkVFRk9WY1l3MXBnRnRVelZuYjdWR3otMWp2bVJhNEh6d21McVQtZ3Y2N0RoY0czVXdlUWpwUDlKSjFPM3JKbWNQaHNJWVlsVmdibE1heV9IYVRnclVXSTNrSGRTcWtzRFdn?oc=5",
         "published_at": "Thu, 26 Nov 2026 17:17:06 GMT",
@@ -262,6 +255,13 @@
         "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFAyUjl3TDFqeXJOOE9qNm8tYXNFcUJJREpDdXFNaE9fU0d0d29zN0pkaExFZUZiZENwMVJIOW5UTGVGVmZJRlB0dUJhSEZLUQ?oc=5",
         "published_at": "Thu, 26 Nov 2026 17:06:35 GMT",
         "source": "Yahoo Finance",
+        "summary": ""
+      },
+      {
+        "title": "Gold forecast: XAU/USD steadies as the dollar rally runs out of steam - FOREX.com",
+        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPdEtxZWxYaHZxcnVkdHhNUnd4ZzN6Mm5Iczh5Q2xEd2xLWEFWZG1oWURxb3VpaG9xcTB3a1pCdEM5SzBhWUwwbnNPcEVyTUlvTDV1emJ3OGFCSjYzallkZlA3YmNDUlhIWnRTUDY2UDZXSUZDdThwSVcwUU0tTmR2VFAtUlpNc1hUaGFDT3VZenJ3bGtjUmZ0NUlld3F6b1NNMVlCdGZ5U3lxMUZSLXZNT2sxM0FLZw?oc=5",
+        "published_at": "Thu, 26 Nov 2026 17:04:31 GMT",
+        "source": "FOREX.com",
         "summary": ""
       }
     ]
@@ -284,4 +284,4 @@
     }
   ],
   "errors": []
-}
+}\n
