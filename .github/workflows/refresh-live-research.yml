@@ -1,5 +1,10 @@
 name: Refresh live gold research snapshot
 on:
+  push:
+    branches: [main]
+    paths:
+      - scripts/refresh-live-research.js
+      - .github/workflows/refresh-live-research.yml
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
