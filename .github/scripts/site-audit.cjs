@@ -158,7 +158,7 @@ function check(name, pass, detail) {
     check("Chart canvas renders", snapshot.chart.canvases >= 1, snapshot.chart.canvases + " canvas elements");
     check("Chart receives candle data", snapshot.chart.price !== "—" && !/FEED ERROR|Connecting/i.test(snapshot.chart.status), snapshot.chart.status + " · " + snapshot.chart.price);
     check("Chart draws the new live analysis overlay", snapshot.chart.analysisOverlay, snapshot.chart.consensusOverlay);
-    check("Old session timeline lines are removed", !/source\.setData\(\[\{time:r\.start,value:r\.high\}/.test(chartSource) && !/result\.ranges\.forEach\(r=>\{const mid=/.test(deployedChartSource), "Session timeline drawings removed; session sweeps remain");
+    check("Old session timeline lines are removed", !/source\.setData\(\[\{time:r\.start,value:r\.high\}/.test(deployedChartSource) && !/result\.ranges\.forEach\(r=>\{const mid=/.test(deployedChartSource), "Session timeline drawings removed; session sweeps remain");
     check("No uncaught browser JavaScript errors", evidence.page_errors.length === 0, evidence.page_errors.slice(0, 3).join(" | ") || "None");
 
     await page.screenshot({ path: path.join(out, "desktop-full.png"), fullPage: true });
