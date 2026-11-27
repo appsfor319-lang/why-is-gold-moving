@@ -1,0 +1,38 @@
+// Free, keyless live research updater. Uses Yahoo Finance chart endpoints + Google News RSS.
+// Direction is a transparent heuristic, NOT an AI model or institutional consensus.
+const fs = require("fs");
+const OUT = "research/live-market-outlook.json";
+const headers = { "user-agent": "Mozilla/5.0 (compatible; GoldMarketDesk/1.0)" };
+async function getJson(url) { const r=await fetch(url,{headers,signal:AbortSignal.timeout(15000)}); if(!r.ok)throw new Error(url+" HTTP "+r.status);return r.json(); }
+async function quote(symbol,range="5d",interval="1h"){
+ const j=await getJson("https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(symbol)+"?range="+range+"&interval="+interval);
+ const x=j.chart?.result?.[0]; if(!x)throw new Error("No chart for "+symbol);
+ const q=x.indicators.quote[0],cl=q.close.filter(Number.isFinite),hi=q.high.filter(Number.isFinite),lo=q.low.filter(Number.isFinite);
+ return {symbol,price:cl.at(-1),previous:cl.at(-2),first:cl[0],high:Math.max(...hi),low:Math.min(...lo),closes:cl,times:x.timestamp||[],currency:x.meta.currency||"",exchange:x.meta.exchangeName||""};
+}
+const feeds=[
+ "https://news.google.com/rss/search?q=gold+XAU+when%3A1d&hl=en-US&gl=US&ceid=US:en",
+ "https://news.google.com/rss/search?q=Federal+Reserve+inflation+US+dollar+gold+when%3A1d&hl=en-US&gl=US&ceid=US:en"
+];
+function parseRss(xml){const rows=[...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)].map(m=>m[1]);return rows.map(s=>{const get=t=>(s.match(new RegExp("<"+t+">([\\s\\S]*?)<\/"+t+">"))||[])[1]||"";const dec=v=>v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'");return{title:dec(get("title")),url:dec(get("link")),published_at:dec(get("pubDate")),source:dec(get("source")),summary:""}}).filter(x=>x.title&&x.url);}
+function sentiment(items){let pos=0,neg=0;const positive=/lower yields|rate cut|cuts|weak dollar|dollar falls|safe haven|central bank buy|buying|inflow|escalat|war|risk off|inflation cool|dovish|bullish|rally|surge|record high/i,negative=/higher yields|rate hike|hawkish|strong dollar|dollar rises|dollar gain|sell|outflow|liquidat|inflation hot|sticky inflation|risk on|bearish|falls|drop|plunge|slump/i;for(const n of items){if(positive.test(n.title))pos++;if(negative.test(n.title))neg++;}return{positive:pos,negative:neg,net:pos-neg};}
+const pct=(a,b)=>a&&b?(a/b-1)*100:null;
+(async()=>{
+ let failures=[],data={};
+ for(const [key,sym] of Object.entries({gold:"XAUUSD=X",dxy:"DX-Y.NYB",silver:"SI=F",yield10y:"^TNX",oil:"CL=F"})){try{data[key]=await quote(sym,key==="gold"?"5d":"5d","1h")}catch(e){failures.push(key+": "+e.message)}}
+ let headlines=[];for(const f of feeds){try{const r=await fetch(f,{headers,signal:AbortSignal.timeout(15000)});if(r.ok)headlines.push(...parseRss(await r.text()))}catch(e){failures.push("RSS: "+e.message)}}
+ const unique=[...new Map(headlines.map(x=>[x.title,x])).values()].sort((a,b)=>new Date(b.published_at)-new Date(a.published_at)).slice(0,18);
+ const s=sentiment(unique),g=data.gold;
+ if(!g?.price)throw new Error("Gold quote missing; aborting update rather than publishing incomplete forecast.");
+ const mom=pct(g.price,g.closes[0]), day=pct(g.price,g.closes.at(-2)), dxy=data.dxy?pct(data.dxy.price,data.dxy.closes[0]):null,yieldMove=data.yield10y?data.yield10y.price-data.yield10y.closes[0]:null;
+ let score=(mom||0)*2+(day||0)*1.2+(s.net*0.18)+(dxy!=null?-dxy*1.1:0)+(yieldMove!=null?-yieldMove*0.1:0);
+ let direction=score>0.35?"Bullish lean":score<-.35?"Bearish lean":"Neutral / mixed";
+ const confidence=Math.min(60,Math.max(30,Math.round(35+Math.abs(score)*8)));
+ const hi=g.high,lo=g.low,range=hi-lo;
+ const supports=[lo,lo-range*.15, g.price-range*.25].map(n=>Math.round(n*100)/100).sort((a,b)=>b-a);
+ const resistances=[hi,hi+range*.15,g.price+range*.25].map(n=>Math.round(n*100)/100).sort((a,b)=>a-b);
+ const fmt=n=>"$"+n.toLocaleString("en-US",{maximumFractionDigits:2});
+ const narrative="Heuristic lean from 5-day gold momentum, latest change, DXY/yield moves where available, and keyword-scored fresh headlines. This is a low-confidence signal; no verified analyst consensus or AI research was used.";
+ const obj={source:"Automated keyless updater",snapshot_type:"live_heuristic",snapshot_date:new Date().toISOString().slice(0,10),updated_at:new Date().toISOString(),live:true,engine:"transparent heuristic · no AI",caveat:"Auto-refreshed market-data snapshot. This is not professional consensus, not a calibrated forecast, and headlines are keyword-scored only. Validate market data freshness.",price:g.price,price_range_usd:[g.price,g.price],short_term_direction:direction,short_term_confidence:confidence+"% heuristic confidence (not calibrated)",long_term_direction:"Not assessed",summary:narrative,range_usd:[lo,hi],near_resistance:resistances.slice(0,2),support:supports.slice(0,2),major_resistance:hi,upside_targets:[resistances[1],resistances[2]].filter(Number.isFinite),downside_targets:[supports[1],supports[2]].filter(Number.isFinite),scenarios:[{name:"Upside continuation",trigger:"Price holds above recent hourly range high "+fmt(hi),path:"Next heuristic extension "+fmt(resistances[1]),reason:"Recent range extension levels only",invalidation:"Falls back inside the recent range"},{name:"Range / pullback",trigger:"Price rejected at recent range high "+fmt(hi),path:"Range low "+fmt(lo)+" then "+fmt(supports[1]),reason:"Recent 5-day range boundaries",invalidation:"Break and hold above the range high"},{name:"Breakdown",trigger:"Hourly price acceptance below "+fmt(lo),path:"Extension "+fmt(supports[1]),reason:"Range-based extension, not an analyst target",invalidation:"Reclaims the range low"}],drivers:[{bias:mom>=0?"positive":"negative",title:"Gold momentum",detail:"5-day change "+(mom==null?"unavailable":mom.toFixed(2)+"%")+"; latest interval "+(day==null?"unavailable":day.toFixed(2)+"%")},{bias:dxy==null?"unknown":dxy<0?"positive":"negative",title:"Dollar index",detail:dxy==null?"DXY quote unavailable":"5-day change "+dxy.toFixed(2)+"% (inverse relationship is context, not certainty)"},{bias:yieldMove==null?"unknown":yieldMove<0?"positive":"negative",title:"US 10-year yield",detail:yieldMove==null?"Yield quote unavailable":"5-day move "+yieldMove.toFixed(2)+" index points"},{bias:s.net>0?"positive":s.net<0?"negative":"mixed",title:"Fresh headline tone",detail:s.positive+" supportive / "+s.negative+" pressuring keyword hits across "+unique.length+" headlines; crude keyword scoring"}],analyst_consensus:{short_term:"No verified consensus retrieved. This engine does not fabricate institutional views.",long_term:"Not assessed.",unverified_opinions:[]},market_inputs:{gold:{price:g.price,change_5d_pct:mom,latest_change_pct:day,high_5d:hi,low_5d:lo,source:"Yahoo Finance XAUUSD=X"},dxy:data.dxy?{price:data.dxy.price,change_5d_pct:dxy,source:"Yahoo Finance DX-Y.NYB"}:null,silver:data.silver?{price:data.silver.price,change_5d_pct:pct(data.silver.price,data.silver.closes[0]),source:"Yahoo Finance SI=F"}:null,us10y:data.yield10y?{value:data.yield10y.price,change_5d_points:yieldMove,source:"Yahoo Finance ^TNX"}:null,oil:data.oil?{price:data.oil.price,change_5d_pct:pct(data.oil.price,data.oil.closes[0]),source:"Yahoo Finance CL=F"}:null,headline_sentiment:s,headlines:unique},sources:[{source:"Yahoo Finance",title:"XAUUSD and cross-market chart quotes",url:"https://finance.yahoo.com/"},{source:"Google News RSS",title:"Gold and macro headlines",url:"https://news.google.com/"}],errors:failures};
+ fs.mkdirSync("research",{recursive:true});fs.writeFileSync(OUT,JSON.stringify(obj,null,2)+"\n");console.log("Updated",OUT,"price",g.price,"direction",direction,"news",unique.length);
+})();
