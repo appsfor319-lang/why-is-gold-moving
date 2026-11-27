@@ -25,10 +25,10 @@ function check(name, pass, detail) {
   // The Pages deployment and this audit are triggered by the same push.
   // Wait until the public CDN is serving the exact fixed renderer before testing.
   const expectedRendererMarker = 'async function refreshLiveIntelligence(force=false)';
-  let deploymentReady = false;
+  let deploymentReady = false, deployedChartSource = "";
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
-      const asset = new URL("outlook.js?v=live14&deploy_audit=" + Date.now(), base);
+      const asset = new URL("outlook.js?v=live15&deploy_audit=" + Date.now(), base);
       const chartAsset = new URL("chart.js?v=analysis-overlay1&deploy_audit=" + Date.now(), base);
       const [homeResponse, response, chartResponse] = await Promise.all([
         fetch(base + "?deploy_audit=" + Date.now(), { cache: "no-store" }),
@@ -40,6 +40,7 @@ function check(name, pass, detail) {
         response.ok ? response.text() : Promise.resolve(""),
         chartResponse.ok ? chartResponse.text() : Promise.resolve("")
       ]);
+      deployedChartSource = chartSource;
       const htmlReady = home.includes("outlook.js?v=live15") && home.includes("chart.js?v=analysis-overlay1") && home.includes("app.js?v=chart6");
       if (homeResponse.ok && htmlReady && response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt") && chartSource.includes("drawAnalysisOverlay") && chartSource.includes("CONSENSUS CHECK")) {
         deploymentReady = true;
@@ -157,7 +158,7 @@ function check(name, pass, detail) {
     check("Chart canvas renders", snapshot.chart.canvases >= 1, snapshot.chart.canvases + " canvas elements");
     check("Chart receives candle data", snapshot.chart.price !== "—" && !/FEED ERROR|Connecting/i.test(snapshot.chart.status), snapshot.chart.status + " · " + snapshot.chart.price);
     check("Chart draws the new live analysis overlay", snapshot.chart.analysisOverlay, snapshot.chart.consensusOverlay);
-    check("Old session timeline lines are removed", !/source\.setData\(\[\{time:r\.start,value:r\.high\}/.test(chartSource) && !/result\.ranges\.forEach\(r=>\{const mid=/.test(chartSource), "Session timeline drawings removed; session sweeps remain");
+    check("Old session timeline lines are removed", !/source\.setData\(\[\{time:r\.start,value:r\.high\}/.test(chartSource) && !/result\.ranges\.forEach\(r=>\{const mid=/.test(deployedChartSource), "Session timeline drawings removed; session sweeps remain");
     check("No uncaught browser JavaScript errors", evidence.page_errors.length === 0, evidence.page_errors.slice(0, 3).join(" | ") || "None");
 
     await page.screenshot({ path: path.join(out, "desktop-full.png"), fullPage: true });
