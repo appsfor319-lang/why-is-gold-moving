@@ -21,16 +21,21 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - name: Fetch free market quotes and headlines
+      - name: Validate updater JavaScript
+        run: node --check scripts/refresh-live-research.js
+      - name: Fetch market snapshot and refresh outlook JSON
         run: node scripts/refresh-live-research.js
-      - name: Commit snapshot if changed
+      - name: Validate generated research JSON
+        run: |
+          node -e "for (const f of ['research/live-market-outlook.json','research/where-gold-going-latest.json']) { const d=JSON.parse(require('fs').readFileSync(f,'utf8')); if(!d.updated_at) throw new Error(f+' missing updated_at'); console.log('Valid:',f,d.updated_at); }"
+      - name: Commit all generated research if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add research/live-market-outlook.json
+          git add research/*.json
           if git diff --cached --quiet; then
-            echo "No changes to publish"
+            echo "No generated research changes"
           else
-            git commit -m "Refresh live gold research snapshot"
+            git commit -m "Refresh automated gold research and outlook"
             git push
           fi
