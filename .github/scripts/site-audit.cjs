@@ -114,7 +114,7 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live10/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart5/.test(s)) && snapshot.script.some(s => /chart\.js\?v=shock8/.test(s)), snapshot.script.join(", "));
+    check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live10/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=shock8/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
     check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
