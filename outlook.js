@@ -77,11 +77,34 @@ function renderDestination(d){
  $d("destination-limitations").textContent=d.limitations||"Views are source summaries, not recommendations. Quote may be delayed.";
  const ask=$d("ask-claude-research");if(ask&&!ask.dataset.bound){ask.dataset.bound="1";ask.addEventListener("click",async()=>{const brief=["Refresh and critically verify this gold outlook using current primary and trusted sources. Do not blindly agree.","Current desk view: "+d.bias,"Price reference: "+d.price_reference.low+"–"+d.price_reference.high,"Summary: "+d.bottom_line,"Scenarios:",...(d.paths||[]).flatMap(p=>[p.name+" | trigger: "+p.trigger+" | target path: "+p.target+" | invalidation: "+p.invalidation]),"Professional opinions:",...(d.professional_views||[]).flatMap(p=>[p.source+" ("+p.horizon+"): "+p.view+" Source: "+p.url]),"Community opinions (not vetted):",...(d.community_views||[]).flatMap(p=>[p.source+": "+p.view+" Source: "+p.url]),"Sources to verify:",...(d.sources||[]).map(s=>s.name+" "+s.url),"Please give an evidence-weighted view, conflicting evidence, key price levels, what whales/positioning can actually be verified, and what would invalidate each path. Do not fabricate live prices, X posts, forecasts, win rates, or sources. Separate intraday, swing, and long-term."].join(String.fromCharCode(10));try{await navigator.clipboard.writeText(brief);ask.textContent="Brief copied — paste it in Claude";}catch{ask.textContent="Clipboard blocked — brief not copied";}window.open("https://claude.ai/new","_blank","noopener");});}
 }
+let publishedResearch=null;
+function renderPublishedResearch(d){
+ if(!d)return;publishedResearch=d;
+ const $d=id=>document.getElementById(id),fmt=n=>"$"+Number(n).toLocaleString("en-US",{maximumFractionDigits:2});
+ const levels=d.levels||[],paths=d.paths||[],pros=d.professional_views||[],community=d.community_views||[];
+ const current=Number(d.price_reference?.high??d.price_reference?.low);
+ const bearish=paths.find(p=>/bear/i.test(p.name)),bullish=paths.find(p=>/bull|recovery|countertrend/i.test(p.name)),base=paths.find(p=>/base|range/i.test(p.name));
+ const next=(/bearish|downside/i.test(d.bias||"")?bearish:base)||bearish||bullish;
+ const decision=levels.find(l=>/decision|pivot|confirmation/i.test(l.label))||levels[0];
+ if($d("outlook-stuck-title"))$d("outlook-stuck-title").textContent=decision?decision.label:"Decision level";
+ if($d("outlook-stuck"))$d("outlook-stuck").textContent=decision?decision.note+" Current reference: "+fmt(current)+". This is a conditional level, not a guaranteed barrier.":d.bottom_line||"No sourced obstacle.";
+ if($d("outlook-next-target"))$d("outlook-next-target").textContent=next?.target||"No conditional destination supplied";
+ if($d("outlook-next-reason"))$d("outlook-next-reason").textContent=next?"Scenario: "+next.name+". Trigger: "+next.trigger+" Invalidation: "+next.invalidation:"A destination is shown only if the published research supplies one.";
+ if($d("outlook-levels"))$d("outlook-levels").innerHTML=levels.length?levels.map(l=>'<article class="outlook-level"><span class="level-kind">'+esc(l.label)+'</span><strong>'+esc(fmt(l.price))+'</strong><p>'+esc(l.note||"")+'</p></article>').join(""):'<div class="empty">No sourced levels in the latest published research.</div>';
+ if($d("outlook-scenarios"))$d("outlook-scenarios").innerHTML=paths.length?paths.map(p=>'<article class="outlook-scenario"><h4>'+esc(p.name)+'</h4><p><b>Trigger:</b> '+esc(p.trigger)+'</p><p><b>Path / destination:</b> '+esc(p.target)+'</p><p><b>Invalidation:</b> '+esc(p.invalidation)+'</p></article>').join(""):'<div class="empty">No conditional paths in the latest published research.</div>';
+ if($d("outlook-consensus"))$d("outlook-consensus").innerHTML='<p class="consensus-summary"><b>'+pros.length+' published professional views collected.</b> Not a statistical consensus or verified win-rate ranking; the views conflict.</p>'+pros.map(p=>'<article class="outlook-source"><div class="outlook-source-meta">'+esc(p.horizon||p.published||"Horizon not specified")+'</div><h4>'+esc(p.source)+'</h4><p>'+esc(p.view)+'</p><a href="'+esc(p.url)+'" target="_blank" rel="noopener noreferrer">Original source ↗</a></article>').join("")+(community.length?'<h4>Community ideas (not professional consensus)</h4>'+community.map(p=>'<article class="outlook-source"><div class="outlook-source-meta">'+esc(p.label||"Community idea")+'</div><h4>'+esc(p.source)+'</h4><p>'+esc(p.view)+'</p><a href="'+esc(p.url)+'" target="_blank" rel="noopener noreferrer">Original idea ↗</a></article>').join(""):'');
+ if($d("outlook-verified-scorecards"))$d("outlook-verified-scorecards").innerHTML='<div class="empty">Forecast scorecards are being built from dated calls and recorded outcomes. No analyst win-rates are claimed until audited.</div>';
+ const sources=d.sources||[];if($d("outlook-sources"))$d("outlook-sources").innerHTML=sources.length?sources.map(s=>'<article class="outlook-source"><h4>'+esc(s.name)+'</h4><p>'+esc(s.published||s.note||"")+'</p><a href="'+esc(s.url)+'" target="_blank" rel="noopener noreferrer">Source ↗</a></article>').join(""):'<div class="empty">No source links supplied.</div>';
+ if($d("outlook-status"))$d("outlook-status").textContent="Published research · "+stamp(d.updated_at)+" · source-checked outlook";
+ if($d("outlook-direction"))$d("outlook-direction").textContent=d.bias||"UNASSESSED";
+ if($d("outlook-summary"))$d("outlook-summary").textContent=d.bottom_line||"No executive outlook supplied.";
+ if($d("outlook-why"))$d("outlook-why").textContent=(d.drivers||[]).map(x=>x.name+": "+x.detail).join(" ");
+}
 async function refreshPublishedResearch(){
  const stamp=Date.now();
  const latest=await fetch("./research/where-gold-going-latest.json?v="+stamp,{cache:"no-store"});
  if(!latest.ok)throw Error("published outlook HTTP "+latest.status);
- renderDestination(await latest.json());
+ const research=await latest.json();renderDestination(research);renderPublishedResearch(research);
  const [live,legacy]=await Promise.all([
   fetch("./research/live-market-outlook.json?v="+stamp,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null),
   fetch("./research/claude-market-snapshot-2026-11-27.json?v="+stamp,{cache:"no-store"}).then(r=>r.ok?r.json():null).catch(()=>null)
@@ -108,7 +131,7 @@ function renderFallback(d){
  $("outlook-consensus").innerHTML='<div class="empty">Professional/social consensus collection is not connected. No counts or fake agreement displayed.</div>';
  const headlines=(ctx.news||[]).slice(0,8).map(n=>({source:n.source,title:n.title,summary:n.summary,published_at:n.published_at,url:n.url}));
  $("outlook-sources").innerHTML=headlines.length?headlines.map(sourceCard).join(""):'<div class="empty">No news sources in current data.</div>';
- $("outlook-status").textContent="Snapshot "+stamp(d?.updated_at)+" · forecast/research backend not connected";
+ if(publishedResearch)renderPublishedResearch(publishedResearch); $("outlook-status").textContent=publishedResearch?"Published source-checked research · "+stamp(publishedResearch.updated_at)+" · live AI endpoint unavailable":"Snapshot "+stamp(d?.updated_at)+" · forecast/research backend not connected";
 }
 async function load(force=false){
  if(busy)return;busy=true;$("outlook-status").textContent="Researching live gold market…";
