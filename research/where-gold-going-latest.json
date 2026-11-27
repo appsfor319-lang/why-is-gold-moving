@@ -1,178 +1,219 @@
 {
-  "updated_at": "2026-11-27T01:56:00Z",
-  "snapshot_label": "Source-checked desk view · Nov 27, 2026 (Algeria)",
+  "updated_at": "2026-11-27T02:06:00Z",
+  "snapshot_label": "Verified research refresh · 27 Nov 2026 · Algeria time",
   "price_reference": {
-    "low": 3565.43,
-    "high": 3568.39,
-    "note": "Asynchronous public snapshots: AlQanaas $3,568.39 at 01:41 UTC Nov 27; FXNX $3,565.43 at 02:06 GMT+3 (23:06 UTC Nov 26). Quotes are not synchronized, can be delayed, and are not executable."
+    "low": 3569.7,
+    "high": 3569.7,
+    "note": "XAUS spot API quote $3,569.70 at 02:03:23 UTC on Nov 27 (reported fresh, 22-second provider age at retrieval). Reuters' Nov 26 close/reference was $3,566.99; quotes differ by timestamp/provider and are indicative, not executable."
   },
-  "bias": "Short-term neutral-to-bearish; recovery attempt not confirmed",
-  "confidence": "Moderate-low · thin holiday liquidity; sources disagree on short-term direction",
-  "bottom_line": "Gold is trying to stabilize around $3,565–$3,570 after a sharp selloff, but the bounce is not a confirmed reversal. While price remains below $3,607–$3,635, rallies are vulnerable to rejection. Reclaim and hold above $3,607, then $3,635, would improve the recovery case. Lose $3,551 and $3,500 becomes the next major downside magnet; below $3,450 opens the $3,400 area.",
+  "bias": "Short-term cautious / bearish below $3,589.38; neutral while $3,526–$3,589 holds; rebound case only on confirmed reclaim",
+  "confidence": "Qualitative · moderate-low; contradictory technical rebound signal vs bearish macro/rate repricing; thin holiday liquidity",
+  "bottom_line": "At the latest retrieved spot quote near $3,569.70, gold is below the $3,589.38 confirmation level for the reversal and inside the $3,558–$3,589 decision zone. Base case: choppy consolidation with downside risk while $3,589.38 caps. A clean break below $3,526.83 raises the chance of retesting $3,500 and $3,426.80. A sustained reclaim of $3,589.38 strengthens the bounce; clearing $3,689.87 would open $3,787.76–$3,872.94. Do not treat either direction as confirmed in holiday-thin conditions.",
   "drivers": [
     {
-      "name": "Fed / yields",
+      "name": "Fed / inflation / rates",
       "bias": "negative",
-      "detail": "Sticky inflation and expectations of further Fed tightening keep real-rate pressure on non-yielding gold."
+      "detail": "Reuters says sticky US inflation and market expectations for further Fed hikes weighed on gold. October core PCE reported 3.3% y/y; hike expectations were near 95–97% in cited sources. Higher rates are a headwind for non-yielding bullion."
     },
     {
-      "name": "Dollar",
-      "bias": "negative",
-      "detail": "Recent dollar strength has been a headwind, although its rally has paused."
+      "name": "US dollar and yields",
+      "bias": "mixed-to-negative",
+      "detail": "Recent dollar strength was a headwind, but the dollar/yields eased during some rebounds. The live snapshot showed DXY around 103.81 (+0.01% over its sampled 5 days) and US 10Y yield 4.848%, down about 0.24 percentage points over its sampled period; timing and Yahoo source caveats apply."
     },
     {
-      "name": "Oversold bounce",
-      "bias": "positive",
-      "detail": "Gold bounced from the $3,400–$3,500 region; short-term reversal remains unconfirmed."
+      "name": "Technical rebound",
+      "bias": "positive-but-unconfirmed",
+      "detail": "FXEmpire's James Hyerczyk identified a closing-price reversal bottom; $3,589.38 is the confirmation threshold. The move remains counter-trend until structure/levels reclaim."
     },
     {
-      "name": "Holiday liquidity",
+      "name": "Liquidity / holiday",
       "bias": "mixed",
-      "detail": "Thanksgiving-thinned trading can exaggerate moves; avoid treating small breaks as decisive."
+      "detail": "US Thanksgiving and thin trading can exaggerate moves; do not trust marginal breakouts without sustained acceptance."
+    },
+    {
+      "name": "Official positioning",
+      "bias": "caution",
+      "detail": "CFTC non-commercial net-long positioning fell 23,975 contracts week-over-week, while Managed Money net long fell 9,399. Speculators remain net long but are reducing exposure."
     }
   ],
   "levels": [
     {
-      "label": "Immediate pivot / decision",
-      "price": 3575,
-      "note": "FXNX desk pivot; price near this level is undecided."
+      "label": "Decision / reversal confirmation",
+      "price": 3589.38,
+      "note": "FXEmpire retracement-zone upper edge; sustained reclaim strengthens countertrend recovery."
     },
     {
-      "label": "Resistance 1",
-      "price": 3607,
-      "note": "Recent intraday high; reclaim and hold is first bullish confirmation."
+      "label": "Current decision zone lower edge",
+      "price": 3558.34,
+      "note": "FXEmpire 50–61.8% retracement band; price response here matters."
     },
     {
-      "label": "Resistance 2",
-      "price": 3635,
-      "note": "FXEmpire daily pivot resistance; stronger recovery test."
+      "label": "Near support / pivot",
+      "price": 3526.83,
+      "note": "FXEmpire says failure weakens rebound and could bring secondary-low risk."
     },
     {
-      "label": "Support 1",
-      "price": 3551,
-      "note": "Prior-day low / nearby intraday low."
-    },
-    {
-      "label": "Major support",
+      "label": "Psychological support",
       "price": 3500,
-      "note": "Round-number area; recent bounce origin / key retest."
+      "note": "Round number / recent low-zone; not guaranteed support."
     },
     {
-      "label": "Support zone",
-      "price": 3450,
-      "note": "Below $3,500, downside extension area; recent lows near $3,427–$3,450."
+      "label": "Major swing low / bearish invalidation for reversal",
+      "price": 3426.8,
+      "note": "FXEmpire Nov 26 article: losing this closing reversal low shifts bias back bearish."
+    },
+    {
+      "label": "Minor swing high",
+      "price": 3689.87,
+      "note": "Break above changes the short-term swing structure."
+    },
+    {
+      "label": "Recovery target zone",
+      "price": 3787.76,
+      "note": "50% retracement target if the minor trend turns up; upper zone 3872.94."
+    },
+    {
+      "label": "Daily pivot resistance",
+      "price": 3635.31,
+      "note": "FXEmpire technical pivot; resistance if bounce continues."
     }
   ],
   "paths": [
     {
-      "name": "Bull recovery (needs confirmation)",
-      "trigger": "15m/1h acceptance above $3,607, then $3,635",
-      "target": "$3,690–$3,713 first; $3,835–$3,870 only if recovery expands",
-      "invalidation": "Reject back below $3,575/$3,551"
-    },
-    {
-      "name": "Range / chop (base case near-term)",
-      "trigger": "Hold $3,551–$3,607 without clean acceptance outside",
-      "target": "Rotate inside $3,551–$3,607; avoid guessing midpoint",
-      "invalidation": "Clean break and hold beyond range"
+      "name": "Base: range / fragile stabilization",
+      "trigger": "Price remains between $3,526.83 and $3,589.38; no sustained acceptance outside.",
+      "target": "Rotation within the decision band; avoid treating the middle as a directional signal.",
+      "invalidation": "Sustained acceptance above $3,589.38 or below $3,526.83."
     },
     {
       "name": "Bear continuation",
-      "trigger": "Break and hold below $3,551",
-      "target": "$3,500 then $3,450; below $3,450 exposes ~$3,400",
-      "invalidation": "Reclaim and hold $3,607"
+      "trigger": "Break and hold below $3,526.83; stronger confirmation below $3,500.",
+      "target": "$3,500, then $3,426.80; extension toward $3,400–$3,350 only if the low breaks.",
+      "invalidation": "Reclaim and hold above $3,589.38; stronger invalidation above $3,689.87."
+    },
+    {
+      "name": "Countertrend recovery",
+      "trigger": "Sustained reclaim above $3,589.38, followed by break of $3,689.87.",
+      "target": "$3,697 first reference; then $3,787.76–$3,872.94 retracement zone.",
+      "invalidation": "Lose $3,526.83; decisive reversal failure below $3,426.80."
     }
   ],
   "professional_views": [
     {
-      "source": "FXEmpire · Muhammad Umair",
-      "view": "Daily technical signal: Strong Sell; 16 sell, 3 neutral, 3 buy. Short-term forecast $3,400–$3,500; medium-term $3,900–$4,000.",
-      "horizon": "Short-term / 1–4 weeks",
-      "url": "https://www.fxempire.com/forecasts/gold?page=1",
-      "published": "Updated Nov 26, 2026"
-    },
-    {
-      "source": "StoneX · Fawad Razaqzada",
-      "view": "Tentative upside tilt after bounce from $3,400–$3,500, but no confirmed higher high. Recovery levels $3,835–$3,870; $4,000 extended; $4,148 needed to break lower-high/lower-low structure.",
-      "horizon": "Swing / technical",
-      "url": "https://www.stonex.com/en-gb/news-and-analysis/gold-forecast-xau-usd-steadies-as-the-dollar-rally-runs-out-of-steam/",
+      "source": "FXEmpire · James Hyerczyk",
+      "view": "Contrarian rebound setup: closing-price reversal bottom; bullish bias strengthens above $3,589.38. Losing $3,426.80 shifts bias bearish. Notes 97.2% market-implied December hike probability in his article.",
+      "horizon": "Short swing / technical",
+      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-price-forecast-reversal-puts-long-term-value-area-in-focus-1647476",
       "published": "Nov 26, 2026"
     },
     {
-      "source": "Reuters · HSBC / TD Securities reported",
-      "view": "HSBC warns continued equity weakness could push gold below $3,400; TD Securities sees a longer-term path toward $5,000 in late 2027. These are distinct horizon views, not intraday targets.",
-      "horizon": "Macro / longer-term",
+      "source": "FXEmpire · Muhammad Umair",
+      "view": "Daily technical rating Strong Sell (16 sell / 3 neutral / 3 buy). Short-term forecast $3,400–$3,500; medium-term $3,900–$4,000; long-term $5,000–$5,600. He also says medium-term neutral amid inflation/slow growth uncertainty.",
+      "horizon": "1–4 weeks / 3–6 months / 12+ months",
+      "url": "https://www.fxempire.com/forecasts/gold",
+      "published": "Forecast page updated Nov 26, 2026"
+    },
+    {
+      "source": "Reuters · Han Tan / TD Securities / HSBC",
+      "view": "Rate-hike expectations and inflation pressure near-term gold; Han Tan says a sustained rebound needs signs the hike cycle is nearing its end. TD Securities cautions it may be too early to call a bottom but sees ~$5,000 in late 2027. HSBC warns equity weakness could put gold below $3,400.",
+      "horizon": "Macro near-term and long-term",
       "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/",
       "published": "Nov 26, 2026"
     },
     {
-      "source": "FXNX research desk",
-      "view": "15-minute / daily context: leaning down; nearest prior-day low $3,551 and pivot $3,575; recovery must clear recent high $3,607.",
-      "horizon": "Intraday",
-      "url": "https://fxnx.com/en/analysis/xauusd/",
+      "source": "FXEmpire · Arslan Ali",
+      "view": "Hot October PCE/GDP data and Fed-hike bets weigh on gold; watch $3,595 pivot, $3,503 support, and $3,697 above a $3,651 close. Central-bank Q3 buying reported at 321 tonnes.",
+      "horizon": "Short-term technical / macro",
+      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429",
       "published": "Nov 26, 2026"
+    },
+    {
+      "source": "WSJ · StoneX / HSBC commentary",
+      "view": "Hawkish Fed expectations are a headwind; StoneX says next week's payrolls could influence January hike expectations. HSBC ties near-term risk to equities and sees downside risk below $3,400; central-bank buying may limit downside.",
+      "horizon": "Short-term",
+      "url": "https://www.wsj.com/finance/commodities-futures/gold-fortunes-tied-to-stocks-in-near-term-42ce98be",
+      "published": "Nov 27, 2026"
     }
   ],
   "community_views": [
     {
-      "source": "TradingView · Leo_WarRoom",
-      "view": "Bullish reversal idea: liquidity sweep around $3,508 with rebound target near $3,610.",
-      "label": "Bullish idea · community",
-      "url": "https://www.tradingview.com/markets/futures/ideas/"
+      "source": "TradingView · RLinda · GOLD - Countertrend correction within a bear market",
+      "view": "Bearish: sees a countertrend rebound within a bearish trend; cites Fed hike expectations, COT-long reduction and ETF outflows. Listed as a popular idea on the TradingView XAUUSD ideas page; visible engagement metadata but no independent validation.",
+      "label": "Popular community · bearish",
+      "url": "https://www.tradingview.com/chart/XAUUSD/71XYKUF1-GOLD-Countertrend-correction-within-a-bear-market/"
     },
     {
-      "source": "TradingView · KABHI_TA_TRADING",
-      "view": "Bearish falling-channel rejection; cites hawkish Fed and dollar/rate pressure.",
-      "label": "Bearish idea · community",
-      "url": "https://www.tradingview.com/markets/futures/ideas/"
+      "source": "TradingView · HAMED_AZ · XAUUSD",
+      "view": "Bearish overall structure but buyers defended the $3,500 area, allowing a corrective rebound. Popular listing.",
+      "label": "Community · bearish / bounce",
+      "url": "https://www.tradingview.com/chart/XAUUSD/z3TcpIlE-XAUUSD/"
     },
     {
-      "source": "TradingView · RLinda",
-      "view": "Bearish retest view: $3,500 area and range near $3,500–$3,575, with news as catalyst.",
-      "label": "Bearish idea · community",
-      "url": "https://www.tradingview.com/markets/futures/ideas/"
+      "source": "TradingView · CEO_OF_GOLD · Downside Liquidity Before Potential Bullish Reversal",
+      "view": "Bearish structure/liquidity sweep with possible bullish reversal only after price response/confirmation. Listing categorized Long.",
+      "label": "Community · conditional bullish",
+      "url": "https://www.tradingview.com/chart/GOLD/w0WlLuPj-XAUUSD-Downside-Liquidity-Before-Potential-Bullish-Reversal/"
     },
     {
-      "source": "X / Twitter live search",
-      "view": "No individual X posts were authenticated and source-checked in this snapshot. Use the live search to discover posts; treat anonymous calls and screenshots as unverified until traced to the original account.",
-      "label": "X discovery only · not verified",
+      "source": "TradingView · TradeFlow_Signals · 4H Final Demand Zone",
+      "view": "Bullish reversal watch at a demand zone; requires price confirmation after the selloff.",
+      "label": "Community · conditional bullish",
+      "url": "https://www.tradingview.com/chart/XAUUSD/x5hCfUd1-XAUUSD-4H-Final-Demand-Zone-Bullish-Reversal-Setup/"
+    },
+    {
+      "source": "X / Twitter",
+      "view": "No original X posts were accessible/authenticated in this refresh. Not included as sentiment.",
+      "label": "Not verified",
       "url": "https://x.com/search?q=XAUUSD%20gold%20forecast&f=live"
     }
   ],
-  "positioning": "Public CFTC Commitments of Traders is the closest transparent proxy for large speculative positioning, but it is weekly and delayed. It cannot show real-time whale orders, private OTC positions, or live stop clusters. No verified live whale flow is available here.",
+  "positioning": "CFTC COMEX Gold Futures-only report: positions as of Tue Nov 17, released Nov 20. Non-commercial: 210,051 long / 43,919 short = +166,132 net, down 23,975 w/w; 40.7% of open interest. Managed Money: 121,994 long / 19,052 short = +102,942 net, down 9,399 w/w. Open interest 407,834. Still net-long speculators but trimming exposure (a caution/position unwinding signal, not live whale flow). Holiday-delayed next report expected Nov 30 for positions Nov 24.",
   "sources": [
     {
-      "name": "TradingView XAUUSD chart",
-      "url": "https://www.tradingview.com/symbols/XAUUSD/?exchange=OANDA"
+      "name": "XAUS live gold spot quote",
+      "url": "https://xaus.com/api/v1/spot?compact=1",
+      "published": "Retrieved Nov 27, 2026 02:03 UTC"
+    },
+    {
+      "name": "Reuters · Gold drifts lower as Fed rate-hike fears loom",
+      "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/",
+      "published": "Nov 26, 2026"
+    },
+    {
+      "name": "FXEmpire · Reversal puts long-term value area in focus",
+      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-price-forecast-reversal-puts-long-term-value-area-in-focus-1647476",
+      "published": "Nov 26, 2026"
     },
     {
       "name": "FXEmpire forecast / technicals",
-      "url": "https://www.fxempire.com/forecasts/gold?page=1"
+      "url": "https://www.fxempire.com/forecasts/gold",
+      "published": "Updated Nov 26, 2026"
     },
     {
-      "name": "StoneX gold forecast",
-      "url": "https://www.stonex.com/en-gb/news-and-analysis/gold-forecast-xau-usd-steadies-as-the-dollar-rally-runs-out-of-steam/"
+      "name": "FXEmpire · Hot PCE keeps Fed hikes in play",
+      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429",
+      "published": "Nov 26, 2026"
     },
     {
-      "name": "Reuters market report",
-      "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/"
+      "name": "WSJ · Gold fortunes tied to stocks in near term",
+      "url": "https://www.wsj.com/finance/commodities-futures/gold-fortunes-tied-to-stocks-in-near-term-42ce98be",
+      "published": "Nov 27, 2026"
     },
     {
-      "name": "FXNX daily/intraday desk",
-      "url": "https://fxnx.com/en/analysis/xauusd/"
+      "name": "CFTC official COMEX Gold COT",
+      "url": "https://www.cftc.gov/dea/futures/deacmxlf.htm",
+      "published": "Positions Nov 17, 2026; released Nov 20"
     },
     {
-      "name": "CFTC gold positioning reports",
-      "url": "https://www.cftc.gov/MarketReports/CommitmentsofTraders/index.htm"
-    },
-    {
-      "name": "TradingView community ideas",
-      "url": "https://www.tradingview.com/markets/futures/ideas/"
+      "name": "TradingView popular XAUUSD ideas",
+      "url": "https://www.tradingview.com/symbols/XAUUSD/ideas/",
+      "published": "Retrieved Nov 27, 2026"
     },
     {
       "name": "X live search (discovery only)",
-      "url": "https://x.com/search?q=XAUUSD%20gold%20forecast&f=live"
+      "url": "https://x.com/search?q=XAUUSD%20gold%20forecast&f=live",
+      "published": "Not verified"
     }
   ],
-  "limitations": "Manual source-check snapshot. The site should not present this as live X sentiment, real-time whale data, a statistically proven forecast, or a verified TradingView analyst accuracy ranking. Refresh sources and timestamp before acting."
+  "limitations": "Source-checked update, not a calibrated forecasting model. Live spot is indicative; XAUS quote timestamp/freshness is recorded in the separate 15-minute snapshot. Public professional views and community posts are snapshots, not continuously refreshed. X posts not authenticated. COT is delayed weekly, not live order flow. Holiday-thin liquidity can distort technical breaks. Probabilities are intentionally omitted because this is not a validated probability model."
 }
