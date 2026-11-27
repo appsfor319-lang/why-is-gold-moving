@@ -28,7 +28,7 @@ function check(name, pass, detail) {
   let deploymentReady = false;
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
-      const asset = new URL("outlook.js?v=6&deploy_audit=" + Date.now(), base);
+      const asset = new URL("outlook.js?v=7&deploy_audit=" + Date.now(), base);
       const response = await fetch(asset, { cache: "no-store" });
       const source = response.ok ? await response.text() : "";
       if (response.ok && source.includes(expectedRendererMarker)) {
@@ -68,7 +68,7 @@ function check(name, pass, detail) {
     const snapshot = await page.evaluate(async () => {
       const ids = ["outlook-status","destination-updated","destination-bias","destination-bottomline",
         "outlook-direction","outlook-summary","outlook-stuck","outlook-next-target",
-        "outlook-levels","outlook-scenarios","outlook-consensus","outlook-sources"];
+        "outlook-levels","outlook-scenarios","outlook-consensus","outlook-sources","chart-feed-status","chart-last-price"];
       const text = id => document.getElementById(id)?.innerText?.trim() || "";
       let research = null, researchStatus = null;
       try {
@@ -91,6 +91,7 @@ function check(name, pass, detail) {
           sources: research.sources?.length || 0
         } : null,
         panels: Object.fromEntries(ids.map(id => [id, text(id)])),
+        chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },
         counts: {
           levels: document.querySelectorAll("#outlook-levels .outlook-level").length,
           scenarios: document.querySelectorAll("#outlook-scenarios .outlook-scenario").length,
@@ -108,7 +109,7 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Outlook script is loaded", snapshot.script.some(s => /outlook\.js\?v=6/.test(s)), snapshot.script.join(", "));
+    check("Outlook script is loaded", snapshot.script.some(s => /outlook\.js\?v=7/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
     check("Price levels render", snapshot.counts.levels >= 1 && snapshot.counts.levels === snapshot.research?.levels, snapshot.counts.levels + " rendered / " + snapshot.research?.levels + " in JSON");
     check("Scenarios render", snapshot.counts.scenarios >= 1 && snapshot.counts.scenarios === snapshot.research?.paths, snapshot.counts.scenarios + " rendered / " + snapshot.research?.paths + " in JSON");
@@ -117,6 +118,8 @@ function check(name, pass, detail) {
     check("No old empty-state placeholders remain", !/No sourced levels yet|No scenarios loaded|No source list yet|Scenario analysis is not active|Professional\/social consensus collection is not connected/i.test(
       [snapshot.panels["outlook-levels"], snapshot.panels["outlook-scenarios"], snapshot.panels["outlook-consensus"], snapshot.panels["outlook-sources"]].join("\n")
     ), "Checks the four research panels");
+    check("Chart canvas renders", snapshot.chart.canvases >= 1, snapshot.chart.canvases + " canvas elements");
+    check("Chart receives candle data", snapshot.chart.price !== "—" && !/FEED ERROR|Connecting/i.test(snapshot.chart.status), snapshot.chart.status + " · " + snapshot.chart.price);
     check("No uncaught browser JavaScript errors", evidence.page_errors.length === 0, evidence.page_errors.slice(0, 3).join(" | ") || "None");
 
     await page.screenshot({ path: path.join(out, "desktop-full.png"), fullPage: true });
