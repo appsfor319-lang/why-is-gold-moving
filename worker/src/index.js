@@ -364,14 +364,15 @@ async function chartCandles(env,interval){
 }
 // Keep chart-context reasoning separate from the scheduled macro briefing.
 async function explainChart(env,payload){
-  const chart=payload?.chart||{},rawMarket=payload?.market||{},headlines=Array.isArray(payload?.headlines)?payload.headlines.slice(0,6):[];
+  const chart=payload?.chart||{},rawMarket=payload?.market||{},headlines=Array.isArray(payload?.headlines)?payload.headlines.slice(0,6):[],communityIdeas=Array.isArray(payload?.community_ideas)?payload.community_ideas.slice(0,8):[];
   const marketLabels={gold:"Gold",silver:"Silver",dxy:"DXY",yield:"US 10-year yield",oil:"WTI oil"};
   const excludedStale=Object.entries(marketLabels).filter(([key])=>{const x=rawMarket[key];return x&&(x.stale===true||x.freshness==="stale"||x.freshness==="unknown")}).map(([,label])=>label);
   const market=Object.fromEntries(Object.entries(marketLabels).map(([key])=>{const x=rawMarket[key];return[key,x&&x.stale!==true&&x.freshness!=="stale"&&x.freshness!=="unknown"?x:null]}));
-  const evidence={chart:{symbol:"XAU/USD",timeframe:chart.timeframe||"5min",last:chart.last||null,structure:chart.structure||null,session:chart.session||null,session_ranges:chart.session_ranges||[],active_liquidity:chart.active_liquidity||[],recent_sweeps:chart.recent_sweeps||[],order_blocks:chart.order_blocks||[],candle_window:chart.candle_window||null},macro:{gold:market.gold||null,dxy:market.dxy||null,us10y:market.yield||null,silver:market.silver||null,oil:market.oil||null},data_quality:{excluded_stale_readings:excludedStale},headlines};
+  const evidence={chart:{symbol:"XAU/USD",timeframe:chart.timeframe||"5min",last:chart.last||null,structure:chart.structure||null,session:chart.session||null,session_ranges:chart.session_ranges||[],active_liquidity:chart.active_liquidity||[],recent_sweeps:chart.recent_sweeps||[],order_blocks:chart.order_blocks||[],candle_window:chart.candle_window||null},macro:{gold:market.gold||null,dxy:market.dxy||null,us10y:market.yield||null,silver:market.silver||null,oil:market.oil||null},data_quality:{excluded_stale_readings:excludedStale},headlines,community_ideas:communityIdeas};
   const fallback=()=>{
     const s=evidence.chart.structure||{},session=evidence.chart.session||{},sweeps=evidence.chart.recent_sweeps||[],liq=evidence.chart.active_liquidity||[],obs=evidence.chart.order_blocks||[];
     const parts=[];
+    if(communityIdeas.length){const counts={bullish:communityIdeas.filter(x=>x.bias==="bullish").length,bearish:communityIdeas.filter(x=>x.bias==="bearish").length,mixed:communityIdeas.filter(x=>x.bias==="mixed").length};parts.push("Recent TradingView community ideas: "+counts.bullish+" bullish, "+counts.bearish+" bearish, "+counts.mixed+" mixed. These are public trader opinions, not verified professional forecasts or proof of actual order flow.");}
     if(s.direction)parts.push("The latest chart structure is "+s.direction+".");
     if(session.name)parts.push("The active session is "+session.name+".");
     if(sweeps.length)parts.push("A recent session-liquidity sweep was detected: "+sweeps.slice(0,2).map(x=>x.label+" at "+x.price).join(", ")+".");
@@ -391,6 +392,7 @@ async function explainChart(env,payload){
     "The chart indicator is a JavaScript translation of the user's UFD Sessions & Liquidity Pine indicator.",
     "Describe only observed facts: current candle, recent swing structure, Asia/London/New York session ranges, unswept session HH/HL liquidity, detected sweeps, and active higher-timeframe order blocks.",
     "Then compare DXY, US 10-year yield, silver, oil and supplied headlines as context. Do not claim macro data caused a candle move without evidence.",
+    "TradingView community_ideas are trader opinions, not professional research or verified facts. Treat them as sentiment/context only, note disagreement when present, and never count reposts as independent confirmation.",
     "Explain what price is doing around the indicator levels. Distinguish a wick sweep from a close beyond a level. Do not treat a sweep or order block as an automatic reversal or entry signal.",
     "Use only the non-stale market readings in macro. Never use any reading listed in data_quality.excluded_stale_readings; explicitly say those readings were excluded. Never invent prices, indicator events, candle values, news, or certainty. No buy/sell calls, no targets.",
     "Write plain concise English. Return JSON only: {headline:string,body:string,confidence:'HIGH'|'MEDIUM'|'LOW'|'MIXED',what_to_watch:string[]}.",
