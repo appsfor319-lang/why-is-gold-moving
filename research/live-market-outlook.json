@@ -1,178 +1,287 @@
 {
-  "source": "Manually refreshed research snapshot from web search",
-  "snapshot_type": "manual_current_research",
+  "source": "Automated multi-source market snapshot",
+  "snapshot_type": "live_heuristic",
   "snapshot_date": "2026-11-27",
-  "updated_at": "2026-11-27T09:30:00Z",
-  "live": false,
-  "caveat": "Research checked now, but the latest verified price references are dated Nov 26 due the US Thanksgiving holiday. This is not a streaming quote. Automatic 15-minute updater has not yet been confirmed successful.",
-  "price": 3567.26,
+  "updated_at": "2026-11-27T01:45:58.287Z",
+  "live": true,
+  "engine": "XAUS gold spot + cross-market Yahoo data + headline keyword heuristic",
+  "caveat": "Automated quote snapshot, not calibrated prediction or verified analyst consensus. Spot quote freshness metadata is included where provider supplies it. Check timestamps and broker price before decisions.",
+  "price": 3577.300049,
   "price_range_usd": [
-    3566.44,
-    3567.26
+    3577.300049,
+    3577.300049
   ],
-  "short_term_direction": "Neutral-to-bearish / volatile",
-  "short_term_confidence": "Low; conditional only",
-  "long_term_direction": "Bullish bias into 2027, but not a near-term entry signal",
-  "summary": "Gold is near $3,567 after a sharp selloff and rebound attempt. Rate-hike expectations, sticky inflation, a stronger dollar and elevated yields are pressuring it; central-bank demand and risk-off uncertainty are longer-term supports. Holiday-thin trading means price confirmation is essential.",
+  "short_term_direction": "Bullish lean",
+  "short_term_confidence": "38% heuristic score (not statistical confidence)",
+  "long_term_direction": "Not modeled",
+  "summary": "Lean is based on available gold momentum, cross-market changes and keyword counts from recent headlines. It is not AI forecast or institutional consensus.",
   "range_usd": [
-    3500,
-    3607.24
+    3453.8,
+    3691
   ],
   "near_resistance": [
-    3595,
-    3607.24,
-    3635.31
+    3636.6,
+    3691
   ],
   "support": [
-    3551.25,
-    3500,
-    3472.15,
-    3400
+    3518,
+    3453.8
   ],
-  "major_resistance": 3635.31,
+  "major_resistance": 3691,
   "upside_targets": [
-    3607.24,
-    3635.31,
-    3700
+    3691,
+    3726.58
   ],
   "downside_targets": [
-    3551.25,
-    3500,
-    3472.15,
-    3400
+    3453.8,
+    3418.22
   ],
   "scenarios": [
     {
-      "name": "Recovery continuation",
-      "trigger": "Reclaim and hold $3,595–$3,607",
-      "path": "$3,635 then $3,700 if momentum confirms",
-      "reason": "Recent rebound levels and resistance references",
-      "invalidation": "Rejection and return below $3,550"
+      "name": "Range-high breakout",
+      "trigger": "Hourly acceptance above $3,691",
+      "path": "Range extension $3,691",
+      "reason": "Observed range projection",
+      "invalidation": "Re-enters range"
     },
     {
-      "name": "Range / chop",
-      "trigger": "Price stays between $3,550 and $3,607",
-      "path": "Rotations inside the range; avoid middle",
-      "reason": "Holiday liquidity and conflicting macro drivers",
-      "invalidation": "Strong acceptance beyond range"
+      "name": "Range / rejection",
+      "trigger": "Rejection near $3,691",
+      "path": "Range low $3,453.8 and $3,453.8",
+      "reason": "5-day range context",
+      "invalidation": "Breaks range high"
     },
     {
-      "name": "Bearish continuation",
-      "trigger": "Break and hold below $3,550; stronger confirmation below $3,500",
-      "path": "$3,472 then $3,400",
-      "reason": "Rates and dollar pressure, vulnerable rebound",
-      "invalidation": "Reclaim above $3,607"
+      "name": "Range-low breakdown",
+      "trigger": "Acceptance below $3,453.8",
+      "path": "Extension $3,453.8",
+      "reason": "Observed range projection",
+      "invalidation": "Reclaims range low"
     }
   ],
   "drivers": [
     {
-      "bias": "negative",
-      "title": "Fed expectations / inflation",
-      "detail": "Hot inflation and market pricing of possible further hikes is weighing on gold."
+      "bias": "positive",
+      "title": "Gold momentum",
+      "detail": "5-day change 0.88%; latest change -0.69%"
     },
     {
       "bias": "negative",
-      "title": "Dollar and yields",
-      "detail": "Stronger USD and elevated US yields cited as pressure; verify their live direction before intraday trades."
+      "title": "Dollar",
+      "detail": "5-day 0.01%"
     },
     {
       "bias": "positive",
-      "title": "Central-bank demand / risk-off",
-      "detail": "Longer-term support remains, but it does not negate short-term bearish pressure."
+      "title": "US 10Y yield",
+      "detail": "5-day move -0.24 points"
     },
     {
-      "bias": "mixed",
-      "title": "Holiday liquidity",
-      "detail": "US Thanksgiving trading conditions can reduce reliability and increase sudden moves."
+      "bias": "negative",
+      "title": "Headline tone",
+      "detail": "1 positive / 3 negative keyword hits from 20 headlines"
     }
   ],
   "analyst_consensus": {
-    "short_term": "No verified broad consensus. Reuters reports analysts warning rebound may be difficult while rate-hike risk persists; HSBC sees downside risk below $3,400. TD Securities has a longer-term bullish view, potentially near $5,000 later in 2027.",
-    "long_term": "Bullish outlook from TD Securities is reported, but forecast horizons and assumptions vary.",
+    "short_term": "Not included in this automated refresh; no fabricated analyst opinions.",
+    "long_term": "Not modeled.",
     "unverified_opinions": []
   },
-  "sources": [
-    {
-      "source": "Reuters",
-      "title": "Gold drifts lower as Fed rate-hike fears loom — Nov 26",
-      "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/"
-    },
-    {
-      "source": "FXEmpire",
-      "title": "Gold retreats as traders rush to take profits — Nov 26",
-      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-platinum-forecasts-gold-retreats-as-traders-rush-to-take-profits-after-rebound-1647576"
-    },
-    {
-      "source": "FXEmpire",
-      "title": "Hot PCE keeps Fed hikes in play; $3,595 level — Nov 26",
-      "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429"
-    },
-    {
-      "source": "FXStreet / ING",
-      "title": "Stronger dollar and elevated US yields weigh on gold — Nov 26",
-      "url": "https://www.fxstreet.com/news/gold-stronger-dollar-and-elevated-us-yields-weigh-on-prices-ing-202611261136"
-    },
-    {
-      "source": "Gold Corgano",
-      "title": "Daily gold drivers and snapshot — Nov 27",
-      "url": "https://goldprice.corgano.com/why-is-gold-up-or-down-today"
-    },
-    {
-      "source": "SilverTrade",
-      "title": "Gold reference price $3,567.26 — Nov 26",
-      "url": "https://www.silvertrade.com/prices/gold/?mode=compare-assets&overlays=dxy%2Cwti&range=All"
-    }
-  ],
   "market_inputs": {
     "gold": {
-      "price": 3567.26,
-      "daily_change_pct": 0,
-      "source": "Gold Corgano / SilverTrade; references Nov 26"
+      "price": 3577.300049,
+      "change_5d_pct": 0.8798412058317551,
+      "latest_change_pct": -0.6884859109963615,
+      "high_5d": 3691,
+      "low_5d": 3453.8,
+      "source": "XAUS spot API",
+      "as_of": "2026-11-27T01:45:26.821Z",
+      "freshness": "fresh",
+      "age_seconds": 20
     },
     "dxy": {
-      "price": 103.78,
-      "change_pct": 0.11,
-      "source": "Gold Corgano daily snapshot"
+      "price": 103.80999755859375,
+      "change_5d_pct": 0.010591582903618502,
+      "source": "Yahoo Finance"
     },
     "silver": {
-      "price": 41.52,
-      "source": "Gold Corgano daily snapshot"
+      "price": 42.084999084472656,
+      "change_5d_pct": 0.7661910678814277,
+      "source": "Yahoo Finance"
     },
-    "real_yield_10y": {
-      "value": 2.73,
-      "change_basis": "-6 basis points",
-      "source": "Gold Corgano; TIPS real yield data for Nov 25"
+    "us10y": {
+      "value": 4.8480000495910645,
+      "change_5d_points": -0.24300003051757812,
+      "source": "Yahoo Finance"
     },
     "oil": {
-      "price": 84.96,
-      "change_5d_pct": 1.53,
-      "source": "Gold Corgano daily snapshot"
+      "price": 84.41999816894531,
+      "change_5d_pct": 2.166284612157976,
+      "source": "Yahoo Finance"
+    },
+    "headline_sentiment": {
+      "positive": 1,
+      "negative": 3,
+      "net": -2
     },
     "headlines": [
       {
-        "title": "Gold drifts lower as Fed rate-hike fears loom",
-        "source": "Reuters · Nov 26",
-        "published_at": "2026-11-26",
-        "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/"
+        "title": "ETFS Gold Trust (SGOL) Stock Price: Nov 25 Close $34.02 - Gotrade",
+        "url": "https://news.google.com/rss/articles/CBMiV0FVX3lxTE1DSlphTi1DVGxtM2U4eVdHZnZpaGhNQzduR19JMVJBTEZBOGVCMTVQeWt0NWlCcEpWMEYyTExnOXNVSmFLM1lkblFGU2FSbVRZUFh5TmlYUQ?oc=5",
+        "published_at": "Fri, 27 Nov 2026 01:01:46 GMT",
+        "source": "Gotrade",
+        "summary": ""
       },
       {
-        "title": "Gold retreats as traders rush to take profits after rebound",
-        "source": "FXEmpire · Nov 26",
-        "published_at": "2026-11-26",
-        "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-platinum-forecasts-gold-retreats-as-traders-rush-to-take-profits-after-rebound-1647576"
+        "title": "Gold declines to near $3,550 amid hawkish Fed expectations - FXStreet",
+        "url": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQUWl6WDgzM0tfbzV6bDlPc0dfd3hpbUtHa3pQSDRHeGFIa0JySjNXaEF0V2NTanlDYktkaTV0dHdEdmhqOWtYSk5vMHZSNU8zRTVLN2w3RnY3OXVmRXFHMkpqTnExblo2ekNGMzNLSU9nM3R3M1g2SHFJVGM1aWFSaUdRS2xCUVVncjlTczVmeVk2bE9jRm1faFBseG11ejBhZmc?oc=5",
+        "published_at": "Thu, 26 Nov 2026 23:37:16 GMT",
+        "source": "FXStreet",
+        "summary": ""
       },
       {
-        "title": "Hot PCE keeps Fed hikes in play; can $3,595 hold?",
-        "source": "FXEmpire · Nov 26",
-        "published_at": "2026-11-26",
-        "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429"
+        "title": "Gold Traders are Watching 5 Historic Signals - CryptoRank",
+        "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPTmNFSi1EQTFPYkFFVEZvLWdKNG1GbDNSc3pPSGppWnJVLV9GakE2RFpIRnVLUmNQcy1OVGpDS0RBX1psOUtGMFR0Rkw5WFg5cG9BNDZaVVRBQmNwdEE5TExudTNFRlBNSVhUOFZmM0V1UGlucjY5VEJBYlpWZWpIclZuR2sySGVC?oc=5",
+        "published_at": "Thu, 26 Nov 2026 23:12:30 GMT",
+        "source": "CryptoRank",
+        "summary": ""
       },
       {
-        "title": "Stronger dollar and elevated US yields weigh on gold",
-        "source": "FXStreet · ING · Nov 26",
-        "published_at": "2026-11-26",
-        "url": "https://www.fxstreet.com/news/gold-stronger-dollar-and-elevated-us-yields-weigh-on-prices-ing-202611261136"
+        "title": "Gold slips, silver gains as Fed rate hike expectations persist in holiday trading - Kitco PM Report - Kitco",
+        "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxQeG5mODVrQkQyYUR6RjI2N25WejFPYUNfbVJNVFRTeVhXWndLWVdmNUNlcmRlM0JWZUdXWU0ydmdFNXZPU2JQNVJWZ2hCbFRTcUlpNjdXN2FpU0lybGlPVC1uR2pmYXI5THlqd3BRR0o1Vzh1Um8tOWNBRGE3NndHc09iNnl1RFFLZjNNRDhlOVNmSDhBanFzLTZUWTdkNklsT1RNV0NFWVl4TGhpVTVJTlpWSzZZemxWY2dDQQ?oc=5",
+        "published_at": "Thu, 26 Nov 2026 22:07:29 GMT",
+        "source": "Kitco",
+        "summary": ""
+      },
+      {
+        "title": "Gold (XAU/USD) Price Forecast: Failed Breakout Leaves Bullish Reversal Unconfirmed - FXEmpire",
+        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNR3JVQnRQYTE2SEZGUTFCMHpqUGxvbTRwQnJheEJzbTRXQ25fUWxMVGdobTlodzNOaHFScmJWX2lvQWFNdXBzYktpUUhDdVdsNlpIeDhkc0MxME54MEVjYldxV2dWNFc1M1h4NHpwZDI3MVpMUE10dFlZNUl2WlB0aVpoUjhBUnZjc1Rfck9SdjZsUVpocGxiZmphclRQNWRMc3FuY2JxdnhMNTlfSV9lWk1rUFpMaDBxSG1neHdVeVdJV0hPVXBONXln?oc=5",
+        "published_at": "Thu, 26 Nov 2026 22:03:09 GMT",
+        "source": "FXEmpire",
+        "summary": ""
+      },
+      {
+        "title": "Gold, GBP/USD Forecast: Two trades to watch - StoneX",
+        "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOalh3MGtqbl9JYmxIWDc1MV9Yb0g2ZmhuVmhqeHc4WHZONjMxWVBYemVSR2VublNjREZnZzZLZDF3ZnFnWXp5enhmdXZRUGpULUE2THEwQjR0Wi05bXBCdFc5Rmp0WkNHV1d2bFl2U29oc09RcDdrU3ZEbDhDc1BiMXdubTFCNUpoNkRoRklJTU5WTlk?oc=5",
+        "published_at": "Thu, 26 Nov 2026 21:49:39 GMT",
+        "source": "StoneX",
+        "summary": ""
+      },
+      {
+        "title": "EUR/USD, Gold Forecast: Two trades to Watch - FOREX.com",
+        "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPVFpFYi1yVm5UbjV6cGtiQndjNUttY1J2dkhHUW5xX3ZQNS1jSGR3N3U3QXdaZE9jXzdNTWVTM2x4VTgycHV2TXQ1MUdPdXBkSkV3NUM3RmhhODU4eFN1enBHMTBGNG1IOHhLX25NZl9aTjhqcll3RXlKanZNeEozcmRXTEZHbFR4dWxqRDlud2J3c0pwSUMyX25hNDNLZ25X?oc=5",
+        "published_at": "Thu, 26 Nov 2026 21:26:20 GMT",
+        "source": "FOREX.com",
+        "summary": ""
+      },
+      {
+        "title": "Is GoldMoney (TSX:XAU) Emerging As A Standout TSX Stock? - Kalkine Media",
+        "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQT0tJUGZRalRLaEJRdmM4bk8tYmlGaG1VWi15bTFNQmNjSlJKWjR0M1hXUnRnYTA1dVl5dnRZSUVFTzB4T3hIT0k5dHVLMENxUHktVVVCUFN2NUxIT05sbnhITlMyQ19sSFFEZ3BxNkxHal9xbDlxSTdqdU0yb092MnBTMlBZRFdRYk1tTFVZQUpWUzRhY21j?oc=5",
+        "published_at": "Thu, 26 Nov 2026 20:55:00 GMT",
+        "source": "Kalkine Media",
+        "summary": ""
+      },
+      {
+        "title": "$3,570 area: Gold price stalls as Fed hike bets restrain bulls - www.tmgm.com",
+        "url": "https://news.google.com/rss/articles/CBMiygFBVV95cUxNX0k0eEY4WWQ1TV9ZeHNxVEx3RHBhc0RkdTNhRWV1TVpyZUQ2bUFfLUhXbHQ2NFRKTVFIc28wYVh0b1Vsb2h4ZWROTHFDNkNsU2dDZy1oRWFrQWYzMWxNajczc1pCak55S3RSamtMVzZwbWNpeE1vbmZIbUlSZFJOUEl1eE9ZUVg4Ulg1dnVPWS1NUGQtRnVoMTBOUzhRaGpZbElDZmlhd0xoMFJ2bUc4T2NYQVBEOXE5Y2U3ZlQ3RVRFTEVGU0xaQlJB?oc=5",
+        "published_at": "Thu, 26 Nov 2026 20:49:20 GMT",
+        "source": "www.tmgm.com",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Forecast: XAU/USD Breaks Multi-Year Uptrend in Worst Week Since March - StoneX",
+        "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOS0V0aXctMHhmVjRnZXFxRnZyVzRBMUxVUklISmhWTEEtNlk2RWYzbFcxd3kxOXpFUGJZNU15YlN1MkpPOXd4d1EtRVpfeHByTkVhOVNrcGROWnh6WEhWQ2xLSW53QXZVdXdialViRWl2WXFHcUxET1N6cDRkR0hHZnZXLVBJbndPSV9mbkhRZWtsN1ZLWUx0LWFWTkJRNXhwYndoeEZXVmN1MkI5NDNFbWk2QzJzU3VwMVdaLVV2QTd5Sk9hNGc?oc=5",
+        "published_at": "Thu, 26 Nov 2026 20:01:56 GMT",
+        "source": "StoneX",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Forecast: XAU/USD Rebounds Above $3,600 as Buyers Defend Key Support Despite Stronger PCE Inflation - FXLeaders",
+        "url": "https://news.google.com/rss/articles/CBMi5AFBVV95cUxNSDNTS0o1dWZlZ252TF8xcWRta3o2NWpGUEs4LXdRb1NUWkt3NWw2YjZNWkhxZk9xOUFVMUhoUWJjdDNTMnpqQkRMNU42UUlDbU5MV19ZeUdDeVhYUW5VN0w5X3ZuZTNwb1FfYlY1MTYxT2hHMUtOSkZJeEVHSkFDaUtkU3ZQOXNoYTlWUHhqa05ncjF2SUd6VXFQd3lyRF9hQTdhMmFmZ2xpdERUOFBUdG80OVE1Vk1YRUhEWjRFeTRJZkMyS1ZfU3p3Q01UdDFlbmJmSTR2MDhVSmJoSi03UzJQd0U?oc=5",
+        "published_at": "Thu, 26 Nov 2026 19:47:15 GMT",
+        "source": "FXLeaders",
+        "summary": ""
+      },
+      {
+        "title": "Palladium price analysis: XPD trades below key MAs - Invezz",
+        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOYldMSjZGSlFDbXpwT0xJLW51cVVENmZhOXhPdUtjeXZBUVBZUG13U2ZoTGxtQlVobDc0RG9vcDZVREVCRF8wZ0E2NzByZ1g4U2VBMzdzNGIya2lDOGpmWmNsbkpvN3Y4bU1nT3JVQTUwYVR4TXo0cGJPTUVydlhmWk13?oc=5",
+        "published_at": "Thu, 26 Nov 2026 19:28:33 GMT",
+        "source": "Invezz",
+        "summary": ""
+      },
+      {
+        "title": "22-Karat and Pure Gold Price in India; Gold Remains Under Pressure, Market Analysts Expect Recovery in International Markets - TopNews",
+        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPUXlLcFh4eEpNN3ozdmFFOEVuR1JYSlVyVVFfUGpadUdvTU9aaVR2SkZfVUpidnJyUDlmZVU5RUFNWWZUMWVPejJJY2dXdER5RWlaa25iN2VNWG5peW9wdUw2dG1PYnlTaWlDbzRpMUFyaS1oZDZOR003Vkd3ZHhUTmFSTTVtZHNmMERLdzFRb1BSR0xSSUtIUFl3NXViSC1qUnlDaHg1Zjd0RXlYMGF5UXFWRGR1Zw?oc=5",
+        "published_at": "Thu, 26 Nov 2026 18:35:42 GMT",
+        "source": "TopNews",
+        "summary": ""
+      },
+      {
+        "title": "Gold price stalls near $3,570 as Fed hike bets keep bulls at bay | FXStreet - شبكة تواصل الإخبارية",
+        "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE1ySTRIOENzeU84aGdtUUp2WVRtZ0R0bkZuczVMRFNTSU02YktDNFJ5VURKSllfb0xVUEJzMUdPZ2VnWUliQ0oxdnY2WDdjdXhDVGZn?oc=5",
+        "published_at": "Thu, 26 Nov 2026 18:18:05 GMT",
+        "source": "شبكة تواصل الإخبارية",
+        "summary": ""
+      },
+      {
+        "title": "Gold price stalls near $3,570 as Fed hike bets keep bulls at bay - FXStreet",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOb29vaFQ2a1Z3UmxfQzZKcnpMcGMtMmZwcGNZZkkxOGhDSWVqczlWbTV2eThPY3FvczlnQVI4aXg4UEx4UVIzcnlSNmNQT0dzT1JRRG1mVmcxUHVxNEY3bVZjc3RmUEZFY3lKcmV0cVpoWXdkSXJrWl9COXlUbTFKVEZLMjNtZEMycGdvZUhwRVFwU2cyak5wZlhIcmZ0X0QwZU02ZS1vZjh3Zw?oc=5",
+        "published_at": "Thu, 26 Nov 2026 18:01:26 GMT",
+        "source": "FXStreet",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Forecast: XAU/USD Rebounds Above $3,600 as Buyers Defend Key Support Despite Higher PCE Inflation - FXLeaders",
+        "url": "https://news.google.com/rss/articles/CBMi4gFBVV95cUxPV0QwUkdQUTRVWmpEbER3OG9sa2hrdFJpTFhFbHhBNENDYndXc0RFbEFkUnN4ZjFhX0RWVmZUdjFEMmRxQ2tKLWZINGdRVXo5eXZ4UHNseUtGM1Nsd2xwTld5ekxxRU9vcjlFX2dqdkFpU3lNYndid2xabF9YdUZhTHVMWF9DaVFkeVRvWWx3ZXFrWjgxc2paWWhEUkdOOG5CVkhTU1hxbWVvd3BnMjl1U2RkYkNvZGVhV2dxTldCREJpRlBJVGZLakJDblhKc1owQU5zcGg4MnlBVXpoNEtZNDNR?oc=5",
+        "published_at": "Thu, 26 Nov 2026 17:41:58 GMT",
+        "source": "FXLeaders",
+        "summary": ""
+      },
+      {
+        "title": "Bitcoin and Gold price forecast: Why daily technicals flash sell amid hawkish Fed and thanksgiving liquidity - FXStreet",
+        "url": "https://news.google.com/rss/articles/CBMi-wFBVV95cUxNb09iaXJSZEJ2aGozZWJIaEc3WEpMLTNOZk9iU2YyMjNQY054NWRwNFlneEt0XzM5SmJRQV9CeTcyczdKWE9oUHp3dHNrRldkeUtYOUsxNUVRRU9LRFBqcEtvbmJaMTJjVEdqMXFJRTl6eElJeWVIZkMxM054SUNBSlpIeUNjOG9BU0RFRDhBSHZNaVNMTUFwYmVkTkN2UTV2Y29meW5ENjgyeTRIZl9BTnJnelp2Mm9UVHVZMk5HWWhlR1hMazFrbnNDdW1ISVRsVnh3N1VMUkZ3c3VFNG90anJMcmhmZlpFZlYzRGRwNzBRMjJaZ1JBN2gxbw?oc=5",
+        "published_at": "Thu, 26 Nov 2026 17:18:28 GMT",
+        "source": "FXStreet",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Forecast — XAU/USD ($3,569) $3,740 Upside Target on 97.5% Fed Hike Odds - TradingNEWS",
+        "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPbG9xdUluTTgtMUw0QTgtTEQ4WnlWdlRBYVFiU2xSeWZVTlZJOUlWUTRKcGlHSDBMV01KMU5zWTZscGd6YWlvVkVVeVNNMm5fWk9paTFSOUZZR3pwbkVFRk9WY1l3MXBnRnRVelZuYjdWR3otMWp2bVJhNEh6d21McVQtZ3Y2N0RoY0czVXdlUWpwUDlKSjFPM3JKbWNQaHNJWVlsVmdibE1heV9IYVRnclVXSTNrSGRTcWtzRFdn?oc=5",
+        "published_at": "Thu, 26 Nov 2026 17:17:06 GMT",
+        "source": "TradingNEWS",
+        "summary": ""
+      },
+      {
+        "title": "Latest inflation figures reinforce monetary policy risk for gold, may influence demand - Traders Union",
+        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQZU9IWjN5NFZ6a1hDU2VtRndmRlZrTGx4WGY4LU5QUlJaX0Y4bUZYd0V3Z1FFRjBuT1NhSnJELXpEN1JKY1pBQ0tqNXlOTF9rbVZacllfTmdJcTktMVVpdWpvLXVGZ0FIaU93bjlKcnlBY1kwaExKbmtKNnFiS0MzS3FKdVVvSzdiN3REU0hVWjlBV2NQ?oc=5",
+        "published_at": "Thu, 26 Nov 2026 17:11:26 GMT",
+        "source": "Traders Union",
+        "summary": ""
+      },
+      {
+        "title": "META_TITLE_QUOTE - Yahoo Finance",
+        "url": "https://news.google.com/rss/articles/CBMiTkFVX3lxTFAyUjl3TDFqeXJOOE9qNm8tYXNFcUJJREpDdXFNaE9fU0d0d29zN0pkaExFZUZiZENwMVJIOW5UTGVGVmZJRlB0dUJhSEZLUQ?oc=5",
+        "published_at": "Thu, 26 Nov 2026 17:06:35 GMT",
+        "source": "Yahoo Finance",
+        "summary": ""
       }
     ]
-  }
+  },
+  "sources": [
+    {
+      "source": "XAUS",
+      "title": "Gold spot API (with freshness metadata)",
+      "url": "https://xaus.com/api/v1/spot?compact=1"
+    },
+    {
+      "source": "Yahoo Finance",
+      "title": "Cross-market quotes / fallback",
+      "url": "https://finance.yahoo.com/"
+    },
+    {
+      "source": "Google News RSS",
+      "title": "Headline feeds",
+      "url": "https://news.google.com/"
+    }
+  ],
+  "errors": []
 }
