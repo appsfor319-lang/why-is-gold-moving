@@ -71,6 +71,8 @@ function check(name, pass, detail) {
     }
     check("Live website responds", !!response && response.ok(), response ? "HTTP " + response.status() : "No response");
     await page.waitForTimeout(12000);
+    await page.waitForFunction(() => !!window.goldTerminalData?.market, null, { timeout: 30000 }).catch(() => {});
+    await page.waitForTimeout(1500);
 
     const snapshot = await page.evaluate(async () => {
       const ids = ["outlook-status","destination-updated","destination-bias","destination-bottomline",
@@ -86,7 +88,7 @@ function check(name, pass, detail) {
       return {
         title: document.title,
         heading: document.querySelector("h1")?.innerText || "",
-        script: [...document.scripts].map(s => s.src).filter(s => s.includes("outlook.js")),
+        script: [...document.scripts].map(s => s.src).filter(Boolean),
         researchStatus,
         research: research ? {
           updated_at: research.updated_at,
@@ -99,6 +101,7 @@ function check(name, pass, detail) {
         } : null,
         panels: Object.fromEntries(ids.map(id => [id, text(id)])),
         chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length },
+        liveCounts: { ideas: document.querySelectorAll("#live-tradingview-ideas .live-idea-card").length, news: document.querySelectorAll("#live-gold-news .live-news-card").length },
         tabCount: document.querySelectorAll(".horizon-tab").length,
         longHidden: document.getElementById("horizon-long-panel")?.hidden === true,
         horizonButtonsVisible: [...document.querySelectorAll(".horizon-tab")].every(b => getComputedStyle(b).display !== "none" && b.getBoundingClientRect().height > 30),
@@ -127,6 +130,9 @@ function check(name, pass, detail) {
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
     check("Both horizon tabs are present", snapshot.tabCount === 2 && snapshot.longHidden === true, "Short and long term tabs");
     check("Both horizon controls are visibly rendered", snapshot.horizonButtonsVisible, "Visible two-button horizon switcher");
+    check("TradingView gold idea cards render", snapshot.liveCounts.ideas > 0, snapshot.liveCounts.ideas + " current community ideas");
+    check("Fresh gold/news cards render", snapshot.liveCounts.news > 0, snapshot.liveCounts.news + " timestamped reports");
+
     check("Live intelligence panel is visible", snapshot.livePanelVisible, snapshot.panels["live-intelligence"].slice(0, 180));
     check("Dated short-term snapshot is hidden from live view", snapshot.staticShortSnapshotHidden, "Old snapshot price map is not presented as current");
     await page.locator("#tab-long-term").click();
