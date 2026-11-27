@@ -1,0 +1,55 @@
+name: Live website browser audit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 */6 * * *"
+  push:
+    branches: [main, master]
+    paths:
+      - "index.html"
+      - "outlook.js"
+      - "styles.css"
+      - "research/**"
+      - ".github/workflows/site-browser-audit.yml"
+      - ".github/scripts/site-audit.cjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: live-site-browser-audit
+  cancel-in-progress: true
+
+jobs:
+  browser-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright and Chromium
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Wait for GitHub Pages and inspect the live site
+        env:
+          SITE_URL: https://appsfor319-lang.github.io/why-is-gold-moving/
+        run: node .github/scripts/site-audit.cjs
+
+      - name: Upload browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-site-browser-audit
+          path: |
+            audit-output/
+          if-no-files-found: warn
+          retention-days: 14
