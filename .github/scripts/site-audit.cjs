@@ -24,14 +24,21 @@ function check(name, pass, detail) {
 (async () => {
   // The Pages deployment and this audit are triggered by the same push.
   // Wait until the public CDN is serving the exact fixed renderer before testing.
-  const expectedRendererMarker = 'function renderLongHorizon(d)';
+  const expectedRendererMarker = 'async function refreshLiveIntelligence(force=false)';
   let deploymentReady = false;
   for (let attempt = 1; attempt <= 30; attempt++) {
     try {
-      const asset = new URL("outlook.js?v=9&deploy_audit=" + Date.now(), base);
-      const response = await fetch(asset, { cache: "no-store" });
-      const source = response.ok ? await response.text() : "";
-      if (response.ok && source.includes(expectedRendererMarker)) {
+      const asset = new URL("outlook.js?v=live14&deploy_audit=" + Date.now(), base);
+      const chartAsset = new URL("chart.js?v=shock10&deploy_audit=" + Date.now(), base);
+      const [response, chartResponse] = await Promise.all([
+        fetch(asset, { cache: "no-store" }),
+        fetch(chartAsset, { cache: "no-store" })
+      ]);
+      const [source, chartSource] = await Promise.all([
+        response.ok ? response.text() : Promise.resolve(""),
+        chartResponse.ok ? chartResponse.text() : Promise.resolve("")
+      ]);
+      if (response.ok && chartResponse.ok && source.includes(expectedRendererMarker) && chartSource.includes("lastGoldShockAnalysisAt")) {
         deploymentReady = true;
         console.log("PASS Public Pages is serving the fixed outlook renderer");
         break;
