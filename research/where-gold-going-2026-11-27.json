@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-11-27T02:06:00Z",
-  "snapshot_label": "Source-checked desk view · Nov 27, 2026",
+  "updated_at": "2026-11-27T01:56:00Z",
+  "snapshot_label": "Source-checked desk view · Nov 27, 2026 (Algeria)",
   "price_reference": {
     "low": 3565.43,
     "high": 3568.39,
-    "note": "Two public feeds at roughly 02:00 UTC; broker quotes can differ. Not an executable quote."
+    "note": "Asynchronous public snapshots: AlQanaas $3,568.39 at 01:41 UTC Nov 27; FXNX $3,565.43 at 02:06 GMT+3 (23:06 UTC Nov 26). Quotes are not synchronized, can be delayed, and are not executable."
   },
   "bias": "Short-term neutral-to-bearish; recovery attempt not confirmed",
   "confidence": "Moderate-low · thin holiday liquidity; sources disagree on short-term direction",
