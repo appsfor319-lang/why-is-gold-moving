@@ -9,6 +9,13 @@ JSON:
 - request.focus: requested analysis scope
 - request.instructions: accuracy and research constraints
 
+## Trusted analyst verification
+- Priority sources: LBMA annual/snapshot surveys and historical forecast-vs-actual; Fastmarkets competitions/rankings; original bank and commodity-desk research; Reuters institutional surveys and reporting.
+- Institution reputation is not a verified short-term win rate. Long-horizon forecasts and intraday calls are separate datasets.
+- Individual metrics require dated forecast archive and independently observed outcome. Minimum 30 forecasts for provisional stats; preferably 100+. Report sample size, timeframe, directional accuracy, target hit rate, mean error, benchmark comparison and all losses.
+- No auditable record: label UNVERIFIED, do not assign performance weight. Never fabricate accuracy, credentials, source links or counts.
+- Social media and TradingView are discovery-only, not consensus-weighted unless identity and original call are verified.
+
 ## Required behavior
 - Research fresh accessible sources: GoldSquawk, TradingView XAUUSD ideas, X/Twitter professional gold/macro analysts, Reuters and other reliable news, macro data.
 - Clearly disclose sources that are inaccessible; never claim access.
