@@ -100,6 +100,7 @@ async function refreshLiveIntelligence(force=false){
  if(liveDeskBusy)return;liveDeskBusy=true;
  const status=$("live-intelligence-status"),price=$("live-intelligence-price"),priceTime=$("live-intelligence-price-time"),change=$("live-intelligence-change"),changeTime=$("live-intelligence-change-time");
  try{
+  if(force&&typeof window.refreshGoldTerminal==="function")await window.refreshGoldTerminal();
   const api=liveApiBase(),terminal=window.goldTerminalData||{};
   const quote=terminal.market?.gold||{},chart=window.goldChartSummary||null;
   const domPrice=Number(String($("chart-last-price")?.textContent||"").replace(/[^0-9.]/g,""));
