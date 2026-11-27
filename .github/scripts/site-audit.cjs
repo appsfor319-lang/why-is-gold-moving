@@ -22,6 +22,28 @@ function check(name, pass, detail) {
 }
 
 (async () => {
+  // The Pages deployment and this audit are triggered by the same push.
+  // Wait until the public CDN is serving the exact fixed renderer before testing.
+  const expectedRendererMarker = 'const pane=$d("pane-outlook")';
+  let deploymentReady = false;
+  for (let attempt = 1; attempt <= 30; attempt++) {
+    try {
+      const asset = new URL("outlook.js?v=6&deploy_audit=" + Date.now(), base);
+      const response = await fetch(asset, { cache: "no-store" });
+      const source = response.ok ? await response.text() : "";
+      if (response.ok && source.includes(expectedRendererMarker)) {
+        deploymentReady = true;
+        console.log("PASS Public Pages is serving the fixed outlook renderer");
+        break;
+      }
+      console.log("Waiting for Pages deployment (" + attempt + "/30) · HTTP " + response.status);
+    } catch (error) {
+      console.log("Waiting for Pages deployment (" + attempt + "/30) · " + error.message);
+    }
+    await new Promise(resolve => setTimeout(resolve, 10000));
+  }
+  if (!deploymentReady) throw new Error("GitHub Pages did not publish the fixed outlook renderer within five minutes");
+
   const browser = await chromium.launch({ headless: true });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, deviceScaleFactor: 1 });
