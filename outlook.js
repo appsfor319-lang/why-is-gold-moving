@@ -102,10 +102,12 @@ async function refreshLiveIntelligence(force=false){
  try{
   const api=liveApiBase(),terminal=window.goldTerminalData||{};
   const quote=terminal.market?.gold||{},chart=window.goldChartSummary||null;
-  const shown=chart?.last?.close??Number(String($("chart-last-price")?.textContent||"").replace(/[^0-9.]/g,""))||quote.value;
-  const quoteDate=quote.timestamp||terminal.updated_at;
-  if(price)price.textContent=quote.stale||quote.freshness==="stale"?"STALE QUOTE":shown?money(shown):"QUOTE UNAVAILABLE";
-  if(priceTime)priceTime.textContent=(quote.source||"XAU/USD reference")+" · "+liveTime(quoteDate)+(quote.stale||quote.freshness==="stale"?" · excluded from analysis":"");
+  const domPrice=Number(String($("chart-last-price")?.textContent||"").replace(/[^0-9.]/g,""));
+  const chartPrice=Number(chart?.last?.close);
+  const shown=Number.isFinite(chartPrice)&&chartPrice>0?chartPrice:Number.isFinite(domPrice)&&domPrice>0?domPrice:(!quote.stale&&quote.freshness!=="stale"?quote.value:null);
+  const quoteDate=chart?.last?.time?new Date(chart.last.time*1000).toISOString():quote.timestamp||terminal.updated_at;
+  if(price)price.textContent=shown?money(shown):"FRESH QUOTE UNAVAILABLE";
+  if(priceTime)priceTime.textContent=(chart?"Live XAU/USD chart":quote.source||"XAU/USD reference")+" · "+liveTime(quoteDate)+(shown==null?" · no stale price substituted":"");
   const pct=chart?.last?.change_pct;
   if(change){change.textContent=pct==null?"Waiting for 5m candle":(pct>0?"+":"")+Number(pct).toFixed(2)+"%";change.className=pct>0?"direction-bullish":pct<0?"direction-bearish":"direction-neutral"}
   if(changeTime)changeTime.textContent=chart?.timeframe?chart.timeframe+" candle · chart feed":"Latest available chart move";
