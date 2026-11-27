@@ -94,7 +94,7 @@ function renderLiveNews(data){
  const rows=(data?.news||[]).filter(x=>x.published_at&&Date.now()-Date.parse(x.published_at)<48*3600000).slice(0,8);
  status.textContent=rows.length?rows.length+" recent reports · "+liveTime(data.updated_at):"No fresh reports";
  if(!rows.length){root.innerHTML='<div class="empty">No timestamped gold/macro reports in the current feed. Nothing old is substituted.</div>';return;}
- root.innerHTML=rows.map(x=>{const b=String(x.gold_bias||"").toLowerCase(),dir=/bull|positive|support/.test(b)?"direction-bullish":/bear|negative|pressure/.test(b)?"direction-bearish":"direction-neutral";return'<article class="live-news-card '+dir+'"><div class="live-idea-meta">'+esc(x.source||"Publisher")+' · '+esc(liveTime(x.published_at))+'</div><h4>'+esc(x.title)+'</h4><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Open report ↗</a></article>'}).join("");
+ root.innerHTML=rows.map(x=>{const b=typeof goldBias==="function"?goldBias(x):String(x.gold_bias||"").toLowerCase(),dir=/bull|positive|support/.test(b)?"direction-bullish":/bear|negative|pressure/.test(b)?"direction-bearish":"direction-neutral";return'<article class="live-news-card '+dir+'"><div class="live-idea-meta">'+esc(x.source||"Publisher")+' · '+esc(liveTime(x.published_at))+'</div><h4>'+esc(x.title)+'</h4><a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer">Open report ↗</a></article>'}).join("");
 }
 async function refreshLiveIntelligence(force=false){
  if(liveDeskBusy)return;liveDeskBusy=true;
