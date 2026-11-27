@@ -104,35 +104,45 @@
       "view": "Contrarian rebound setup: closing-price reversal bottom; bullish bias strengthens above $3,589.38. Losing $3,426.80 shifts bias bearish. Notes 97.2% market-implied December hike probability in his article.",
       "horizon": "Short swing / technical",
       "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-price-forecast-reversal-puts-long-term-value-area-in-focus-1647476",
-      "published": "Nov 26, 2026"
+      "published": "Nov 26, 2026",
+      "short_term_bias": "Conditional bullish",
+      "long_term_bias": "Not stated"
     },
     {
       "source": "FXEmpire · Muhammad Umair",
       "view": "Daily technical rating Strong Sell (16 sell / 3 neutral / 3 buy). Short-term forecast $3,400–$3,500; medium-term $3,900–$4,000; long-term $5,000–$5,600. He also says medium-term neutral amid inflation/slow growth uncertainty.",
       "horizon": "1–4 weeks / 3–6 months / 12+ months",
       "url": "https://www.fxempire.com/forecasts/gold",
-      "published": "Forecast page updated Nov 26, 2026"
+      "published": "Forecast page updated Nov 26, 2026",
+      "short_term_bias": "Bearish near-term / mixed medium-term",
+      "long_term_bias": "Bullish 12+ months"
     },
     {
       "source": "Reuters · Han Tan / TD Securities / HSBC",
       "view": "Rate-hike expectations and inflation pressure near-term gold; Han Tan says a sustained rebound needs signs the hike cycle is nearing its end. TD Securities cautions it may be too early to call a bottom but sees ~$5,000 in late 2027. HSBC warns equity weakness could put gold below $3,400.",
       "horizon": "Macro near-term and long-term",
       "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/",
-      "published": "Nov 26, 2026"
+      "published": "Nov 26, 2026",
+      "short_term_bias": "Bearish near-term / mixed",
+      "long_term_bias": "Mixed-to-bullish (TD); bearish risk (HSBC)"
     },
     {
       "source": "FXEmpire · Arslan Ali",
       "view": "Hot October PCE/GDP data and Fed-hike bets weigh on gold; watch $3,595 pivot, $3,503 support, and $3,697 above a $3,651 close. Central-bank Q3 buying reported at 321 tonnes.",
       "horizon": "Short-term technical / macro",
       "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429",
-      "published": "Nov 26, 2026"
+      "published": "Nov 26, 2026",
+      "short_term_bias": "Bearish",
+      "long_term_bias": "Not stated"
     },
     {
       "source": "WSJ · StoneX / HSBC commentary",
       "view": "Hawkish Fed expectations are a headwind; StoneX says next week's payrolls could influence January hike expectations. HSBC ties near-term risk to equities and sees downside risk below $3,400; central-bank buying may limit downside.",
       "horizon": "Short-term",
       "url": "https://www.wsj.com/finance/commodities-futures/gold-fortunes-tied-to-stocks-in-near-term-42ce98be",
-      "published": "Nov 27, 2026"
+      "published": "Nov 27, 2026",
+      "short_term_bias": "Bearish / cautious",
+      "long_term_bias": "Not stated"
     }
   ],
   "community_views": [
@@ -260,5 +270,12 @@
     "open_interest": 407834,
     "next_release": "Nov 30, 2026 (holiday delayed)",
     "note": "Speculators remain net-long while reducing exposure; weekly/delayed, not live order flow."
-  }
+  },
+  "short_term_bias": "Neutral-to-bearish below $3,589.38",
+  "short_term_summary": "Near-term professional reporting leans cautious: Reuters, WSJ and FXEmpire describe rate-hike and inflation headwinds, while FXEmpire's James Hyerczyk identifies a countertrend reversal only if gold reclaims $3,589.38. The sources do not establish a unanimous bearish call; price confirmation is still required.",
+  "short_term_target": "If $3,526.83 breaks and holds: $3,500, then $3,426.80. Recovery requires a sustained reclaim of $3,589.38, then $3,689.87 and $3,697. These are conditional levels, not guaranteed destinations.",
+  "short_term_confidence": "Moderate-low · conflicting reversal signal and holiday-thin liquidity.",
+  "long_term_bias": "Constructive but mixed · long-term targets are conditional",
+  "long_term_summary": "Long-horizon forecasts from FXEmpire and TD Securities point to possible higher prices, including $5,000–$5,600, but the same source set warns that the current correction could deepen first. This is a long-term scenario, not a near-term target or a confirmed institutional consensus.",
+  "long_term_confidence": "Low-to-moderate qualitative · forecasts diverge and are not a calibrated probability model."
 }
