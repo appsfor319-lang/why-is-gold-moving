@@ -111,7 +111,7 @@ function updateObZones(){
   if(left>=width-68||top>$("xau-chart").clientHeight)return;
   const box=document.createElement("div");box.className="ob-zone "+(o.direction==="bullish"?"bull":"bear")+(type==="fvg"?" fvg-zone":"");
   box.style.left=left+"px";box.style.top=top+"px";box.style.width=(right-left)+"px";box.style.height=height+"px";
-  const label=document.createElement("span");label.textContent=type==="fvg"?(o.direction==="bullish"?"Bullish FVG":"Bearish FVG"):(o.direction==="bullish"?"Bullish":"Bearish")+" Order Block · "+(o.timeframe||"1H");box.appendChild(label);obZoneLayer.appendChild(box);
+  const label=document.createElement("span");label.textContent=type==="fvg"?(o.direction==="bullish"?"Bullish FVG":"Bearish FVG"):(o.direction==="bullish"?"Demand · Bullish OB":"Supply · Bearish OB")+" · "+(o.timeframe||"1H");box.appendChild(label);obZoneLayer.appendChild(box);
  }
  activeZoneData.forEach(o=>drawZone(o,"ob"));activeFvgData.forEach(o=>drawZone(o,"fvg"));
 }
