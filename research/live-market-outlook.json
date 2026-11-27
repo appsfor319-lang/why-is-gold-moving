@@ -122,5 +122,57 @@
       "title": "Gold reference price $3,567.26 — Nov 26",
       "url": "https://www.silvertrade.com/prices/gold/?mode=compare-assets&overlays=dxy%2Cwti&range=All"
     }
-  ]
+  ],
+  "market_inputs": {
+    "gold": {
+      "price": 3567.26,
+      "daily_change_pct": 0,
+      "source": "Gold Corgano / SilverTrade; references Nov 26"
+    },
+    "dxy": {
+      "price": 103.78,
+      "change_pct": 0.11,
+      "source": "Gold Corgano daily snapshot"
+    },
+    "silver": {
+      "price": 41.52,
+      "source": "Gold Corgano daily snapshot"
+    },
+    "real_yield_10y": {
+      "value": 2.73,
+      "change_basis": "-6 basis points",
+      "source": "Gold Corgano; TIPS real yield data for Nov 25"
+    },
+    "oil": {
+      "price": 84.96,
+      "change_5d_pct": 1.53,
+      "source": "Gold Corgano daily snapshot"
+    },
+    "headlines": [
+      {
+        "title": "Gold drifts lower as Fed rate-hike fears loom",
+        "source": "Reuters · Nov 26",
+        "published_at": "2026-11-26",
+        "url": "https://www.reuters.com/world/india/gold-steadies-after-hitting-over-1-year-low-fed-outlook-focus-2026-11-26/"
+      },
+      {
+        "title": "Gold retreats as traders rush to take profits after rebound",
+        "source": "FXEmpire · Nov 26",
+        "published_at": "2026-11-26",
+        "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-platinum-forecasts-gold-retreats-as-traders-rush-to-take-profits-after-rebound-1647576"
+      },
+      {
+        "title": "Hot PCE keeps Fed hikes in play; can $3,595 hold?",
+        "source": "FXEmpire · Nov 26",
+        "published_at": "2026-11-26",
+        "url": "https://www.fxempire.com/forecasts/article/gold-xauusd-silver-price-forecast-hot-pce-keeps-fed-hikes-in-play-can-3595-hold-1647429"
+      },
+      {
+        "title": "Stronger dollar and elevated US yields weigh on gold",
+        "source": "FXStreet · ING · Nov 26",
+        "published_at": "2026-11-26",
+        "url": "https://www.fxstreet.com/news/gold-stronger-dollar-and-elevated-us-yields-weigh-on-prices-ing-202611261136"
+      }
+    ]
+  }
 }
