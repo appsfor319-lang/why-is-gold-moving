@@ -487,3 +487,22 @@ body{top:0!important;position:static!important;}
 @media(max-width:760px){.destination-levels{grid-template-columns:repeat(2,1fr)}.destination-paths{grid-template-columns:1fr}.destination-columns{grid-template-columns:1fr}.destination-heading{display:block}.destination-bias{margin-top:10px;max-width:none}}
 
 .claude-research-action{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:12px 0 15px}.claude-research-action span{color:var(--muted);font-size:10px}
+
+/* Consistent market direction language across every panel */
+.direction-bullish{color:#36c47b!important;border-color:rgba(54,196,123,.55)!important}
+.direction-bearish{color:#ef514d!important;border-color:rgba(239,81,77,.58)!important}
+.direction-neutral{color:#c5cdd4}
+.destination-bias.direction-bullish{background:rgba(54,196,123,.10);border-color:#36c47b;color:#36c47b!important}
+.destination-bias.direction-bearish{background:rgba(239,81,77,.10);border-color:#ef514d;color:#ef514d!important}
+.destination-bottomline.direction-bullish{border-left-color:#36c47b}
+.destination-bottomline.direction-bearish{border-left-color:#ef514d}
+.destination-path.direction-bullish,.outlook-scenario.direction-bullish,.outlook-source.direction-bullish{border-left:3px solid #36c47b}
+.destination-path.direction-bearish,.outlook-scenario.direction-bearish,.outlook-source.direction-bearish{border-left:3px solid #ef514d}
+.position-item.direction-bullish{border-left:2px solid #36c47b;padding-left:9px}
+.position-item.direction-bearish{border-left:2px solid #ef514d;padding-left:9px}
+.driver-chip.direction-bullish{border-color:rgba(54,196,123,.55);background:rgba(54,196,123,.10)}
+.driver-chip.direction-bearish{border-color:rgba(239,81,77,.55);background:rgba(239,81,77,.10)}
+.cot-stat.direction-bullish{border-left:3px solid #36c47b;padding-left:10px}
+.cot-stat.direction-bearish{border-left:3px solid #ef514d;padding-left:10px}
+.ob-zone.bull{background:rgba(54,196,123,.12);border-color:rgba(54,196,123,.72)}
+.ob-zone.bear{background:rgba(239,81,77,.12);border-color:rgba(239,81,77,.72)}
