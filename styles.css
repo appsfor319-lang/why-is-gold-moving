@@ -594,3 +594,24 @@ body{top:0!important;position:static!important;}
 .gold-session-note{margin:12px 0 0;color:#8293a1;font-size:10px;line-height:1.55}
 @media(max-width:850px){.gold-session-days{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:520px){.gold-session-calendar{padding:12px}.gold-session-days{grid-template-columns:repeat(2,minmax(0,1fr))}.gold-session-head{display:block}.gold-session-legend{margin-top:10px}}
+
+/* Mobile-first short-term price map directly below the chart */
+.where-chart-table{margin:12px 0 4px;padding:13px;background:#0d151e;border:1px solid #2c3c4b;border-radius:8px}
+.where-chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px}
+.where-chart-head h3{font-size:17px;margin:3px 0}
+.where-chart-head p:not(.eyebrow){font-size:10px;color:#91a2b0;margin:3px 0}
+.where-chart-tag{font:9px 'DM Mono',monospace;color:#e1c17a;border:1px solid #665635;padding:5px 7px;border-radius:4px;white-space:nowrap}
+.where-chart-table-wrap{overflow-x:auto}
+.where-chart-table table{width:100%;border-collapse:collapse;font-size:11px;text-align:left}
+.where-chart-table th{font:9px 'DM Mono',monospace;color:#8293a1;padding:8px 6px;border-bottom:1px solid #30404d}
+.where-chart-table td{padding:9px 6px;border-bottom:1px solid #263541;color:#b9c5ce;vertical-align:top}
+.where-chart-table td:nth-child(2){font-family:'DM Mono',monospace;white-space:nowrap}
+.where-chart-table tr.resistance-row td:first-child{color:#ef7772}.where-chart-table tr.support-row td:first-child{color:#36c47b}
+.where-chart-scenarios{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.where-scenario{padding:10px;border:1px solid #2c3c49;border-radius:5px;background:#121e29}
+.where-scenario b{font:9px 'DM Mono',monospace}
+.where-scenario p{font-size:10px;line-height:1.5;color:#b3c0ca;margin:5px 0 0}
+.where-scenario.bull b{color:#36c47b}.where-scenario.bear b{color:#ef7772}
+.where-chart-foot{font-size:9px;line-height:1.55;color:#8293a1;margin:10px 0 0}
+.ob-zone.fvg-zone{border-style:dashed;opacity:.12}
+@media(max-width:520px){.where-chart-table{padding:10px}.where-chart-head{display:block}.where-chart-tag{display:inline-block;margin-top:7px}.where-chart-table th{font-size:8px}.where-chart-table td{font-size:10px;padding:8px 4px}.where-chart-scenarios{grid-template-columns:1fr}}
