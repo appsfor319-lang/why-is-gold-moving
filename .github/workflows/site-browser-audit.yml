@@ -8,6 +8,8 @@ on:
     branches: [main, master]
     paths:
       - "index.html"
+      - "app.js"
+      - "chart.js"
       - "outlook.js"
       - "styles.css"
       - "research/**"
@@ -33,6 +35,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check app.js
+          node --check chart.js
+          node --check outlook.js
+          node --check .github/scripts/site-audit.cjs
 
       - name: Install Playwright and Chromium
         run: |
