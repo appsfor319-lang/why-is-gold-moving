@@ -1,12 +1,12 @@
 (()=>{"use strict";
 const $=id=>document.getElementById(id);
-const api=()=>{try{return(localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev").replace(/\\/+$/,"")}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
+const api=()=>{try{let u=localStorage.getItem("why-gold-api-base")||"https://why-is-gold-movingm.appsfor319.workers.dev";while(u.endsWith("/"))u=u.slice(0,-1);return u}catch{return"https://why-is-gold-movingm.appsfor319.workers.dev"}};
 const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const money=n=>n==null||!Number.isFinite(Number(n))?"—":"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
 const stamp=x=>x?new Date(x).toLocaleString("en-GB",{timeZone:"Africa/Algiers",hour12:false})+" Algeria time":"Timestamp unavailable";
 let busy=false,last=null;
 function marketContext(d){const m=d?.market||{},g=m.gold||{};return{price:g.value,change_pct:g.change_pct,change_period:g.change_period,updated_at:d?.updated_at,dxy:m.dxy,yield:m.yield,silver:m.silver,oil:m.oil,briefing:d?.briefing,news:(d?.news||[]).slice(0,15),calendar:(d?.calendar||[]).slice(0,8),positioning:d?.positioning,sources:d?.sources};}
-function sourceCard(s){const url=s.url||s.source_url||"",valid=/^https?:\\/\\//i.test(url);return'<article class="outlook-source"><div class="outlook-source-meta">'+esc(s.source||s.author||"Source")+' · '+esc(stamp(s.published_at||s.timestamp))+'</div><h4>'+esc(s.title||s.headline||"Market source")+'</h4><p>'+esc(s.summary||s.reason||"")+'</p>'+(valid?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Open original ↗</a>':'<span class="fine">Source link unavailable</span>')+'</article>'}
+function sourceCard(s){const url=s.url||s.source_url||"",valid=url.startsWith("https://")||url.startsWith("http://");return'<article class="outlook-source"><div class="outlook-source-meta">'+esc(s.source||s.author||"Source")+' · '+esc(stamp(s.published_at||s.timestamp))+'</div><h4>'+esc(s.title||s.headline||"Market source")+'</h4><p>'+esc(s.summary||s.reason||"")+'</p>'+(valid?'<a href="'+esc(url)+'" target="_blank" rel="noopener noreferrer">Open original ↗</a>':'<span class="fine">Source link unavailable</span>')+'</article>'}
 function render(o,d){
  const direction=String(o.direction||"").toLowerCase(),label=direction.includes("bull")?"BULLISH":direction.includes("bear")?"BEARISH":direction.includes("neutral")?"NEUTRAL":direction||"UNASSESSED";
  $("outlook-direction").textContent=label;$("outlook-direction").className=direction.includes("bull")?"bull":direction.includes("bear")?"bear":"";
