@@ -80,7 +80,7 @@ function renderDestination(d){
 }
 let publishedResearch=null;
 
-function isLongHorizon(p){return /long|medium|3.?6 months|12\\+|late 2027|months/i.test(String(p.horizon||""))}
+function isLongHorizon(p){return /long|medium|3.?6 months|12\+|late 2027|months/i.test(String(p.horizon||""))}
 function isShortHorizon(p){return /short|intraday|swing|near.?term|1.?4 weeks/i.test(String(p.horizon||""))||!isLongHorizon(p)}
 function renderLongHorizon(d){
  const root=$("horizon-long-panel");if(!root)return;root.textContent="";
