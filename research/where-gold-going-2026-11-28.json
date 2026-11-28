@@ -1,0 +1,413 @@
+{
+  "updated_at": "2026-11-28T07:45:44Z",
+  "snapshot_label": "Source-checked weekend research · 28 Nov 2026 · Algeria time · market closed",
+  "price_reference": {
+    "low": 3639.61,
+    "high": 3639.61,
+    "spot": 3639.61,
+    "currency": "USD per troy ounce",
+    "quote_source": "Reuters spot-gold market report",
+    "quote_time_utc": "2026-11-27T19:01:00Z",
+    "quote_time_algeria": "2026-11-27T20:01:00+01:00",
+    "retrieved_at_utc": "2026-11-28T07:45:44Z",
+    "market_status": "Closed · Saturday 28 Nov 2026",
+    "futures": {
+      "contract": "US gold futures · December delivery",
+      "price": 3637.6,
+      "quote_time_utc": "2026-11-27T19:01:00Z",
+      "source": "Reuters"
+    },
+    "note": "Last accessible Reuters spot reference: $3,639.61 at 19:01 UTC on Fri 27 Nov (Reuters quotes carry a minimum 15-minute delay). Reuters' December futures reference was $3,637.60 at the same report time. WSJ separately reported front-month futures at $3,639.60; contract/settlement timing differs, so this is not a like-for-like exact match. No live XAUUSD quote is available while the market is closed. The Friday reference is about 12h45 old at this review."
+  },
+  "bias": "Short-term neutral-to-bearish below $3,665 and especially $3,750–$3,800; Friday's rebound is not yet a confirmed trend reversal",
+  "confidence": "Qualitative · moderate-low. A strong relief bounce conflicts with a still-hawkish rates/dollar backdrop, ETF outflows and reduced speculative longs. Market closed; no intraday signal.",
+  "bottom_line": "Gold rebounded sharply on Friday from Wednesday's 15-month low of $3,426.35, but Reuters' analyst read is that the move looks more like short-covering/profit-taking than a confirmed trend change. Last accessible spot reference was $3,639.61 at 19:01 UTC on 27 Nov. Base case for the next open: test whether $3,600–$3,620 holds; failure risks $3,550–$3,565 and then $3,426.35. Bulls need to reclaim Friday's reported $3,665 area and then clear the $3,750–$3,800 seller zone. Strong dollar, 4.94% 10-year nominal yield and a fully priced December Fed hike remain headwinds. Market closed Saturday; do not treat this as a live entry signal.",
+  "drivers": [
+    {
+      "name": "US inflation / Federal Reserve",
+      "bias": "negative",
+      "detail": "Reuters reported that October PCE inflation rose 0.3% month-on-month after 0.5% in September. By 25 Nov, markets had fully priced a December Fed rate hike. Higher expected rates increase the opportunity cost of holding non-yielding gold.",
+      "source_url": "https://www.reuters.com/world/india/gold-ticks-lower-ahead-us-inflation-data-2026-11-25/",
+      "published": "2026-11-25"
+    },
+    {
+      "name": "US dollar and Treasury yields",
+      "bias": "negative",
+      "detail": "ICE-sourced DXY data show 104.01 at the 27 Nov close, +0.33% on the day and +2.09% from end-October; Reuters described the dollar as near a 22-month high. The official US Treasury 10-year par yield was 4.94% on 27 Nov, up from 4.85% on 25 Nov. Latest FRED 10-year TIPS real yield available at this review was 2.79% on 24 Nov; no 27 Nov real-yield observation was yet visible.",
+      "source_url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2026&type=daily_treasury_yield_curve",
+      "published": "Daily market data through 2026-11-27; real-yield observation through 2026-11-24"
+    },
+    {
+      "name": "Friday's rebound",
+      "bias": "positive but tactical",
+      "detail": "Reuters attributed the recovery to bargain-buying after the 15-month low and quoted Zain Vawda describing it as short-covering/profit-taking rather than a trend reversal. WSJ linked Friday's metals rally to renewed AI-equity risk appetite and less liquidity-driven selling. Reuters also noted improving jewellery/investment demand in India and firm Chinese retail premiums.",
+      "source_url": "https://www.reuters.com/world/india/gold-rebounds-one-year-low-ai-jitters-ease-2026-11-27/",
+      "published": "2026-11-27"
+    },
+    {
+      "name": "Silver / precious-metals confirmation",
+      "bias": "positive for the rebound",
+      "detail": "Reuters reported spot silver up 4.7% to $43.44/oz on Friday. WSJ reported its front-month silver futures benchmark up 7.8% to $43.167; these are different quote types/timestamps and should not be conflated.",
+      "source_url": "https://www.wsj.com/finance/commodities-futures/precious-metals-rally-as-ai-trade-revives-risk-appetite-86477a98",
+      "published": "2026-11-28"
+    },
+    {
+      "name": "Speculative positioning and ETF flows",
+      "bias": "negative near-term",
+      "detail": "CFTC data as of 17 Nov show COMEX managed-money net longs down 9,399 contracts week-on-week and legacy non-commercial net longs down 23,975. WGC weekly data reported net ETF outflows of about $2.15bn and holdings down 20.4t in the week to 20 Nov. These are delayed weekly observations, not live flow or whale order flow.",
+      "source_url": "https://www.cftc.gov/dea/futures/other_sf.htm",
+      "published": "CFTC positions 2026-11-17; WGC weekly flow report published 2026-11-23"
+    },
+    {
+      "name": "Official-sector demand",
+      "bias": "positive long-term",
+      "detail": "World Gold Council Q3 data show central banks added 321t in the quarter, up 42% year-on-year, and year-to-date purchases reached 675t. October physically backed gold ETFs added $2.7bn and 19t to a record 4,275t, but the later week to 20 Nov saw material outflows. Structural demand therefore supports the longer horizon but does not remove near-term liquidation risk.",
+      "source_url": "https://www.gold.org/news-and-events/press-releases/central-bank-buying-and-etf-inflows-support-gold-demand-q3",
+      "published": "2026-11-03"
+    }
+  ],
+  "levels": [
+    {
+      "label": "Friday session high / first resistance",
+      "price": 3664.8,
+      "note": "Reported by a secondary technical-analysis page for 27 Nov; not independently confirmed as an official exchange high."
+    },
+    {
+      "label": "Immediate retest support",
+      "price": 3610,
+      "note": "$3,600–$3,620 band identified in 27 Nov technical commentary as a breakout/retest floor. Treat as a zone, not a single tick."
+    },
+    {
+      "label": "Secondary support band",
+      "price": 3558,
+      "note": "$3,550–$3,565 prior floor/reaction area cited in 27 Nov technical commentary."
+    },
+    {
+      "label": "Major swing low",
+      "price": 3426.35,
+      "note": "Reuters-reported low on Wednesday 25 Nov, the lowest since late August 2025. A decisive loss would invalidate the current recovery structure."
+    },
+    {
+      "label": "Analyst-identified seller zone",
+      "price": 3775,
+      "note": "$3,750–$3,800 area where Zain Vawda said rallies could attract sellers while the dollar and rates remain firm; analyst view, not a guaranteed resistance."
+    },
+    {
+      "label": "Psychological pivot",
+      "price": 3600,
+      "note": "Round-number level at the lower edge of the immediate $3,600–$3,620 retest band."
+    }
+  ],
+  "paths": [
+    {
+      "name": "Base: rebound stalls / retest",
+      "trigger": "Price fails to establish acceptance above the reported $3,665 Friday high and remains below the $3,750–$3,800 analyst seller zone.",
+      "target": "First test $3,600–$3,620. If that fails, $3,550–$3,565 becomes the next reaction area.",
+      "invalidation": "Sustained acceptance above $3,800 would invalidate the near-term stall case."
+    },
+    {
+      "name": "Bear continuation",
+      "trigger": "A clean break and hold below $3,600, followed by failure to reclaim $3,550–$3,565.",
+      "target": "$3,550–$3,565 first, then the Reuters-reported $3,426.35 swing low. No lower target is published here without a verified support reference.",
+      "invalidation": "Reclaim $3,665 and then sustain above the $3,750–$3,800 seller zone."
+    },
+    {
+      "name": "Bullish recovery",
+      "trigger": "Hold $3,600–$3,620, reclaim the $3,665 Friday high and then accept above $3,750–$3,800.",
+      "target": "$3,665 first, then $3,750–$3,800. Beyond that, no independently verified short-term target was found in this review; Goldman Sachs' $4,150 is a year-end forecast, not an immediate chart target.",
+      "invalidation": "Lose $3,600 and then fail to recover $3,550–$3,565."
+    }
+  ],
+  "professional_views": [
+    {
+      "source": "Reuters · Zain Vawda, market analyst at Audacity Capital",
+      "view": "Called the rebound more like short-covering/profit-taking than a trend change. Said rallies toward $3,750–$3,800 could attract sellers while real yields and the dollar remain high. A move toward $4,500 by mid-2027 would require the Fed to stop hiking and the dollar to weaken.",
+      "horizon": "Short swing; conditional medium-term",
+      "url": "https://www.reuters.com/world/india/gold-rebounds-one-year-low-ai-jitters-ease-2026-11-27/",
+      "published": "Nov 27, 2026",
+      "short_term_bias": "Cautious / sell-rallies risk",
+      "long_term_bias": "Conditional recovery"
+    },
+    {
+      "source": "Reuters · David Meger, director of metals trading at High Ridge Futures",
+      "view": "On 25 Nov, said the October PCE report did not ease inflation concerns and that the likelihood of further Fed rate increases remained a headwind for non-yielding gold. Reuters reported markets had fully priced a December hike.",
+      "horizon": "Near-term macro",
+      "url": "https://www.reuters.com/world/india/gold-ticks-lower-ahead-us-inflation-data-2026-11-25/",
+      "published": "Nov 25, 2026",
+      "short_term_bias": "Bearish / rates-sensitive",
+      "long_term_bias": "Not stated"
+    },
+    {
+      "source": "Goldman Sachs strategists · reported by Investing.com",
+      "view": "The bank cut its end-2026 gold forecast to $4,150/oz from $4,650 and end-2027 to $4,800 from $5,400, citing a hawkish Fed and normalising hedge demand, while retaining a constructive longer-term case tied to central-bank purchases.",
+      "horizon": "Year-end 2026 / 2027",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/goldman-lowers-end-gold-price-081423381.html",
+      "published": "Nov 6, 2026",
+      "short_term_bias": "Cautious",
+      "long_term_bias": "Constructive but reduced targets"
+    },
+    {
+      "source": "WSJ · Saxo Bank analysts",
+      "view": "Offered a market explanation rather than a price target: renewed enthusiasm for AI equities and a rebound in global stocks eased liquidity-driven selling and helped precious metals rally on Friday. The article also notes that higher expected Fed rates remain a counterweight.",
+      "horizon": "Event explanation / short-term",
+      "url": "https://www.wsj.com/finance/commodities-futures/precious-metals-rally-as-ai-trade-revives-risk-appetite-86477a98",
+      "published": "Nov 28, 2026",
+      "short_term_bias": "Relief bounce; no directional target",
+      "long_term_bias": "Not stated"
+    },
+    {
+      "source": "World Gold Council · Q3 Gold Demand Trends",
+      "view": "Official-sector demand remains a structural support: central banks bought 321t in Q3, +42% year-on-year; year-to-date purchases reached 675t. This is demand evidence, not a short-term price forecast.",
+      "horizon": "Structural / months to years",
+      "url": "https://www.gold.org/news-and-events/press-releases/central-bank-buying-and-etf-inflows-support-gold-demand-q3",
+      "published": "Nov 3, 2026",
+      "short_term_bias": "Not stated",
+      "long_term_bias": "Supportive"
+    }
+  ],
+  "community_views": [
+    {
+      "source": "TradingView · RLinda · GOLD - Countertrend correction within a bear market",
+      "view": "Bearish: treats the recovery as a countertrend correction within a broader bearish market and cites the hawkish Fed, reduced COT longs and ETF outflows.",
+      "label": "Community · bearish",
+      "url": "https://www.tradingview.com/chart/XAUUSD/71XYKUF1-GOLD-Countertrend-correction-within-a-bear-market/",
+      "published": "Exact publication date not exposed in the public listing; listing checked 28 Nov 2026",
+      "visible_engagement": "83 / 3 / 5 / 3 counters displayed; counter labels were not reliably exposed, so not interpreted"
+    },
+    {
+      "source": "TradingView · HAMED_AZ · XAUUSD",
+      "view": "Bearish broader structure after the break below $3,800, but notes buyers' reaction around the $3,500 area and a possible corrective bounce.",
+      "label": "Community · bearish with rebound risk",
+      "url": "https://www.tradingview.com/chart/XAUUSD/z3TcpIlE-XAUUSD/",
+      "published": "Exact publication date not exposed in the public listing; listing checked 28 Nov 2026",
+      "visible_engagement": "63 / 3 / 7 / 5 counters displayed; counter labels were not reliably exposed, so not interpreted"
+    },
+    {
+      "source": "TradingView · CEO_OF_GOLD · Downside Liquidity Before Potential Bullish Reversal",
+      "view": "Bearish structure and sell-side liquidity sweep, but a potential bullish reversal if price confirms a response from demand.",
+      "label": "Community · conditional bullish",
+      "url": "https://www.tradingview.com/chart/GOLD/w0WlLuPj-XAUUSD-Downside-Liquidity-Before-Potential-Bullish-Reversal/",
+      "published": "Exact publication date not exposed in the public listing; listing checked 28 Nov 2026",
+      "visible_engagement": "55 / 1 / 2 / 3 counters displayed; counter labels were not reliably exposed, so not interpreted"
+    },
+    {
+      "source": "TradingView · TradeFlow_Signals · XAUUSD 4H Final Demand Zone",
+      "view": "Bullish reversal watch near a higher-timeframe demand zone, conditional on confirmation after the selloff.",
+      "label": "Community · conditional bullish",
+      "url": "https://www.tradingview.com/chart/XAUUSD/x5hCfUd1-XAUUSD-4H-Final-Demand-Zone-Bullish-Reversal-Setup/",
+      "published": "Exact publication date not exposed in the public listing; listing checked 28 Nov 2026",
+      "visible_engagement": "63 / 4 / 0 / 4 counters displayed; counter labels were not reliably exposed, so not interpreted"
+    },
+    {
+      "source": "TradingView · Leo_WarRoom · XAU/USD pre-holiday liquidity sweep",
+      "view": "Bullish idea from a Nov 25 pre-Thanksgiving liquidity sweep near $3,508, looking for a rebound. It predates Friday's rally and is now a historical community call, not a fresh signal.",
+      "label": "Community · older bullish call",
+      "url": "https://www.tradingview.com/chart/XAUUSD/ZNfMEGcm-XAU-USD-THE-3-508-PRE-HOLIDAY-TRAP-BEFORE-A-1-000-PIP-SURGE/",
+      "published": "Nov 25, 2026 (date stated in idea text)",
+      "visible_engagement": "71 / 3 / 3 / 5 counters displayed; counter labels were not reliably exposed, so not interpreted"
+    }
+  ],
+  "positioning": "Latest official CFTC COMEX gold futures report visible on 28 Nov is for positions as of Tue 17 Nov (weekly reporting lag). Futures-only legacy non-commercial: 210,051 long / 43,919 short = +166,132 net, down 23,975 contracts from the prior week. Legacy commercial: 77,005 long / 270,755 short = -193,750 net. Disaggregated Managed Money: 121,994 long / 19,052 short = +102,942 net, down 9,399 week-on-week. Open interest 407,834. The Nov 24 report was not yet visible on the official CFTC pages at retrieval; do not treat this as current positioning or live whale flow. WGC-reported global ETF flows for the week ended 20 Nov were about -$2.15bn and holdings fell 20.4t to 4,247.7t; this weekly flow is delayed. October's monthly WGC data had shown +$2.7bn inflows and record 4,275t holdings, so monthly and weekly periods tell different stories.",
+  "sources": [
+    {
+      "name": "Reuters · Gold pares gains as Fed hike risks linger",
+      "url": "https://www.reuters.com/world/india/gold-rebounds-one-year-low-ai-jitters-ease-2026-11-27/",
+      "published": "Nov 27, 2026 · 03:28 UTC; updated later",
+      "attribution": "Sherin Sans / Reuters",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Fresh · Friday market report; quote timestamp 19:01 UTC"
+    },
+    {
+      "name": "Reuters · Gold falls after US inflation data",
+      "url": "https://www.reuters.com/world/india/gold-ticks-lower-ahead-us-inflation-data-2026-11-25/",
+      "published": "Nov 25, 2026 · 00:49 UTC",
+      "attribution": "Pablo Sinha / Reuters",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Fresh context · catalyst from 25 Nov"
+    },
+    {
+      "name": "WSJ · Precious metals rally as AI trade revives risk appetite",
+      "url": "https://www.wsj.com/finance/commodities-futures/precious-metals-rally-as-ai-trade-revives-risk-appetite-86477a98",
+      "published": "Nov 28, 2026 (date surfaced by search; exact time not exposed)",
+      "attribution": "Giulia Petroni and Adam Whittaker / Wall Street Journal",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Fresh · Friday close context"
+    },
+    {
+      "name": "US Treasury · Daily Treasury Par Yield Curve Rates",
+      "url": "https://home.treasury.gov/resource-center/data-chart-center/interest-rates/TextView?field_tdr_date_value=2026&type=daily_treasury_yield_curve",
+      "published": "Nov 27, 2026 observation",
+      "attribution": "US Department of the Treasury",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Fresh official daily close"
+    },
+    {
+      "name": "FRED · 10-Year TIPS real yield (DFII10)",
+      "url": "https://fred.stlouisfed.org/series/DFII10",
+      "published": "Latest observation Nov 24, 2026; updated Nov 25",
+      "attribution": "Board of Governors of the Federal Reserve System via FRED",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Stale by 4 calendar days · 2.79%; no newer observation visible"
+    },
+    {
+      "name": "ICE US Dollar Index daily closes",
+      "url": "https://portfolio-terminal.com/markets/us-dollar-index/november-2026",
+      "published": "Nov 27, 2026 close",
+      "attribution": "Portfolio Terminal citing ICE US Dollar Index (DX-Y.NYB)",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Fresh secondary-source close · not a direct ICE terminal feed"
+    },
+    {
+      "name": "CFTC · COMEX Gold futures-only COT",
+      "url": "https://www.cftc.gov/dea/futures/deacmxlf.htm",
+      "published": "Positions Nov 17, 2026; release Nov 20, 2026",
+      "attribution": "US Commodity Futures Trading Commission",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Latest official report visible · weekly lag"
+    },
+    {
+      "name": "CFTC · Disaggregated futures COT",
+      "url": "https://www.cftc.gov/dea/futures/other_sf.htm",
+      "published": "Positions Nov 17, 2026; release Nov 20, 2026",
+      "attribution": "US Commodity Futures Trading Commission",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Latest official report visible · Managed Money data"
+    },
+    {
+      "name": "World Gold Council · October 2026 ETF flows",
+      "url": "https://www.gold.org/goldhub/research/gold-etfs-holdings-and-flows/2026/11",
+      "published": "Nov 5, 2026; monthly data as of Oct 31; page's weekly data as of Nov 20",
+      "attribution": "World Gold Council",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Mixed freshness · monthly October data and weekly Nov 20 update"
+    },
+    {
+      "name": "Informist · WGC weekly gold ETF flow report",
+      "url": "https://www.informistmedia.com/CommodityWire/65381/Global-gold-ETFs-see-net-outflows-of-2-15-billion-in-week-to-Friday-says-WGC",
+      "published": "Nov 25, 2026",
+      "attribution": "Informist citing World Gold Council weekly data",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Freshest weekly flow detail found · secondary report"
+    },
+    {
+      "name": "World Gold Council · Q3 2026 central-bank demand",
+      "url": "https://www.gold.org/news-and-events/press-releases/central-bank-buying-and-etf-inflows-support-gold-demand-q3",
+      "published": "Nov 3, 2026",
+      "attribution": "World Gold Council",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Structural demand data · quarterly"
+    },
+    {
+      "name": "Goldman Sachs forecast revision",
+      "url": "https://finance.yahoo.com/markets/commodities/articles/goldman-lowers-end-gold-price-081423381.html",
+      "published": "Nov 6, 2026",
+      "attribution": "Investing.com report by Vahid Karaahmetovic, republished by Yahoo Finance",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Dated bank forecast; not a live price target"
+    },
+    {
+      "name": "TradingView · XAUUSD public ideas listing",
+      "url": "https://www.tradingview.com/symbols/XAUUSD/ideas/",
+      "published": "Listing retrieved Nov 28, 2026; individual dates mostly not exposed",
+      "attribution": "TradingView community authors",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Community snapshot · not professional consensus"
+    },
+    {
+      "name": "Gold Scalper · 27 Nov technical analysis",
+      "url": "https://thegoldscalper.com/gold-analysis/gold-analysis-27-november-2026",
+      "published": "Nov 27, 2026",
+      "attribution": "R. van der Merwe / Gold Scalper",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Secondary technical reference for reported Friday high"
+    },
+    {
+      "name": "Live Gold Signal · 27 Nov technical analysis",
+      "url": "https://livegoldsignal.com/gold-price-forecast-and-xauusd-technical-analysis-27-november-2026/",
+      "published": "Nov 27, 2026",
+      "attribution": "Live Gold Signal",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Secondary technical reference for $3,600–$3,612 and $3,565 areas"
+    },
+    {
+      "name": "Mitrade · 27 Nov gold technical analysis",
+      "url": "https://www.mitrade.com/insights/commodity-analysis/gold/gold-dips-holiday-trading-recession-fears",
+      "published": "Nov 27, 2026",
+      "attribution": "Mitrade",
+      "retrieved_at": "2026-11-28T07:45:44Z",
+      "status": "Secondary technical reference; $3,600–$3,620 zone"
+    }
+  ],
+  "limitations": "Weekend review: market closed on Saturday 28 Nov; no live XAUUSD/COMEX quote or intraday session data is available. Last Reuters spot reference is 27 Nov 19:01 UTC and is delayed by at least 15 minutes; current site snapshot remains a separate 15-minute mechanical feed and was not overwritten. Reuters spot and futures differ slightly from WSJ front-month futures because quote/contract/settlement conventions differ. DXY exact close is from a secondary page citing ICE, not a direct ICE terminal. Official Treasury nominal yield is dated 27 Nov; latest official FRED 10-year TIPS real-yield observation visible is 24 Nov. CFTC positions are as of 17 Nov and the 24 Nov report was not yet visible. ETF flows are weekly/monthly delayed. TradingView individual publish dates and metric labels are not fully exposed in the public listing; raw counters are preserved without interpretation. No original X posts could be accessed and authenticated, so none are included. No live whale order flow is claimed. No calibrated forecasting model exists; probabilities are omitted. Technical levels beyond Reuters' swing low and analyst seller zone include secondary technical commentary and are labeled accordingly.",
+  "horizon_outlook": [
+    {
+      "horizon": "Intraday / next session",
+      "bias": "No intraday call · market closed",
+      "view": "Saturday 28 Nov is a closed-market day. Friday's final accessible spot reference was $3,639.61; wait for the Sunday reopen and new session data before judging momentum or liquidity.",
+      "trigger": "On reopen, observe acceptance/rejection around $3,600–$3,620 and $3,665; do not infer a setup from the weekend quote.",
+      "target": "No intraday target while closed. Conditional references: $3,600–$3,620 support and $3,665 first resistance.",
+      "invalidation": "Any fresh Sunday gap or new macro headline can reset the levels; Friday's levels are not executable quotes."
+    },
+    {
+      "horizon": "Swing · 1–5 sessions",
+      "bias": "Neutral-to-bearish below $3,665–$3,800",
+      "view": "The sharp rebound from $3,426.35 is real, but Reuters' analyst describes it as short-covering rather than a trend change. A strong dollar, high nominal/real yields and reduced speculative longs argue against chasing the bounce.",
+      "trigger": "Hold $3,600–$3,620 and reclaim $3,665 for continuation; break and hold below $3,600 for renewed downside.",
+      "target": "Upside test $3,665 then $3,750–$3,800; downside $3,550–$3,565 then $3,426.35.",
+      "invalidation": "Sustained acceptance above $3,800 weakens the near-term bearish case; loss of $3,426.35 invalidates the current recovery structure."
+    },
+    {
+      "horizon": "Medium · several weeks",
+      "bias": "Cautious / correction risk",
+      "view": "Fed tightening expectations and a firm dollar remain headwinds. Weekly ETF withdrawals and COT long reduction show investor de-risking, while central-bank demand and improving Asian physical buying are counterweights.",
+      "trigger": "A sustained break above $3,800 plus softer DXY/real yields would improve the recovery case; fresh inflation strength and a break below $3,426.35 would reinforce downside.",
+      "target": "No calibrated multi-week target. Goldman Sachs' $4,150 is a dated end-2026 forecast, not a near-term technical objective.",
+      "invalidation": "A clear easing in the Fed path and a durable decline in real yields would challenge the bearish correction thesis."
+    },
+    {
+      "horizon": "Long-term · months",
+      "bias": "Constructive but conditional",
+      "view": "Goldman Sachs retained a higher long-horizon path ($4,150 end-2026; $4,800 end-2027) after cutting both targets, and World Gold Council data show strong Q3 central-bank demand. These supports compete with persistent inflation and a higher-for-longer rate risk.",
+      "trigger": "Sustained official-sector buying, ETF inflows returning and easing real yields would support the bullish structural case.",
+      "target": "Published bank reference: $4,150 end-2026 and $4,800 end-2027 from Goldman Sachs' 6 Nov revision; analyst forecast only, not a model-derived destination.",
+      "invalidation": "Persistently rising real yields/dollar, continued ETF redemptions and a sustained structural break below major swing support would challenge the long-term constructive view."
+    }
+  ],
+  "positioning_data": {
+    "report_date": "Positions as of Nov 17, 2026",
+    "release_date": "Nov 20, 2026",
+    "source": "CFTC COMEX Gold futures-only and disaggregated COT",
+    "noncommercial_long": 210051,
+    "noncommercial_short": 43919,
+    "noncommercial_net": 166132,
+    "noncommercial_change": -23975,
+    "commercial_long": 77005,
+    "commercial_short": 270755,
+    "commercial_net": -193750,
+    "managed_money_long": 121994,
+    "managed_money_short": 19052,
+    "managed_money_net": 102942,
+    "managed_money_change": -9399,
+    "open_interest": 407834,
+    "next_report_status": "Positions as of Nov 24 not yet visible on official CFTC pages at retrieval on Nov 28",
+    "note": "Speculators remain net long but are reducing exposure; weekly/delayed data, not live order flow."
+  },
+  "short_term_bias": "Neutral-to-bearish below $3,665 and $3,750–$3,800",
+  "short_term_summary": "Friday's rebound is a short-covering/bargain-buying bounce until price proves otherwise. Reuters' Zain Vawda sees potential sellers around $3,750–$3,800 while rates and the dollar remain high; the technical recovery needs to hold $3,600–$3,620 and reclaim $3,665.",
+  "short_term_target": "Retest $3,600–$3,620; if it fails, $3,550–$3,565 then $3,426.35. Bull continuation needs $3,665 and then $3,750–$3,800 acceptance.",
+  "short_term_confidence": "Moderate-low qualitative · market closed, no calibrated probability model.",
+  "long_term_bias": "Constructive but conditional · Goldman Sachs $4,150 end-2026 / $4,800 end-2027 forecasts after downward revisions",
+  "long_term_summary": "Central-bank buying supports the structural case, but the latest bank revision explicitly reflects a hawkish Fed and lower hedge demand. Long-term bullishness does not remove short-term downside risk.",
+  "long_term_confidence": "Low-to-moderate qualitative · conditional on rates, dollar and official-sector demand.",
+  "review_timestamp": {
+    "utc": "2026-11-28T07:45:44Z",
+    "algeria": "2026-11-28T08:45:44+01:00",
+    "status": "Completed source review; no live weekend quote"
+  },
+  "x_social": {
+    "status": "No authenticated original posts included",
+    "checked_at": "2026-11-28T07:45:44Z",
+    "reason": "Search surfaced no accessible original gold-market posts with a verifiable author, exact permalink and timestamp. Search results were unrelated or profile-only; no X sentiment is inferred."
+  },
+  "social_posts": []
+}
