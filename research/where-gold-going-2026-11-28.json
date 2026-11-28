@@ -215,7 +215,7 @@
       "visible_engagement": "Not available"
     }
   ],
-  "positioning": "Latest official CFTC COMEX gold futures report visible on 28 Nov is for positions as of Tue 17 Nov (weekly reporting lag). Futures-only legacy non-commercial: 210,051 long / 43,919 short = +166,132 net, down 23,975 contracts from the prior week. Legacy commercial: 77,005 long / 270,755 short = -193,750 net. Disaggregated Managed Money: 121,994 long / 19,052 short = +102,942 net, down 9,399 week-on-week. Open interest 407,834. The Nov 24 report was not yet visible on the official CFTC pages at retrieval; do not treat this as current positioning or live whale flow. WGC-reported global ETF flows for the week ended 20 Nov were about -$2.15bn and holdings fell 20.4t to 4,247.7t; this weekly flow is delayed. October's monthly WGC data had shown +$2.7bn inflows and record 4,275t holdings, so monthly and weekly periods tell different stories.",
+  "positioning": "Latest official CFTC COMEX gold futures-only reports visible on 28 Nov are for positions as of Tue 17 Nov (weekly reporting lag). Futures-only legacy non-commercial: 210,051 long / 43,919 short = +166,132 net, down 23,975 contracts from the prior week. Legacy commercial: 77,005 long / 270,755 short = -193,750 net. Disaggregated Managed Money: 121,994 long / 19,052 short = +102,942 net, down 9,399 week-on-week. Open interest 407,834. The Nov 24 report was not yet visible on the official CFTC pages at retrieval; do not treat this as current positioning or live whale flow. WGC-reported global ETF flows for the week ended 20 Nov were about -$2.15bn and holdings fell 20.4t to 4,247.7t; this weekly flow is delayed. October's monthly WGC data had shown +$2.7bn inflows and record 4,275t holdings, so monthly and weekly periods tell different stories.",
   "sources": [
     {
       "name": "Reuters · Gold pares gains as Fed hike risks linger",
@@ -274,12 +274,12 @@
       "status": "Latest official report visible · weekly lag"
     },
     {
-      "name": "CFTC · Disaggregated futures COT",
-      "url": "https://www.cftc.gov/dea/futures/other_sf.htm",
+      "name": "CFTC · Disaggregated gold futures-only COT",
+      "url": "https://www.cftc.gov/dea/futures/other_lf.htm",
       "published": "Positions Nov 17, 2026; release Nov 20, 2026",
       "attribution": "US Commodity Futures Trading Commission",
       "retrieved_at": "2026-11-28T07:45:44Z",
-      "status": "Latest official report visible · Managed Money data"
+      "status": "Latest official futures-only report visible · Managed Money data"
     },
     {
       "name": "World Gold Council · October 2026 ETF flows",
@@ -382,9 +382,9 @@
     }
   ],
   "positioning_data": {
-    "report_date": "Positions as of Nov 17, 2026",
+    "report_date": "Positions as of Nov 17, 2026 (futures-only)",
     "release_date": "Nov 20, 2026",
-    "source": "CFTC COMEX Gold futures-only and disaggregated COT",
+    "source": "CFTC COMEX Gold futures-only legacy and disaggregated COT",
     "noncommercial_long": 210051,
     "noncommercial_short": 43919,
     "noncommercial_net": 166132,
