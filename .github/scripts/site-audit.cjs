@@ -109,7 +109,9 @@ function check(name, pass, detail) {
           paths: research.paths?.length || 0,
           professional_views: research.professional_views?.length || 0,
           community_views: research.community_views?.length || 0,
-          sources: research.sources?.length || 0
+          sources: research.sources?.length || 0,
+          short_term_bias: research.short_term_bias,
+          short_term_target: research.short_term_target
         } : null,
         panels: Object.fromEntries(ids.map(id => [id, text(id)])),
         chart: { status: text("chart-feed-status"), price: text("chart-last-price"), canvases: document.querySelectorAll("#xau-chart canvas").length, analysisOverlay: !!document.querySelector("#xau-chart .analysis-overlay-layer svg"), consensusOverlay: document.querySelector("#xau-chart .chart-consensus-overlay")?.innerText || "" },
@@ -139,7 +141,7 @@ function check(name, pass, detail) {
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
     check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live15/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=analysis-overlay3/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
-    check("Short-term conclusion and conditional target render", snapshot.panels["short-term-synthesis"].includes("$3,500") && snapshot.panels["short-term-synthesis"].includes("$3,426.80"), snapshot.panels["short-term-synthesis"]);
+    check("Short-term conclusion and conditional target render", !!snapshot.research?.short_term_bias && !!snapshot.research?.short_term_target && snapshot.panels["short-term-synthesis"].includes(snapshot.research.short_term_bias) && snapshot.panels["short-term-synthesis"].includes(snapshot.research.short_term_target), snapshot.panels["short-term-synthesis"]);
     check("Long-term analyst forecasts and COT positioning render", /Professional forecasts supporting the long-term view/.test(snapshot.panels["horizon-long-panel"]) && /Managed Money net/.test(snapshot.panels["horizon-long-panel"]), snapshot.panels["horizon-long-panel"].slice(0, 500));
     check("Both horizon tabs are present", snapshot.tabCount === 2 && snapshot.longHidden === true, "Short and long term tabs");
     check("Outlook pane is active and visible", snapshot.visible.outlook, snapshot.visible.outlook ? "Active top-level research pane" : "Pane is not visible");
