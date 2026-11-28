@@ -91,12 +91,21 @@ function check(name, pass, detail) {
         "outlook-direction","outlook-summary","outlook-stuck","outlook-next-target",
         "outlook-levels","outlook-scenarios","outlook-consensus","outlook-sources","chart-feed-status","chart-last-price","short-term-synthesis","horizon-long-panel","live-intelligence","live-intelligence-price","live-move-headline","live-tradingview-ideas","tradingview-feed-status"];
       const text = id => document.getElementById(id)?.innerText?.trim() || "";
-      let research = null, researchStatus = null;
+      let research = null, researchStatus = null, liveResearch = null, liveResearchStatus = null, outlookCode = "";
       try {
         const r = await fetch("./research/where-gold-going-latest.json?browser_audit=" + Date.now(), { cache: "no-store" });
         researchStatus = r.status;
         if (r.ok) research = await r.json();
       } catch (e) { researchStatus = String(e); }
+      try {
+        const r = await fetch("./research/live-market-outlook.json?browser_audit=" + Date.now(), { cache: "no-store" });
+        liveResearchStatus = r.status;
+        if (r.ok) liveResearch = await r.json();
+      } catch (e) { liveResearchStatus = String(e); }
+      try {
+        const r = await fetch("./outlook.js?browser_audit=" + Date.now(), { cache: "no-store" });
+        if (r.ok) outlookCode = await r.text();
+      } catch (e) { outlookCode = String(e); }
       return {
         title: document.title,
         heading: document.querySelector("h1")?.innerText || "",
@@ -111,12 +120,17 @@ function check(name, pass, detail) {
           community_views: research.community_views?.length || 0,
           sources: research.sources?.length || 0,
           short_term_bias: research.short_term_bias,
-          short_term_target: research.short_term_target,
-          market_inputs: research.market_inputs,
-          data_quality: research.data_quality,
-          headline_link_note: research.headline_link_note
+          short_term_target: research.short_term_target
         } : null,
-        liveSnapshotText: text("live-research-snapshot"),
+        liveResearchStatus,
+        liveResearch: liveResearch ? {
+          updated_at: liveResearch.updated_at,
+          snapshot_type: liveResearch.snapshot_type,
+          market_inputs: liveResearch.market_inputs,
+          data_quality: liveResearch.data_quality,
+          headline_link_note: liveResearch.headline_link_note
+        } : null,
+        outlookCode,
         newsSourceNote: text("news-source-note"),
         newsSourceNoteVisible: document.getElementById("news-source-note")?.hidden === false,
         newsItems: document.querySelectorAll("#news-list .story").length,
@@ -146,9 +160,10 @@ function check(name, pass, detail) {
 
     check("Correct page title", /why is gold moving/i.test(snapshot.title), snapshot.title);
     check("Published research JSON loads", snapshot.researchStatus === 200, String(snapshot.researchStatus));
-    check("Snapshot market inputs carry per-source freshness", !!snapshot.research?.market_inputs?.gold?.freshness && ["dxy","silver","us10y","oil"].every(k => !snapshot.research.market_inputs[k] || (snapshot.research.market_inputs[k].freshness && (snapshot.research.market_inputs[k].as_of || Number.isFinite(snapshot.research.market_inputs[k].age_seconds)))), JSON.stringify(snapshot.research?.data_quality?.stale_inputs || []));
-    check("Nominal 10Y yield is not mislabeled as real yield", /US 10Y nominal yield/.test(snapshot.liveSnapshotText) && !/10Y real yield[^\n]*[0-9]+\.[0-9]+%/.test(snapshot.liveSnapshotText), "Nominal and real yield are separated; real yield is not supplied");
-    check("Google News link limitation is disclosed", !!snapshot.research?.headline_link_note && /Google News RSS/.test(snapshot.research.headline_link_note) && /original-article links/.test(snapshot.research.headline_link_note), snapshot.research?.headline_link_note || "Missing disclosure");
+    check("Live heuristic snapshot JSON loads", snapshot.liveResearchStatus === 200 && snapshot.liveResearch?.snapshot_type === "live_heuristic", String(snapshot.liveResearchStatus));
+    check("Snapshot market inputs carry per-source freshness", !!snapshot.liveResearch?.market_inputs?.gold?.freshness && ["dxy","silver","us10y","oil"].every(k => !snapshot.liveResearch.market_inputs[k] || (snapshot.liveResearch.market_inputs[k].freshness && (snapshot.liveResearch.market_inputs[k].as_of || Number.isFinite(snapshot.liveResearch.market_inputs[k].age_seconds)))), JSON.stringify(snapshot.liveResearch?.data_quality?.stale_inputs || []));
+    check("Nominal yield is not presented as real yield", /US 10Y nominal yield/.test(snapshot.outlookCode) && snapshot.liveResearch?.market_inputs?.us10y?.source === "Yahoo Finance" && snapshot.liveResearch?.market_inputs?.real_yield_10y === null, "Yahoo ^TNX nominal yield is identified; real yield is not supplied");
+    check("Google News link limitation is disclosed", !!snapshot.liveResearch?.headline_link_note && /Google News RSS/.test(snapshot.liveResearch.headline_link_note) && /original-article links/.test(snapshot.liveResearch.headline_link_note), snapshot.liveResearch?.headline_link_note || "Missing disclosure");
     check("Live news publisher concentration is disclosed", snapshot.newsItems === 0 || (snapshot.newsSourceNoteVisible && /publisher|coverage/i.test(snapshot.newsSourceNote)), snapshot.newsSourceNote || (snapshot.newsItems ? "No publisher coverage note shown" : "No headline cards loaded"));
     check("Dashboard scripts are loaded", snapshot.script.some(s => /outlook\.js\?v=live15/.test(s)) && snapshot.script.some(s => /app\.js\?v=chart6/.test(s)) && snapshot.script.some(s => /chart\.js\?v=analysis-overlay3/.test(s)), snapshot.script.join(", "));
     check("Research timestamp appears in live UI", !!snapshot.panels["outlook-status"] && /Published research/i.test(snapshot.panels["outlook-status"]), snapshot.panels["outlook-status"]);
