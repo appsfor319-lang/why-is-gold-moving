@@ -111,7 +111,7 @@ function check(name, pass, detail) {
           community_views: research.community_views?.length || 0,
           sources: research.sources?.length || 0,
           short_term_bias: research.short_term_bias,
-          short_term_target: research.short_term_target
+          short_term_target: research.short_term_target,
           market_inputs: research.market_inputs,
           data_quality: research.data_quality,
           headline_link_note: research.headline_link_note
