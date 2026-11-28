@@ -346,7 +346,7 @@
       "status": "Secondary technical reference; $3,600–$3,620 zone"
     }
   ],
-  "limitations": "Weekend review: market closed on Saturday 28 Nov; no live XAUUSD/COMEX quote or intraday session data is available. Last Reuters spot reference is 27 Nov 19:01 UTC and is delayed by at least 15 minutes; current site snapshot remains a separate 15-minute mechanical feed and was not overwritten. Reuters spot and futures differ slightly from WSJ front-month futures because quote/contract/settlement conventions differ. DXY exact close is from a secondary page citing ICE, not a direct ICE terminal. Official Treasury nominal yield is dated 27 Nov; latest official FRED 10-year TIPS real-yield observation visible is 24 Nov. CFTC positions are as of 17 Nov and the 24 Nov report was not yet visible. ETF flows are weekly/monthly delayed. TradingView individual publish dates and metric labels are not fully exposed in the public listing; raw counters are preserved without interpretation. No original X posts could be accessed and authenticated, so none are included. No live whale order flow is claimed. No calibrated forecasting model exists; probabilities are omitted. Technical levels beyond Reuters' swing low and analyst seller zone include secondary technical commentary and are labeled accordingly.",
+  "limitations": "Weekend review: market closed on Saturday 28 Nov; no live XAUUSD/COMEX quote or intraday session data is available. Last Reuters spot reference is 27 Nov 19:01 UTC and is delayed by at least 15 minutes; current site snapshot remains a separate 15-minute mechanical feed and was not overwritten. Reuters spot and futures differ slightly from WSJ front-month futures because quote/contract/settlement conventions differ. DXY exact close is from a secondary page citing ICE, not a direct ICE terminal. Official Treasury nominal yield is dated 27 Nov; latest official FRED 10-year TIPS real-yield observation visible is 24 Nov. CFTC positions are as of 17 Nov and the 24 Nov report was not yet visible. ETF flows are weekly/monthly delayed. TradingView individual publish dates and metric labels are not fully exposed in the public listing; raw counters are preserved without interpretation. No original X posts could be accessed and authenticated, so none are included. No live whale order flow is claimed. No calibrated forecasting model exists; probabilities are omitted. Technical levels beyond Reuters' swing low and analyst seller zone include secondary technical commentary and are labeled accordingly. The separate mechanical 15-minute snapshot was last committed at 02:08 UTC (source quote as of 02:07:47 UTC); it was about 5h38 old at the 07:45 UTC deep-review timestamp, despite having been fresh when captured. It is therefore stale for its intended cadence and must not be presented as a current quote; this research did not overwrite it.",
   "horizon_outlook": [
     {
       "horizon": "Intraday / next session",
@@ -417,5 +417,16 @@
     "checked_at": "2026-11-28T07:45:44Z",
     "reason": "Search surfaced no accessible original gold-market posts with a verifiable author, exact permalink and timestamp. Search results were unrelated or profile-only; no X sentiment is inferred."
   },
-  "social_posts": []
+  "social_posts": [],
+  "live_snapshot_status": {
+    "updated_at": "2026-11-28T02:08:10.009Z",
+    "source_as_of": "2026-11-28T02:07:47.184Z",
+    "price_usd_oz": 3650,
+    "source": "XAUS spot API",
+    "freshness_at_capture": "fresh · 14 seconds old at capture",
+    "age_at_deep_review_minutes": 337.6,
+    "status": "Stale for the intended 15-minute refresh cadence",
+    "last_successful_workflow_run": "https://github.com/appsfor319-lang/why-is-gold-moving/actions/runs/46096542960",
+    "note": "This is the separate mechanical snapshot. It was not overwritten by the source-checked forecast. The underlying quote was fresh when captured, but the snapshot file had not been refreshed for about 5h38 by the 07:45 UTC review."
+  }
 }
