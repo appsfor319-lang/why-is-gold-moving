@@ -147,13 +147,13 @@
       "long_term_bias": "Constructive but reduced targets"
     },
     {
-      "source": "WSJ · Saxo Bank analysts",
-      "view": "Offered a market explanation rather than a price target: renewed enthusiasm for AI equities and a rebound in global stocks eased liquidity-driven selling and helped precious metals rally on Friday. The article also notes that higher expected Fed rates remain a counterweight.",
-      "horizon": "Event explanation / short-term",
-      "url": "https://www.wsj.com/finance/commodities-futures/precious-metals-rally-as-ai-trade-revives-risk-appetite-86477a98",
-      "published": "Nov 28, 2026",
-      "short_term_bias": "Relief bounce; no directional target",
-      "long_term_bias": "Not stated"
+      "source": "Mitrade report · StoneX senior analyst James Stanley",
+      "view": "Mitrade reports that StoneX senior analyst James Stanley viewed buyers defending $3,500, despite hot PCE and a hawkish Fed, as evidence that markets may fear a 2027 recession and eventual Fed retreat. The report cites $3,606 as a key reclaim level and $3,690 as a possible falling-wedge objective. Secondary reporting, not an original StoneX research note.",
+      "horizon": "Short swing / medium-term macro",
+      "url": "https://www.mitrade.com/insights/commodity-analysis/gold/gold-dips-holiday-trading-recession-fears",
+      "published": "Nov 27, 2026",
+      "short_term_bias": "Contrarian rebound / conditional",
+      "long_term_bias": "Conditional on a Fed reversal"
     },
     {
       "source": "World Gold Council · Q3 Gold Demand Trends",
@@ -236,7 +236,7 @@
     {
       "name": "WSJ · Precious metals rally as AI trade revives risk appetite",
       "url": "https://www.wsj.com/finance/commodities-futures/precious-metals-rally-as-ai-trade-revives-risk-appetite-86477a98",
-      "published": "Nov 28, 2026 (date surfaced by search; exact time not exposed)",
+      "published": "Nov 28, 2026 surfaced date; exact publication time not exposed",
       "attribution": "Giulia Petroni and Adam Whittaker / Wall Street Journal",
       "retrieved_at": "2026-11-28T07:45:44Z",
       "status": "Fresh · Friday close context"
@@ -341,9 +341,9 @@
       "name": "Mitrade · 27 Nov gold technical analysis",
       "url": "https://www.mitrade.com/insights/commodity-analysis/gold/gold-dips-holiday-trading-recession-fears",
       "published": "Nov 27, 2026",
-      "attribution": "Mitrade",
+      "attribution": "Mitrade · AI-assisted editorial report citing StoneX senior analyst James Stanley",
       "retrieved_at": "2026-11-28T07:45:44Z",
-      "status": "Secondary technical reference; $3,600–$3,620 zone"
+      "status": "Secondary report · $3,600–$3,620 resistance and reported StoneX view; not an original StoneX note"
     }
   ],
   "limitations": "Weekend review: market closed on Saturday 28 Nov; no live XAUUSD/COMEX quote or intraday session data is available. Last Reuters spot reference is 27 Nov 19:01 UTC and is delayed by at least 15 minutes; current site snapshot remains a separate 15-minute mechanical feed and was not overwritten. Reuters spot and futures differ slightly from WSJ front-month futures because quote/contract/settlement conventions differ. DXY exact close is from a secondary page citing ICE, not a direct ICE terminal. Official Treasury nominal yield is dated 27 Nov; latest official FRED 10-year TIPS real-yield observation visible is 24 Nov. CFTC positions are as of 17 Nov and the 24 Nov report was not yet visible. ETF flows are weekly/monthly delayed. TradingView individual publish dates and metric labels are not fully exposed in the public listing; raw counters are preserved without interpretation. No original X posts could be accessed and authenticated, so none are included. No live whale order flow is claimed. No calibrated forecasting model exists; probabilities are omitted. Technical levels beyond Reuters' swing low and analyst seller zone include secondary technical commentary and are labeled accordingly. The separate mechanical 15-minute snapshot was last committed at 02:08 UTC (source quote as of 02:07:47 UTC); it was about 5h38 old at the 07:45 UTC deep-review timestamp, despite having been fresh when captured. It is therefore stale for its intended cadence and must not be presented as a current quote; this research did not overwrite it.",
