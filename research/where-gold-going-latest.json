@@ -205,6 +205,14 @@
       "url": "https://www.tradingview.com/chart/XAUUSD/ZNfMEGcm-XAU-USD-THE-3-508-PRE-HOLIDAY-TRAP-BEFORE-A-1-000-PIP-SURGE/",
       "published": "Nov 25, 2026 (date stated in idea text)",
       "visible_engagement": "71 / 3 / 3 / 5 counters displayed; counter labels were not reliably exposed, so not interpreted"
+    },
+    {
+      "source": "X / social · verification result",
+      "view": "No accessible original gold-market post with a confirmed account identity, exact permalink and timestamp was found in this refresh. No X sentiment is included.",
+      "label": "Not available · not authenticated",
+      "url": "https://x.com/search?q=XAUUSD%20gold%20forecast&f=live",
+      "published": "Checked Nov 28, 2026 · no eligible original post verified",
+      "visible_engagement": "Not available"
     }
   ],
   "positioning": "Latest official CFTC COMEX gold futures report visible on 28 Nov is for positions as of Tue 17 Nov (weekly reporting lag). Futures-only legacy non-commercial: 210,051 long / 43,919 short = +166,132 net, down 23,975 contracts from the prior week. Legacy commercial: 77,005 long / 270,755 short = -193,750 net. Disaggregated Managed Money: 121,994 long / 19,052 short = +102,942 net, down 9,399 week-on-week. Open interest 407,834. The Nov 24 report was not yet visible on the official CFTC pages at retrieval; do not treat this as current positioning or live whale flow. WGC-reported global ETF flows for the week ended 20 Nov were about -$2.15bn and holdings fell 20.4t to 4,247.7t; this weekly flow is delayed. October's monthly WGC data had shown +$2.7bn inflows and record 4,275t holdings, so monthly and weekly periods tell different stories.",
