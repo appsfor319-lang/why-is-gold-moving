@@ -1,18 +1,18 @@
 {
   "source": "Automated multi-source market snapshot",
   "snapshot_type": "live_heuristic",
-  "snapshot_date": "2026-11-27",
-  "updated_at": "2026-11-27T19:29:22.992Z",
+  "snapshot_date": "2026-11-28",
+  "updated_at": "2026-11-28T02:08:10.009Z",
   "live": true,
   "engine": "XAUS gold spot + cross-market Yahoo data + headline keyword heuristic",
   "caveat": "Automated quote snapshot, not calibrated prediction or verified analyst consensus. Spot quote freshness metadata is included where provider supplies it. Check timestamps and broker price before decisions.",
-  "price": 3638.600098,
+  "price": 3650,
   "price_range_usd": [
-    3638.600098,
-    3638.600098
+    3650,
+    3650
   ],
   "short_term_direction": "Bullish lean",
-  "short_term_confidence": "49% heuristic score (not statistical confidence)",
+  "short_term_confidence": "55% heuristic score (not statistical confidence)",
   "long_term_direction": "Not modeled",
   "summary": "Lean is based on available gold momentum, cross-market changes and keyword counts from recent headlines. It is not AI forecast or institutional consensus.",
   "range_usd": [
@@ -21,15 +21,15 @@
   ],
   "near_resistance": [
     3691,
-    3697.9
+    3709.3
   ],
   "support": [
-    3579.3,
+    3590.7,
     3453.8
   ],
   "major_resistance": 3691,
   "upside_targets": [
-    3697.9,
+    3709.3,
     3726.58
   ],
   "downside_targets": [
@@ -40,7 +40,7 @@
     {
       "name": "Range-high breakout",
       "trigger": "Hourly acceptance above $3,691",
-      "path": "Range extension $3,697.9",
+      "path": "Range extension $3,709.3",
       "reason": "Observed range projection",
       "invalidation": "Re-enters range"
     },
@@ -63,7 +63,7 @@
     {
       "bias": "positive",
       "title": "Gold momentum",
-      "detail": "5-day change 1.51%; latest change -0.98%"
+      "detail": "5-day change 1.83%; latest change -0.67%"
     },
     {
       "bias": "negative",
@@ -88,15 +88,15 @@
   },
   "market_inputs": {
     "gold": {
-      "price": 3638.600098,
-      "change_5d_pct": 1.5121107577279247,
-      "latest_change_pct": -0.9796958036248804,
+      "price": 3650,
+      "change_5d_pct": 1.83015288472268,
+      "latest_change_pct": -0.669460621564244,
       "high_5d": 3691,
       "low_5d": 3453.8,
       "source": "XAUS spot API",
-      "as_of": "2026-11-27T19:28:31.984Z",
+      "as_of": "2026-11-28T02:07:47.184Z",
       "freshness": "fresh",
-      "age_seconds": 0
+      "age_seconds": 14
     },
     "dxy": {
       "price": 104.04900360107422,
@@ -125,6 +125,125 @@
     },
     "headlines": [
       {
+        "title": "Gold prices surge Rs11,500 per tola - The Express Tribune",
+        "url": "https://news.google.com/rss/articles/CBMie0FVX3lxTFBjWFNIRkxLWUpqaWMySWUyZ2NzdlJuY2VfUE16MnBFZVE2aHd4M0doNHN5YkdJMldWaFN0TzVJeXUzcW5fVGJFX0RsMzlUdjZTUEo1YlduazlGVlh1ZUV0SEltTjJqajJydVJLMHNFdWt3dHpMM19HV0UyMNIBgwFBVV95cUxQc043R05zbS12LUtqdkVkckNvVjMtaG05N19vYmFxbm1vUF9VNHY2RnhQaWtFNnV5OGplWVQ5S3F6cVllTHBqTFJWa0pvdHlBclg1S3YyUEI1enRUYlRycFB1OEFYaXdlSFhRNGFzcVNvRG53YzYxQjdUUVB1RUItWUktOA?oc=5",
+        "published_at": "Sat, 28 Nov 2026 00:29:15 GMT",
+        "source": "The Express Tribune",
+        "summary": ""
+      },
+      {
+        "title": "Gold and Palladium: The Comeback Meets Its First Test - FXEmpire",
+        "url": "https://news.google.com/rss/articles/CBMipgFBVV95cUxPRkc2a2pBcVVCeF92Y3Q2TjVqcFZWb0VwUGRrNFh2ZVhBd3NYS1NVcFJpRUJHYl9VS0d6SnlvcG0xOHpwNTlsalc0S1lSNkpROTNkMU5hUldqZzRQSGs1NzFtcnBLVXlZUVVlWWxZZ1BmaklmTzFJNlF5UkRZZ2syVmN2Vi1lemNTWmxrVWNYOGZWMXU5RkhWTmRsSldva1hUUGZ0akRR?oc=5",
+        "published_at": "Sat, 28 Nov 2026 00:14:44 GMT",
+        "source": "FXEmpire",
+        "summary": ""
+      },
+      {
+        "title": "Gold price prediction: Gold rate to touch USD 4,500 to USD 5,000 again? What we know so far - The Economic Times",
+        "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxOVGtvUERMZUlNWUJVZm9MNkNnMjJoY3p6MFJFLUIzOENuaVpSbXdwaXl4emU0em1XVFN3S3E1QzdmQ1dWZUZ3TmVhd2hZYkVNdWg2aDkxdXFpdEl0SlZGTkRFb0xEVHltWXFvV1JjTFAyQXc0WUdwR2hRZXlWcHNOeU5HX2lzRkhxQWpDZUtDN0pnb25BeDhsX1RwVzlQOGEtWHBWY3dWdjYxUWdkczlZeGFRZVZUdVN1WXFqS1h4emV3c0d6RW9rb3dPQjdVV3ZWZU11c0RlYUtOTUJkdjRlU1o3eU91blZRbG1qZ9IB8gFBVV95cUxOT3FNYXY3MXBiSk9SNFIya3ViTFh2TFMwT1dHQklRaVJrcWRKS2loLUdnV09SM0hDUWx0NGRxRDRoZFA0M2U0VkxNQ1V0NW43dk9VNkVvamZpT2Z0LWZHYmYtbGRvOEVLbDBvcENKWXh1c25ZaFIwbmJBRC1HeFlnSUJmaE85N3Y4ODNxcmFTSXV3NXdxbmpXcXNPRXhQV0I4RE9wOXkzU0oxUFNMMUZWV0s3V2tURE9iS1ZCdGlIdm85YUtmZ1pncThmd0RKRmpsRmdlN1dXM1lWMS02bl96MG0tbTVBVUt1THBBQVFvODdIUQ?oc=5",
+        "published_at": "Fri, 27 Nov 2026 23:45:29 GMT",
+        "source": "The Economic Times",
+        "summary": ""
+      },
+      {
+        "title": "Is it the right time to buy gold? - The Financial Express",
+        "url": "https://news.google.com/rss/articles/CBMilwFBVV95cUxQX3pqd3NHQ2NzWm9wc0JUNEdmX01SUUV4dVBuVkRaNEZmZWIwTHFuUWhaTkpjY3FINEF1cExSVWVhNEh1SFdmaVYxaUhyWnZLYjU1LUxUWWZUWFRCb04tWkY3N2pHN290QmI4TjhjRnoydWVPOGw5Q2txRl9NZXhweWk0MzB3MFJReXo5dlkxNG9yY2ZxZVNN0gGeAUFVX3lxTFBhNEw1VTJNa0RhSzlxUFpFTFgwOHljdHZQc2VEbXlCdTVzTWx6MzNPMFhmei14RWt5enFkVm1CaE1SYmgyeWpndGY1UzRET1pqTUd6Y1BKRTE5NnQ0TEJVZ0o1N3JRMlpDODlGWEs2dGs3bFV6T3Q2VVNHaHVWaU51YzY2S2prMzhsRFRnY0dEck1oeXk4VFVBNmdKX2JB?oc=5",
+        "published_at": "Fri, 27 Nov 2026 23:35:00 GMT",
+        "source": "The Financial Express",
+        "summary": ""
+      },
+      {
+        "title": "Gold hits 4-day high with bullish reversal, eyeing key resistance levels for further gains. - Pluang",
+        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQM2tjRHlDX2NRaGJNSmlSTkxqZ0hMQzZYRFRGT29kNDhWWXhMN2hhVFI4ekV1OFJIVEFGeVN3bWVnWEhpZFFGQ1Bfb2JveWM3N0EwZG5Cb2JyWHlRMERrOWczSGpPWXhGaTlheUFjM0FmWFZYX29rb3h1UXpuTkRjMHB1MFNFRDJIdWxYbF8xSDc4YU5WWi01YWhzWWRrQ0c1U2k0?oc=5",
+        "published_at": "Fri, 27 Nov 2026 22:43:32 GMT",
+        "source": "Pluang",
+        "summary": ""
+      },
+      {
+        "title": "Gold (XAU/USD) Price Forecast: Bullish Reversal Targets $3,900 Resistance - FXEmpire",
+        "url": "https://news.google.com/rss/articles/CBMivgFBVV95cUxONHE5dEtNU25OMlpDMEpDMVVHMHZoVXVvU2UtWnZjMHoxSURZYW1GSGFxOWhSeHQzY2VNdzQ4ZGVpNng1bldFdjdZcS1VajVnUFdaaTFicGFqbHg3eUwyeDZFbnlfMC10QjRhSzBoRHZDNG1hMVNzeURCYVZfUktCNUdSd3ppakVlLWEtZm8yQUtwOHNwcTdHVWVUb2dXZnBGWlVnY1R5SEpEQkRydkI2bmFtb3M0RDhVdWwxR01R?oc=5",
+        "published_at": "Fri, 27 Nov 2026 22:03:55 GMT",
+        "source": "FXEmpire",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Short-term Outlook: XAU/USD Bears Face Critical Test at Yearly Lows - StoneX",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPT01LRy1TcHVtWVBnVGVSVUJSYTFDNHV5bVBpMGJRazAzSkd2Nno5MlkwNEFNTmFZd2pvM3U0YXJiOTF1b2FaaWhCNzRIY2VTOE9qSy1hRjZwSmhpOEFUcHM1T0VCWE95c0ItRVVwX3JPeWhud1RGdGpGWWdSSUJsWS1fWFdRU0lnbWVOVXZYQVNqWjQyOVRKVXRPaFg2Rzd5QjVONE1Wem90WlNKRWwzeXFXaUpGdERMZVRDYnBiZlp0ZHM?oc=5",
+        "published_at": "Fri, 27 Nov 2026 21:57:54 GMT",
+        "source": "StoneX",
+        "summary": ""
+      },
+      {
+        "title": "Blue Gold signs MOU with Current Technology for AI gold payments By Investing.com - Investing.com Australia",
+        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNUWZjUEhncE9WOVl4c1pNUE4zSWs3UWFlQVJHdXVJN3dCbWxrQm9UQ3FHWGVZTnZJNnFlWXoyd3pfSVYyYTJpb2xoT2JBbVM0bGprWmwwM3NfSjV0eVQ1OXpEX3NBQTc1VmlfVWRROWM5dk9lZnY0MjJiU2tmZGtuUHlCTGIxTzZmMWNsZ01wYzJzMFRwa1pGd3ByN1dIb205QThaU0xsdW9NQXJJblI0Z0J5OHlSdWczSXJZc2Zfc0NsTEE?oc=5",
+        "published_at": "Fri, 27 Nov 2026 21:28:11 GMT",
+        "source": "Investing.com Australia",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Today: Gold Rises 2.42% on November 27, 2026 - USA Today",
+        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPd2lCRFlOSHY2TG43WmpHMmFfTWxhSDVmTGc2ejVOQzhSbWRGeWxQNGU3QjFWMGMyQnJKQWFzdFBQdXU5Q0xKNWYtTFFGZUxwQ2YzVTAzQmNjTmhKRU5yYUwxMnFDTjNyVWdWbHI0Vm9aM18wcWpGOExnR3Z3RktTejJPb1BfWEhaTHlvS3dBRHVlNFl6SDc3eWM4eWdCVHFmQlJN?oc=5",
+        "published_at": "Fri, 27 Nov 2026 21:04:00 GMT",
+        "source": "USA Today",
+        "summary": ""
+      },
+      {
+        "title": "Bitcoin Has a Hidden Signal in Gold and Silver, Benjamin Cowen Says: Here's Why - BeInCrypto",
+        "url": "https://news.google.com/rss/articles/CBMic0FVX3lxTE53TjZDb3hZUmd3TEFLNVFINFF4WGdjazRicWpZVm9ud1NUWUNwRTNBTDAydmVfZWVtNDctY1phQW1IcVhxNGdldExqMXd2Tm1Bb3BmOVBYRzFqUlM5WmtqY2VLekVvQWVJNmphMTNSeU0wY00?oc=5",
+        "published_at": "Fri, 27 Nov 2026 21:00:00 GMT",
+        "source": "BeInCrypto",
+        "summary": ""
+      },
+      {
+        "title": "Gold Price Pulls Back Off Session Highs to Trade at About $3,654 - FXDailyReport.Com",
+        "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxNa1BvR0FZQ3o0WjJBUllLN01UZ09KRG5udzNCR19QWTJTYXFqSW5QR0R0SjRUZDNnLVh3NHFyUy1MdWpmRDRDWGJGWWN6QVhOX3pLbW9lSzJ6Z3pzMFlsQXp6NTMyTERjelBjZ3dmM0Y0Y0pKV2JqUm13NHRwR1pVZTZPZ3VUakNZUGlHcURPODJCZW8?oc=5",
+        "published_at": "Fri, 27 Nov 2026 20:54:28 GMT",
+        "source": "FXDailyReport.Com",
+        "summary": ""
+      },
+      {
+        "title": "Gold Outlook: Can XAU/USD Sustain Its Recent Rebound? - FOREX.com",
+        "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxOSk1nZGc1OWxocDF6TDZVYVY5VWlNRVI0eVpVUnBSaWRxeWdTLXdwR3lDT3RjMlNHaGMyS2Y4bEIzZDZSaGIyX29xd1I4c1BJdGFLT05rQ01rdE9LeWh3VFJ6MFZNU3Z2T2lNNl9lSDRBbE83REZwYUh0RG44NnZzRnVZbFFBSmRpSHJFMkdHRnpFb241ZW96WE9EUldhemfSAasBQVVfeXFMUGdETXJ3RjVaQkRBQnFXUjhoWDg3UmNaUE01ZFZ4UUlLS2JrV191aDR0Q2J6bFVHekxSenliLVhmclRiM0V0dTRTM0llOWxvTWFZZFYtVzd4eFgwNHE1UlY4RUM3d0l6aV80UVJybjYtQ3l1YXgtYXZzeGhKa0c4b293c3pIbTcwdzNxVlh4TzlwaDZ1c0RUR2FIZzVsQlljT3Z0SzV2bjhHZnow?oc=5",
+        "published_at": "Fri, 27 Nov 2026 20:33:24 GMT",
+        "source": "FOREX.com",
+        "summary": ""
+      },
+      {
+        "title": "$3,700 target: Gold bulls withstand surging US Dollar and Treasury yields - www.tmgm.com",
+        "url": "https://news.google.com/rss/articles/CBMi1AFBVV95cUxPcVA2TFBHUmxWNTlmUHg4VUxGSzN3Rzk3cFB1eEgzYVpreXY3OWZyamFJZ0FiYVNhdjZGWHFPamJqR2dFYkNCdEFVZWNpeElfVjktb05TbGZjNmVQMTJ5UllEak9IdnpNV3JOQVUwcEFGYndMMUJmYTJpWGl4NnZvbDY1ZE5kai15TFVkbmsyeGhMTDBtV0p2QnlCOE1NN3JrSVhod0E0RE84a2tnMHRpclhFNWZCdGhreGFEVkhiNUxwREx4cmJROGRPTThwcnF6X0Y0eg?oc=5",
+        "published_at": "Fri, 27 Nov 2026 20:16:47 GMT",
+        "source": "www.tmgm.com",
+        "summary": ""
+      },
+      {
+        "title": "Can gold sustain gains as traders monitor risk sentiment and moves in US yields or dollar strength? - Traders Union",
+        "url": "https://news.google.com/rss/articles/CBMijgFBVV95cUxQV3JERURfZUhuVHl3c18yQWZRbHcyTTJ0dW42ZDVLU0FjZ0JrVmJHTngyRjY4NEkwSjk4LW1raU9MaGc5OVZUWjI4ZU4xQ3lUdHhRQ2Y1aHprbGI2NEVJSkxuZC14OXpwQmNIY0tlX3I3LUNyckRsTDNxYUdUY20wYzMtcVVNMjZwUXY1VlhR?oc=5",
+        "published_at": "Fri, 27 Nov 2026 19:37:31 GMT",
+        "source": "Traders Union",
+        "summary": ""
+      },
+      {
+        "title": "Gold Analysis: Is the XAU/USD Recovery Running Out of Steam? - StoneX",
+        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPdjdyTGl3SFpDaW5YWmIxY2hmNTdqSWR1WGZTaDhPaWFCaGFzTlZIb2s3a3dhYWM1OERkdTRxM1lrM1hMTXA0QlBzMFFaNWxDRkVldEYwUjJxeDFhR0NHTkNGU25WT19lQzROR3NXcmo5Q3QxcUUzcThjUUpmMi1LSk42RGJIdWhZc1RZZjliYmM0NXVIWDdzNHZET0pmcXVEekxTVm9fTnhqUQ?oc=5",
+        "published_at": "Fri, 27 Nov 2026 19:34:50 GMT",
+        "source": "StoneX",
+        "summary": ""
+      },
+      {
+        "title": "Gold pares gains as Fed hike risks linger, eyes first weekly rise in three weeks - Livemint",
+        "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxOVVlfdUpnN1F3S1ZOSHpoeHdub3REdkVMTjl4OFNwTmJSYUFZVkp1NllNRnZ3LWtoOU9lSTR0RVBIT2Q2TkF3M0toaWM2bl9VN1BTUHp5MVNTYjcwb2g4amd2bEZLQjlNbU9mWURKNkRsUlVPd3ZZbm42SUxqaUdBemRKdVpuRE9LM19jaWp0QU5kUGVpb0dWc194NEtlR2FxQTM3eF9lMi1ReFlzR1ItaTNtS0RRNlo4eUFkeURyREVnRkZOWUVkeWtwSdIB0AFBVV95cUxOaS1Ec0l2b0wyN3NENWxrNngzNFM1cGFTQVhoZGx4NHQtT1dmVXhWYzhnMFhlQ3JmSWZkcy00VGNTQ0J6TEp2U1F2R2kxTUU0MURDbGRKbHo0ZjM2Y3IxbFhZaC1IcTU0V1VqQ05yOWRqTkVtcjhKYk1VUVlCNDRVdVIyRVE4VmkzdkRELU9JbEFLQ2Rid0JTYTROVE5EOFdRSzRxc19vaXI3aUtqcU9rdjl3cFdPTkxqR19wOVNQb0duTHhtSU9td2xQLWFUZWJJ?oc=5",
+        "published_at": "Fri, 27 Nov 2026 19:18:22 GMT",
+        "source": "Livemint",
+        "summary": ""
+      },
+      {
+        "title": "Gold, GBP/USD Forecast: Two trades to watch - StoneX",
+        "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOalh3MGtqbl9JYmxIWDc1MV9Yb0g2ZmhuVmhqeHc4WHZONjMxWVBYemVSR2VublNjREZnZzZLZDF3ZnFnWXp5enhmdXZRUGpULUE2THEwQjR0Wi05bXBCdFc5Rmp0WkNHV1d2bFl2U29oc09RcDdrU3ZEbDhDc1BiMXdubTFCNUpoNkRoRklJTU5WTlk?oc=5",
+        "published_at": "Fri, 27 Nov 2026 18:56:45 GMT",
+        "source": "StoneX",
+        "summary": ""
+      },
+      {
         "title": "Gold Prices Track US Stock Market Stability - www.suaralandak.co.id",
         "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBEU1NlNGp3aXR4cGhfS3ZpWXk3c3VwVTBHdmp4MFpLZGdUMUNjUWdOc1QxVVlNMWZlc2NaVjREeDQtYWdiSG40S1pLd01FdTVxZjRrdGpubHFDendGeVJvQTB2SGNxZmZFcVZ1MlBLTmZWNlk1alE?oc=5",
         "published_at": "Fri, 27 Nov 2026 18:53:00 GMT",
@@ -139,129 +258,10 @@
         "summary": ""
       },
       {
-        "title": "Gold pares gains as Fed-hike risks linger, eyes first weekly rise in three weeks - The Economic Times",
-        "url": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxOVURSQ1IxWHBqSHRJVENIUEx1SndtOXhEczJwRU9zdmtYelpuMXRpQ2pTTkt4ZnNkSEJUODBjakZSRnZqYUJmMy1MM0wyaGlDSy10WUtwbkRta1VUNzV4V3c0dlpHc1B0dm9GSEhIek9hTTVCSldqME9QNlF1M2NxV0hFcjlnS0xSN3VWN0Q5V3BIVlR4eThRakJfQldua0t1NDhENy11TXpTeFNjTlNoU0JYcWNZYXVJbEdyTGhjWlBVUXlpMlVDZTVqb0lDN04zc1c1ay1WazkwdkVYbWg1LVJOSVFTWWNS0gHuAUFVX3lxTE5wekFYejFmaXAwbDkyTF9jZzYzUFVualhIVVk4UUM4UzZhS08xV0ZFYklFR2JBdnZxSm5OZTBlUGQ0X0cxZE9KcnFqdEItNHdWYWxLckFMcFNET0duTjlOWkJfS0RaR1V6Yml4U3Z2NGlHcTFtY3JQbjU0ZF82clZ5TjJ0RDFUTHJBT0R3YXo3X0RoekptNS1fYXNpQXZHb1hBUWR4MU5PSzl3Vzc0OEdINk1nUzBRZHhReWtHYm56bl9yVHNyZnFURG10T0NCZm9wWGlMX3BVcEpXWm9ZOWI2NU9GcHBZcHl4WExzYUE?oc=5",
-        "published_at": "Fri, 27 Nov 2026 18:39:27 GMT",
-        "source": "The Economic Times",
-        "summary": ""
-      },
-      {
-        "title": "Gold defies surging US Dollar and Treasury yields as bulls target $3,700 - FXStreet",
-        "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNTTA5LTNDRTlvTmJpZHZHb3FIMjlGUlpyM0xoWjlZNWREb3lCZ2ZpOVRHUjRVeThzcFRYRVpHalFIV3NUTG91ekFweXVkblA2MUJKUThadVgxSkczRWo2OW5tSWd0Mld1YVFOdHBZUTZ2Z3k3Y0V1d1B2Z3Y3VFduQnhmN0p3OGdhQUotWUFtdjFjeXNDMEtxc3AzZVYxeTMweHM0SUdiT1B4cDE5cG5YYVBLUVk?oc=5",
-        "published_at": "Fri, 27 Nov 2026 18:19:27 GMT",
-        "source": "FXStreet",
-        "summary": ""
-      },
-      {
-        "title": "Gold Price Forecast: XAU/USD Breaks Multi-Year Uptrend in Worst Week Since March - StoneX",
-        "url": "https://news.google.com/rss/articles/CBMixgFBVV95cUxOS0V0aXctMHhmVjRnZXFxRnZyVzRBMUxVUklISmhWTEEtNlk2RWYzbFcxd3kxOXpFUGJZNU15YlN1MkpPOXd4d1EtRVpfeHByTkVhOVNrcGROWnh6WEhWQ2xLSW53QXZVdXdialViRWl2WXFHcUxET1N6cDRkR0hHZnZXLVBJbndPSV9mbkhRZWtsN1ZLWUx0LWFWTkJRNXhwYndoeEZXVmN1MkI5NDNFbWk2QzJzU3VwMVdaLVV2QTd5Sk9hNGc?oc=5",
-        "published_at": "Fri, 27 Nov 2026 17:33:12 GMT",
-        "source": "StoneX",
-        "summary": ""
-      },
-      {
-        "title": "22-Karat Gold Price Today in India; International Markets Recover with Gold Gaining Almost 2 Percent - TopNews",
-        "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxQUjdVVFNXTWRZemd4RFJ0c20xM01NVzRVMTJmSGZEMUZUcE1vSFNuN2RxMVotRzREbklwR09ERkZFcHhiX0ZscEFySklIbm1qanoycWhCQTFPODRMRk95S0dNZllYOFFlRGNRblpITFlJNHQxX004MGdmc0FTRXB3QVl1eE9OZHNVcmdjejZJWjh2Vm85TU50UFdzcDJOWXVYLV9EcWxmWURzUVNJcGF4ekRSb05oaFBj?oc=5",
-        "published_at": "Fri, 27 Nov 2026 17:29:25 GMT",
-        "source": "TopNews",
-        "summary": ""
-      },
-      {
-        "title": "Gold Price Forecast — XAU/USD ($3,670) $3,880 Upside Target on Rebound From $3,427 Low - TradingNEWS",
-        "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxNZFc1cGNBYWhNRG1pRG9DQUlCUkE0WXJZTnUyTHV2cVJzZ1ZBSmRGWUhrcnVqV3lCVUNGZXVSVTNiVkdURjRxLWZMZURHY0o0WlZRVmpNLVhiZVNFVWZwZ3NlMnROSU1KV2JNV1hFRmxEbS1xSHpPcnFibEMxYTdzZHk1Wnoxd24xWktMMjlGYnNOM0ViMDdvd2FLWVk1U3VKdmNiUU5TNW85aGFPc3c2U2YySGRpQ0pB?oc=5",
-        "published_at": "Fri, 27 Nov 2026 17:17:16 GMT",
-        "source": "TradingNEWS",
-        "summary": ""
-      },
-      {
-        "title": "Gold and Silver rally even as a December Fed hike is all but certain - FXStreet",
-        "url": "https://news.google.com/rss/articles/CBMitgFBVV95cUxPUVcydWlkbWhuTkJ6Yzc4ODZtY3F2dlBEUEVsRDhpb1NpanRzaUJYdFk5ZmpnMS1TZXVPR3otWnJYbnVnQ2FiN01CdDNZYUUtS3pKZTJHV1dvaVJia3k0MFktZG5HYjkybjB1aTZMcEctWHd0TzZUeVlFeXRVVjlFUDhFTk9IMDNyOWhfTmZqT1hpdjl4SVdJNVUzeDFUVGJlcmZhRXVnNWhTSkdEbkJHT0lqRDJaUQ?oc=5",
-        "published_at": "Fri, 27 Nov 2026 17:10:37 GMT",
-        "source": "FXStreet",
-        "summary": ""
-      },
-      {
-        "title": "Daily Gold Trading Report - Friday, November 27, 2026 - Investorideas.com",
-        "url": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxQaWw1cHI2aW52dC1yZkF4ME0xTmdQUXBvNzlRYlM0a25NZXpqM1RaYjM1UzJSeGxxcDhfQl9MZ1N3UWxGSUpwU1lQV2hheENxMGtieEl0VUlaa1RsOGpyS3RzU2Z6YUpDUFdGdE11X0tiYXExR29TSlFzZG9VX2xTSERleXI2aHNlQVZWcTlmc0JFaEVqVHZ2VExQMkJ2RGk4ZGhNbENpTmpUZw?oc=5",
-        "published_at": "Fri, 27 Nov 2026 16:35:09 GMT",
-        "source": "Investorideas.com",
-        "summary": ""
-      },
-      {
-        "title": "Precious Metals Prices Canada | Gold, Silver, Platinum, Palladium, Rhodium in CAD - Kitco",
-        "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTFBqalFQMEJZcTRGQUUtck45dzl5MEtzYmFhZURNVVU1NnFwcXZuNG9MQnhoenNBc28yV2RHU18wM3BuT3RpRnJPQ0FKbkNzMmlLbWxUUmduQjdPUFpGSkt3?oc=5",
-        "published_at": "Fri, 27 Nov 2026 16:28:10 GMT",
-        "source": "Kitco",
-        "summary": ""
-      },
-      {
-        "title": "XRP-Gold Ratio Coils Near 204M as Analyst Flags 115M Support as Decisive Level - BigGo Finance",
-        "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBqSHdGZExSb2JjTGRIaEJwMEYzb3lsdVNTT3o0Nm9rNHlvQnA4Y3d3aVhYRjBiVjU3MzhNSWZFOHBOaXkyVmljeXJvTDh4YVRCY0gtV1N4Q2VNYTRpWXRHZ296bi1ZSG1iZ1ZUazZUNWRiemZiSXc?oc=5",
-        "published_at": "Fri, 27 Nov 2026 16:25:00 GMT",
-        "source": "BigGo Finance",
-        "summary": ""
-      },
-      {
-        "title": "Blue Gold signs MOU with Current Technology for AI gold payments By Investing.com - Investing.com Nigeria",
-        "url": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxNc296Y1ItRmlBRmU4djMtalk0YVpNbFlDOGhtY3hnMk5VcnVBT3VHeGxvZXV0QklGWXZjRF80OHA1QmhIT2c2aGpIZFg4Z29JNFVneUtvVFAwM2w3QUo3VXowLTRkb1VsbWpFVnI1TVVWWjJtSkNmeEl6ZlZmWjllVldXcHc3a0VsSjJRX2hHYkVsLWx3WTd2SWdjZmZWY2hEa3RpWEhnRUlxM3ZrRXFCWFlCUU5fSzhBM05xbTBzUy1MbWc?oc=5",
-        "published_at": "Fri, 27 Nov 2026 15:28:13 GMT",
-        "source": "Investing.com Nigeria",
-        "summary": ""
-      },
-      {
-        "title": "What's driving Bitcoin and Gold's recovery? - FXStreet",
-        "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNRW9RenIxUVMtUU9ZaGxhSWNZYUhldFN2VGtPbVFzajlUcTd1a20tSlU5dldzODRkbVhFUG9PQ1JGR192LThST3BRX0o3U1A3VlpxMUE2TE9fNmhmSi1pNDRFQlFyckV4bEUyellxSVVsM2hma1ZKdWQtWFdQY3FRaDdzOGZ0TVRyd1NkbEIxVWV2cEkyMHZ6RWRDb2dJVVBRN3Y0My15TTBLdzBNdGp4RFpTRFNoR25WWW1SVHpoRVU2RHZ4bGN2MHJiZG9OYjI1RnlmaG4tdG1oQQ?oc=5",
-        "published_at": "Fri, 27 Nov 2026 15:11:27 GMT",
-        "source": "FXStreet",
-        "summary": ""
-      },
-      {
-        "title": "XRP-to-Gold Ratio Nears 204 Million as Chart Shows Compression - www.tokenpost.com",
-        "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE13SHF4eGhiQjZKUUtWQU1Wd185cXN2Vno3X3c5VjU0NnZDSl8ySWFweFRvTy1ZeEZyQUtmdFJVUlJ5aC02MWNBYnFwZ2dTNUdyYzVYaGRobDVBdw?oc=5",
-        "published_at": "Fri, 27 Nov 2026 15:02:40 GMT",
-        "source": "www.tokenpost.com",
-        "summary": ""
-      },
-      {
-        "title": "XRP vs GOLD: Analyst Says This Chart Is Getting Interesting. Here’s why - Times Tabloid",
-        "url": "https://news.google.com/rss/articles/CBMimgFBVV95cUxPYWF3LUJTc3NyWmdyRm43ak5oRng4akpob3V1M2VJYm5ZQXVfejVlZmZmTUJOSHh2Vk03UzE3Y0J2UzctMzBBX0V4MEhUTk1VWU5ZQ0RpVTl3eFZfRktnaDFNVy1yM2IwV1UwcWVBYmlxclBVcFNleXFGbE96VHExNmRqa1pxcWl4NlJDdmRwWklPUW8wSmxpbHJB?oc=5",
-        "published_at": "Fri, 27 Nov 2026 15:00:38 GMT",
-        "source": "Times Tabloid",
-        "summary": ""
-      },
-      {
-        "title": "Has Gold found a bottom, or is this a short-term bounce? - FXStreet",
-        "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPNXlpSmc4c3NfcGFGbGxGVHFYMVpjMXZuMHhGOThtR2I2d0JMMW5mSkJqY0VIaWlIOVpsRXJDVElpOFlPcVRZWjJobThjVE1GRDdQam85MWJzQUhVWlhhNlZuVWRHUy1LOXBvZUFOQmZ4QUxoaU5vR0VvMFEtalN0MnFQNTlZTlRUb19RMGk0YzNPLV8wSGZJdm1xYw?oc=5",
-        "published_at": "Fri, 27 Nov 2026 14:45:49 GMT",
-        "source": "FXStreet",
-        "summary": ""
-      },
-      {
-        "title": "Gold and Silver Rally as More Than $700 Billion Added to Precious Metals Market in Three Hours - Hokanews",
-        "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxObndJRHdGb2c2T1lKemFNYW9ad09YRmp3Qm92c0ktdjRFNlFYOG54cHEzaFpidWdKVFItZWhYdXpCdDBBS1N5VlQwOGRzbkRFaG44Z0hveWJ5VE9mSEdJZDdzYTFCSGlvNWctTl9pWE9LLVlZUWJ2c1lsaWJKLWNDdFB3?oc=5",
-        "published_at": "Fri, 27 Nov 2026 14:24:00 GMT",
-        "source": "Hokanews",
-        "summary": ""
-      },
-      {
-        "title": "Gold Price Today: Gold Rises 2.18% on November 27, 2026 - USA Today",
-        "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPd2lCRFlOSHY2TG43WmpHMmFfTWxhSDVmTGc2ejVOQzhSbWRGeWxQNGU3QjFWMGMyQnJKQWFzdFBQdXU5Q0xKNWYtTFFGZUxwQ2YzVTAzQmNjTmhKRU5yYUwxMnFDTjNyVWdWbHI0Vm9aM18wcWpGOExnR3Z3RktTejJPb1BfWEhaTHlvS3dBRHVlNFl6SDc3eWM4eWdCVHFmQlJN?oc=5",
-        "published_at": "Fri, 27 Nov 2026 14:13:00 GMT",
-        "source": "USA Today",
-        "summary": ""
-      },
-      {
-        "title": "Bernstein outlines bullish roadmap for gold heading into 2027 By Investing.com - Investing.com Nigeria",
-        "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxQanJvMUFOejgxMmg4V2dvcTgwdlhRbVJUR0VNVUliV2FHOGxhSlpkd0RqcGJNOU9IRldJbmc5UmZLTUdlN1dUVzhCeGcyQVNmZFM1TFZWMG5acmJEWWQ0UUEzTXNIVFc0clZlQW9kcmFiRGlyV0JXSmhZZjJqV2ZNRzMwenRha3ZUVmZhWEFlRzlPajZwem5yX0paUDlTTmFzbFNuNzBubmpxeGUzeUdFY1JPNlo3b0k?oc=5",
-        "published_at": "Fri, 27 Nov 2026 14:02:16 GMT",
-        "source": "Investing.com Nigeria",
-        "summary": ""
-      },
-      {
-        "title": "Gold Surges: Is a Massive Short Squeeze Imminent? - 富途牛牛",
-        "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxOWjBOT3hqZUlWWFRyQks2d016RFRDWjJlYUV2NURwSEpTNG9kQjZSUndPb1o0bEdLOEJ4dUd5ZHFQeU1yYTlzSGZaWUlqbEthZm9XNWJJLUZRRjRXUDRVcEo3eVVhdFFhX1MxZFZYbDZlZ3l5MjBPVkJ6eUd4OUxqR2Fob1dpWEl2UERKSDBJd0kwR185?oc=5",
-        "published_at": "Fri, 27 Nov 2026 14:01:14 GMT",
-        "source": "富途牛牛",
+        "title": "Bernstein outlines bullish roadmap for gold heading into 2027 - Investing.com",
+        "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPbHpiQUJYTC05UWlncHlyLTFBRHo0Sk5LRFo0OWY2emFxOXc0LUR5WERXUHVMSlZVUDM2aUlybUFkUkQwOUhaWGdfY1FNR1hkMjRuYzRvMU1aNE42bWZnakIxVlZteTFiZC1XRm9wTjMteXRIQ0ZNaWZVLTBzaHkxeTU4NmhPaWdrQnNkU19sYVBramhuTk80RUEyVHA4SXRaNkxmajlTZy14dldMV2Z3cUZ4Tlc2ZEI0?oc=5",
+        "published_at": "Fri, 27 Nov 2026 18:27:42 GMT",
+        "source": "Investing.com",
         "summary": ""
       }
     ]
